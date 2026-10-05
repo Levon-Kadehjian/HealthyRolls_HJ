@@ -127,6 +127,48 @@
 					</execution>
 				</executions>
 			</plugin>
+            <plugin>
+                <groupId>com.diffplug.spotless</groupId>
+                <artifactId>spotless-maven-plugin</artifactId>
+                <version>3.10.3</version>
+                <configuration>
+                    <java>
+                        <eclipse>
+                            <file>${project.basedir}/eclipse-formatter.xml</file>
+                        </eclipse>
+                        <removeUnusedImports/>
+                    </java>
+                </configuration>
+                <executions>
+                    <execution>
+                        <?m2e ignore?>
+                        <goals><goal>check</goal></goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <version>3.6.0</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>com.puppycrawl.tools</groupId>
+                        <artifactId>checkstyle</artifactId>
+                        <version>14.3.0</version>
+                    </dependency>
+                </dependencies>
+                <configuration>
+                    <configLocation>checkstyle.xml</configLocation>
+                    <violationSeverity>warning</violationSeverity>
+                    <consoleOutput>true</consoleOutput>
+                </configuration>
+                <executions>
+                    <execution>
+                        <?m2e ignore?>
+                        <goals><goal>check</goal></goals>
+                    </execution>
+                </executions>
+            </plugin>
 		</plugins>
 	</build>
 
