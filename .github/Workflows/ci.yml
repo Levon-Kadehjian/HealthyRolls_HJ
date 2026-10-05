@@ -12,3 +12,6 @@ concurrency:
 jobs:
   client-build:
     uses: ./.github/workflows/_client_build.yml
+
+  server-build:
+    uses: ./.github/workflows/_server_build.yml
