@@ -2,6 +2,9 @@ package com.healthyrolls.domain.order;
 
 import java.util.List;
 
+import com.healthyrolls.domain.order.common.CustomerId;
+import com.healthyrolls.domain.order.common.RestaurantId;
+
 public class OrderFactory {
 
     private OrderStateFactory stateFactory;

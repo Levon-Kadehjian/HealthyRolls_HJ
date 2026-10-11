@@ -1,4 +1,4 @@
-package com.healthyrolls.domain.order;
+package com.healthyrolls.domain.order.common;
 
 import java.util.UUID;
 

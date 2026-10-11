@@ -2,6 +2,10 @@ package com.healthyrolls.domain.order;
 
 import java.time.Instant;
 
+import com.healthyrolls.domain.order.common.CourierId;
+import com.healthyrolls.domain.order.common.CustomerId;
+import com.healthyrolls.domain.order.common.RestaurantId;
+
 public class Order {
 
     private OrderId id;
