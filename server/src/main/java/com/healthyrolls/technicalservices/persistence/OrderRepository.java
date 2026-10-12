@@ -1,7 +1,7 @@
 package com.healthyrolls.technicalservices.persistence;
 
-import com.healthyrolls.domain.ord.Order;
-import com.healthyrolls.domain.ord.OrderId;
+import com.healthyrolls.domain.ord.order.Order;
+import com.healthyrolls.domain.ord.order.state.OrderId;
 
 public interface OrderRepository {
 

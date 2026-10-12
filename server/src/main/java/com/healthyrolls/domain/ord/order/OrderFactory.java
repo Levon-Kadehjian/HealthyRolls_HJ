@@ -1,4 +1,4 @@
-package com.healthyrolls.domain.ord;
+package com.healthyrolls.domain.ord.order;
 
 import java.util.List;
 import java.util.UUID;
@@ -10,7 +10,7 @@ public class OrderFactory {
     public Order createNew(
             UUID customerId,
             UUID restaurantId,
-            List<OrderItem> items) {
+            List<OrderLine> items) {
         throw new UnsupportedOperationException();
     }
 

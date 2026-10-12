@@ -1,7 +1,9 @@
-package com.healthyrolls.domain.ord;
+package com.healthyrolls.domain.ord.order;
 
 import java.time.Instant;
 import java.util.UUID;
+
+import com.healthyrolls.domain.ord.order.state.OrderId;
 
 public class Order {
 
