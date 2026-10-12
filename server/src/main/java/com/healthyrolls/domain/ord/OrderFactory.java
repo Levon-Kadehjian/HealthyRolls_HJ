@@ -1,17 +1,15 @@
-package com.healthyrolls.domain.order;
+package com.healthyrolls.domain.ord;
 
 import java.util.List;
-
-import com.healthyrolls.domain.order.common.CustomerId;
-import com.healthyrolls.domain.order.common.RestaurantId;
+import java.util.UUID;
 
 public class OrderFactory {
 
     private OrderStateFactory stateFactory;
 
     public Order createNew(
-            CustomerId customerId,
-            RestaurantId restaurantId,
+            UUID customerId,
+            UUID restaurantId,
             List<OrderItem> items) {
         throw new UnsupportedOperationException();
     }

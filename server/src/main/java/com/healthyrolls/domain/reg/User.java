@@ -1,0 +1,11 @@
+package com.healthyrolls.domain.reg;
+
+import java.util.UUID;
+
+public class User {
+    private UUID userId;
+    private String name;
+    private String email;
+    private String passwordHash;
+    private Role role;
+}

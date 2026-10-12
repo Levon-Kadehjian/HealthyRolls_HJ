@@ -1,22 +1,19 @@
-package com.healthyrolls.domain.order;
+package com.healthyrolls.domain.ord;
 
 import java.time.Instant;
-
-import com.healthyrolls.domain.order.common.CourierId;
-import com.healthyrolls.domain.order.common.CustomerId;
-import com.healthyrolls.domain.order.common.RestaurantId;
+import java.util.UUID;
 
 public class Order {
 
     private OrderId id;
-    private CustomerId customerId;
-    private RestaurantId restaurantId;
-    private CourierId courierId;
+    private UUID customerId;
+    private UUID restaurantId;
+    private UUID courierId;
     private AbstractOrderState state;
     private Instant acceptedAt;
     private long version;
 
-    public void assignCourier(CourierId id) {
+    public void assignCourier(UUID id) {
         throw new UnsupportedOperationException();
     }
 
