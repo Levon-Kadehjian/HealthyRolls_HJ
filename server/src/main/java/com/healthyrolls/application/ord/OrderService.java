@@ -1,6 +1,7 @@
 package com.healthyrolls.application.ord;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 import com.healthyrolls.application.reg.UserContext;
@@ -16,6 +17,16 @@ public class OrderService {
     private OrderRepository repository;
     private OrderFactory factory;
     private OrderEventRecorder recorder;
+
+    public OrderService(
+            OrderRepository repository,
+            OrderFactory factory,
+            OrderEventRecorder recorder) {
+
+        this.repository = Objects.requireNonNull(repository);
+        this.factory = Objects.requireNonNull(factory);
+        this.recorder = Objects.requireNonNull(recorder);
+    }
 
     public OrderId placeOrder(
             UserContext actor,
