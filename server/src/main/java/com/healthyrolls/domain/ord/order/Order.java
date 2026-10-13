@@ -18,15 +18,10 @@ public class Order {
     private long version;
     private List<OrderLine> items;
 
-    Order(
-            UUID customerId,
-            UUID restaurantId,
-            List<OrderLine> items) {
+    Order(UUID customerId, UUID restaurantId, List<OrderLine> items) {
 
-        this.customerId = Objects.requireNonNull(
-                customerId, "Customer ID is required");
-        this.restaurantId = Objects.requireNonNull(
-                restaurantId, "Restaurant ID is required");
+        this.customerId = Objects.requireNonNull(customerId, "Customer ID is required");
+        this.restaurantId = Objects.requireNonNull(restaurantId, "Restaurant ID is required");
 
         Objects.requireNonNull(items, "Order lines are required");
 
@@ -42,6 +37,34 @@ public class Order {
 
     public OrderId getOrderId() {
         return id;
+    }
+
+    Order(OrderRecord record, OrderStateFactory stateFactory) {
+        this(record.customerId(), record.restaurantId(), record.items());
+        this.id = new OrderId(Objects.requireNonNull(record.orderId()));
+        this.courierId = record.courierId();
+        this.acceptedAt = record.acceptedAt();
+        this.state = stateFactory.fromStatus(OrderStatus.valueOf(record.status()), this);
+    }
+
+    public UUID getCustomerId() {
+        return customerId;
+    }
+
+    public UUID getRestaurantId() {
+        return restaurantId;
+    }
+
+    public UUID getCourierId() {
+        return courierId;
+    }
+
+    public Instant getAcceptedAt() {
+        return acceptedAt;
+    }
+
+    public List<OrderLine> getItems() {
+        return items;
     }
 
     public void assignCourier(UUID id) {
