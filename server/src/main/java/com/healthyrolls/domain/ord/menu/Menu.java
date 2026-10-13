@@ -39,4 +39,14 @@ public class Menu {
         }
         throw new IllegalArgumentException("Item does not belong to this restaurant's menu");
     }
+
+    public MenuItem findAvailableItem(UUID itemId) {
+        MenuItem item = findItem(itemId);
+
+        if (item.getStatus() != MenuItemStatus.AVAILABLE) {
+            throw new IllegalStateException("Menu item is sold out");
+        }
+
+        return item;
+    }
 }

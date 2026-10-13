@@ -1,12 +1,12 @@
 package com.healthyrolls.application.ord;
 
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Objects;
 import java.util.UUID;
 
 import com.healthyrolls.domain.ord.menu.Menu;
 import com.healthyrolls.domain.ord.menu.MenuItem;
-import com.healthyrolls.domain.ord.menu.MenuItemStatus;
 import com.healthyrolls.domain.ord.order.OrderLine;
 import com.healthyrolls.technicalservices.persistence.MenuRepository;
 
@@ -18,7 +18,7 @@ public class MenuService {
         this.repository = Objects.requireNonNull(repository, "Menu repository is required");
     }
 
-    public boolean areItemsAvailable(UUID restaurantId, List<OrderLine> items) {
+    public List<OrderLine> validateAndResolveItems(UUID restaurantId, List<OrderLine> items) {
         Objects.requireNonNull(restaurantId, "Restaurant ID is required");
         Objects.requireNonNull(items, "Order lines are required");
         if (items.isEmpty()) {
@@ -30,15 +30,16 @@ public class MenuService {
             throw new IllegalStateException("Repository returned a menu for another restaurant");
         }
 
-        boolean allAvailable = true;
+        List<OrderLine> validatedItems = new ArrayList<>();
+
         for (OrderLine line : items) {
             Objects.requireNonNull(line, "Order line is required");
-            MenuItem storedItem = menu.findItem(line.menuItem().getItemId());
-            if (storedItem.getStatus() != MenuItemStatus.AVAILABLE) {
-                allAvailable = false;
-            }
+
+            MenuItem storedItem = menu.findAvailableItem(line.menuItem().getItemId());
+
+            validatedItems.add(new OrderLine(storedItem, line.quantity()));
         }
 
-        return allAvailable;
+        return List.copyOf(validatedItems);
     }
 }

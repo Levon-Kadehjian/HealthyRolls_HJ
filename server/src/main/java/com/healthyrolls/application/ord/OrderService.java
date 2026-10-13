@@ -54,14 +54,12 @@ public class OrderService {
             throw new IllegalStateException("Restaurant is not open");
         }
 
-        if (!menuService.areItemsAvailable(restaurantId, items)) {
-            throw new IllegalStateException("One or more menu items are unavailable");
-        }
+        List<OrderLine> validatedItems = menuService.validateAndResolveItems(restaurantId, items);
 
         Order order = factory.createNew(
                 customerId,
                 restaurantId,
-                items);
+                validatedItems);
 
         OrderId orderId = order.getOrderId();
 
