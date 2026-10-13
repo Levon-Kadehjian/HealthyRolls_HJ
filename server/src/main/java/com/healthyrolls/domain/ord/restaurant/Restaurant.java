@@ -38,4 +38,8 @@ public class Restaurant {
     public RestaurantStatus getStatus() {
         return status;
     }
+
+    public boolean isOpen() {
+        return status == RestaurantStatus.OPEN;
+    }
 }
