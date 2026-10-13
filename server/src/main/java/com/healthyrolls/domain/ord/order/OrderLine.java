@@ -1,19 +1,16 @@
 package com.healthyrolls.domain.ord.order;
 
-import java.math.BigDecimal;
 import java.util.Objects;
-import java.util.UUID;
 
-public record OrderLine(UUID menuItemId, int quantity, BigDecimal unitPrice) {
+import com.healthyrolls.domain.ord.menu.MenuItem;
+
+public record OrderLine(MenuItem menuItem, int quantity) {
 
     public OrderLine {
-        Objects.requireNonNull(menuItemId, "Menu item ID is required");
-        Objects.requireNonNull(unitPrice, "Unit price is required");
+        Objects.requireNonNull(menuItem, "Menu item is required");
+
         if (quantity <= 0) {
             throw new IllegalArgumentException("Quantity must be positive");
-        }
-        if (unitPrice.signum() < 0) {
-            throw new IllegalArgumentException("Unit price cannot be negative");
         }
     }
 }

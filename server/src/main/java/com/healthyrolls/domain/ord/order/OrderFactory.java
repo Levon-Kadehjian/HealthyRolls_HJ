@@ -11,7 +11,8 @@ public class OrderFactory {
             UUID customerId,
             UUID restaurantId,
             List<OrderLine> items) {
-        throw new UnsupportedOperationException();
+
+        return new Order(customerId, restaurantId, items);
     }
 
     public Order fromRecord(OrderRecord record) {

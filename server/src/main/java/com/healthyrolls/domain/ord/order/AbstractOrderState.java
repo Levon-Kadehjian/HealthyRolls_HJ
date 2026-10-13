@@ -4,6 +4,8 @@ public abstract class AbstractOrderState {
 
     protected Order order;
 
+    public abstract OrderStatus status();
+
     public void accept() {
         throw new UnsupportedOperationException();
     }
@@ -28,7 +30,4 @@ public abstract class AbstractOrderState {
         throw new UnsupportedOperationException();
     }
 
-    public OrderStatus status() {
-        throw new UnsupportedOperationException();
-    }
 }
