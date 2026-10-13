@@ -5,6 +5,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 import com.healthyrolls.application.reg.UserContext;
+import com.healthyrolls.domain.ord.order.Order;
 import com.healthyrolls.domain.ord.order.OrderFactory;
 import com.healthyrolls.domain.ord.order.OrderId;
 import com.healthyrolls.domain.ord.order.OrderAction;
@@ -14,25 +15,59 @@ import com.healthyrolls.technicalservices.persistence.OrderRepository;
 
 public class OrderService {
 
-    private OrderRepository repository;
-    private OrderFactory factory;
-    private OrderEventRecorder recorder;
+    private final OrderRepository repository;
+    private final OrderFactory factory;
+    private final OrderEventRecorder recorder;
+    private final RestaurantService restaurantService;
+    private final MenuService menuService;
 
     public OrderService(
             OrderRepository repository,
             OrderFactory factory,
-            OrderEventRecorder recorder) {
+            OrderEventRecorder recorder,
+            RestaurantService restaurantService,
+            MenuService menuService) {
 
-        this.repository = Objects.requireNonNull(repository);
-        this.factory = Objects.requireNonNull(factory);
-        this.recorder = Objects.requireNonNull(recorder);
+        this.repository = Objects.requireNonNull(repository, "Order repository is required");
+
+        this.factory = Objects.requireNonNull(factory, "Order factory is required");
+
+        this.recorder = Objects.requireNonNull(recorder, "Order event recorder is required");
+
+        this.restaurantService = Objects.requireNonNull(restaurantService, "Restaurant service is required");
+
+        this.menuService = Objects.requireNonNull(menuService, "Menu service is required");
     }
 
     public OrderId placeOrder(
             UserContext actor,
             UUID restaurantId,
             List<OrderLine> items) {
-        throw new UnsupportedOperationException();
+
+        Objects.requireNonNull(actor, "User context is required");
+
+        // TODO: validate actor has permission to place orders
+
+        UUID customerId = actor.userId();
+
+        if (!restaurantService.isOpen(restaurantId)) {
+            throw new IllegalStateException("Restaurant is not open");
+        }
+
+        if (!menuService.areItemsAvailable(restaurantId, items)) {
+            throw new IllegalStateException("One or more menu items are unavailable");
+        }
+
+        Order order = factory.createNew(
+                customerId,
+                restaurantId,
+                items);
+
+        OrderId orderId = order.getOrderId();
+
+        repository.save(order);
+
+        return orderId;
     }
 
     public void changeOrder(
