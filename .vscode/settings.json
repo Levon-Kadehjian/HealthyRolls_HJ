@@ -1,7 +1,7 @@
 {
     "java.format.settings.url": "${workspaceFolder}/server/eclipse-formatter.xml",
     "java.format.settings.profile": "HealthyRolls",
-    "java.checkstyle.configuration": "${workspaceFolder}/server/google_checks.xml",
+    "java.checkstyle.configuration": "${workspaceFolder}/server/checkstyle.xml",
     "java.checkstyle.version": "14.3.0",
     "[java]": {
         "editor.defaultFormatter": "redhat.java",
