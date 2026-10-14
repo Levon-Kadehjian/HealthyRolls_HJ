@@ -1,4 +1,4 @@
-package com.healthyrolls.technicalservices.persistence;
+package com.healthyrolls.technicalservices.persistence.ord;
 
 import java.util.UUID;
 

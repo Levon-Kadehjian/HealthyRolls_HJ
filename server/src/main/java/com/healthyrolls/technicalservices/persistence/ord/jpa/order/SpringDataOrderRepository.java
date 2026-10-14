@@ -1,4 +1,4 @@
-package com.healthyrolls.technicalservices.persistence.jpa.order;
+package com.healthyrolls.technicalservices.persistence.ord.jpa.order;
 
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;

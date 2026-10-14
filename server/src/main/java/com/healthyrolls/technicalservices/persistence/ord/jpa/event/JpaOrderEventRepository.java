@@ -1,12 +1,12 @@
-package com.healthyrolls.technicalservices.persistence.jpa.event;
+package com.healthyrolls.technicalservices.persistence.ord.jpa.event;
 
 import java.util.Objects;
 
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.healthyrolls.technicalservices.persistence.OrderEventRepository;
 import com.healthyrolls.domain.ord.order.OrderStateChanged;
+import com.healthyrolls.technicalservices.persistence.ord.OrderEventRepository;
 
 @Repository
 public class JpaOrderEventRepository implements OrderEventRepository {

@@ -1,4 +1,4 @@
-package com.healthyrolls.technicalservices.persistence.jpa.order;
+package com.healthyrolls.technicalservices.persistence.ord.jpa.order;
 
 import java.util.Objects;
 
@@ -8,7 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.healthyrolls.domain.ord.order.Order;
 import com.healthyrolls.domain.ord.order.OrderFactory;
 import com.healthyrolls.domain.ord.order.OrderId;
-import com.healthyrolls.technicalservices.persistence.OrderRepository;
+import com.healthyrolls.technicalservices.persistence.ord.OrderRepository;
 
 @Repository
 public class JpaOrderRepository implements OrderRepository {

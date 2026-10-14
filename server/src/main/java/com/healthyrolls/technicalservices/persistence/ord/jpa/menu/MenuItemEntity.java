@@ -1,10 +1,10 @@
-package com.healthyrolls.technicalservices.persistence.jpa.menu;
+package com.healthyrolls.technicalservices.persistence.ord.jpa.menu;
 
 import java.math.BigDecimal;
 import java.util.UUID;
 
 import com.healthyrolls.domain.ord.menu.MenuItemStatus;
-import com.healthyrolls.technicalservices.persistence.jpa.restaurant.RestaurantEntity;
+import com.healthyrolls.technicalservices.persistence.ord.jpa.restaurant.RestaurantEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
