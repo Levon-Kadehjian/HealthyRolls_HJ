@@ -1,4 +1,4 @@
-package com.healthyrolls.technicalservices.persistence.jpa.order;
+package com.healthyrolls.technicalservices.persistence.ord.jpa.order;
 
 import java.math.BigDecimal;
 import java.util.UUID;

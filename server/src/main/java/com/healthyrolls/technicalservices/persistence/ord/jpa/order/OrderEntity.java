@@ -1,4 +1,4 @@
-package com.healthyrolls.technicalservices.persistence.jpa.order;
+package com.healthyrolls.technicalservices.persistence.ord.jpa.order;
 
 import java.time.Instant;
 import java.util.ArrayList;

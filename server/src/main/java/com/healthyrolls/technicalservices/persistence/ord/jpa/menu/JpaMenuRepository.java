@@ -1,4 +1,4 @@
-package com.healthyrolls.technicalservices.persistence.jpa.menu;
+package com.healthyrolls.technicalservices.persistence.ord.jpa.menu;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,8 +10,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.healthyrolls.domain.ord.menu.Menu;
 import com.healthyrolls.domain.ord.menu.MenuItem;
-import com.healthyrolls.technicalservices.persistence.MenuRepository;
-import com.healthyrolls.technicalservices.persistence.jpa.restaurant.SpringDataRestaurantRepository;
+import com.healthyrolls.technicalservices.persistence.ord.MenuRepository;
+import com.healthyrolls.technicalservices.persistence.ord.jpa.restaurant.SpringDataRestaurantRepository;
 
 @Repository
 public class JpaMenuRepository implements MenuRepository {

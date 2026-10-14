@@ -9,9 +9,9 @@ import com.healthyrolls.domain.ord.order.Order;
 import com.healthyrolls.domain.ord.order.OrderFactory;
 import com.healthyrolls.domain.ord.order.OrderId;
 import com.healthyrolls.domain.ord.order.OrderAction;
-import com.healthyrolls.technicalservices.persistence.OrderEventRepository;
 import com.healthyrolls.domain.ord.order.OrderLine;
-import com.healthyrolls.technicalservices.persistence.OrderRepository;
+import com.healthyrolls.technicalservices.persistence.ord.OrderEventRepository;
+import com.healthyrolls.technicalservices.persistence.ord.OrderRepository;
 
 public class OrderService {
 

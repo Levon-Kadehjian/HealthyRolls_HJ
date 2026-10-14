@@ -4,14 +4,14 @@ import java.util.Objects;
 import java.util.UUID;
 
 import com.healthyrolls.domain.ord.restaurant.Restaurant;
-import com.healthyrolls.technicalservices.persistence.RestaurantRepository;
+import com.healthyrolls.technicalservices.persistence.ord.RestaurantRepository;
 
 public class RestaurantService {
 
     private final RestaurantRepository repository;
 
     public RestaurantService(RestaurantRepository repository) {
-        this.repository = Objects.requireNonNull(repository,  "Restaurant repository is required");
+        this.repository = Objects.requireNonNull(repository, "Restaurant repository is required");
     }
 
     public boolean isOpen(UUID restaurantId) {
