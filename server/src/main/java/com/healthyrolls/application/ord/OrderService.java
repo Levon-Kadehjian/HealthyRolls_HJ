@@ -4,14 +4,19 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-import com.healthyrolls.application.reg.UserContext;
+import com.healthyrolls.domain.common.AuthenticatedUser;
+import com.healthyrolls.domain.common.UserRole;
+import com.healthyrolls.domain.ord.order.EventId;
 import com.healthyrolls.domain.ord.order.Order;
 import com.healthyrolls.domain.ord.order.OrderFactory;
 import com.healthyrolls.domain.ord.order.OrderId;
 import com.healthyrolls.domain.ord.order.OrderAction;
 import com.healthyrolls.domain.ord.order.OrderLine;
+import com.healthyrolls.domain.ord.order.OrderStateChanged;
+import com.healthyrolls.domain.ord.order.OrderStatus;
 import com.healthyrolls.technicalservices.persistence.ord.OrderEventRepository;
 import com.healthyrolls.technicalservices.persistence.ord.OrderRepository;
+import org.springframework.transaction.annotation.Transactional;
 
 public class OrderService {
 
@@ -40,15 +45,17 @@ public class OrderService {
     }
 
     public OrderId placeOrder(
-            UserContext actor,
+            AuthenticatedUser actor,
             UUID restaurantId,
             List<OrderLine> items) {
 
         Objects.requireNonNull(actor, "User context is required");
 
-        // TODO: validate actor has permission to place orders
+        if (actor.role() != UserRole.CUSTOMER) {
+            throw new SecurityException("Only customers can place orders");
+        }
 
-        UUID customerId = actor.userId();
+        UUID customerId = actor.userId().value();
 
         if (!restaurantService.isOpen(restaurantId)) {
             throw new IllegalStateException("Restaurant is not open");
@@ -68,10 +75,43 @@ public class OrderService {
         return orderId;
     }
 
-    public void changeOrder(
-            OrderId orderId,
-            OrderAction action,
-            UserContext actor) {
-        throw new UnsupportedOperationException();
+    @Transactional
+    public void changeOrder(OrderId orderId, OrderAction action, AuthenticatedUser actor) {
+
+        Objects.requireNonNull(orderId, "Order ID is required");
+        Objects.requireNonNull(action, "Order action is required");
+        Objects.requireNonNull(actor, "User context is required");
+        Objects.requireNonNull(actor.userId(), "User ID is required");
+
+        if (actor.role() != UserRole.RESTAURANT_STAFF) {
+            throw new SecurityException("Only restaurant staff can accept orders");
+        }
+
+        if (action != OrderAction.ACCEPT) {
+            throw new UnsupportedOperationException("Only acceptance is implemented so far");
+        }
+
+        Order order = repository.findById(orderId);
+
+        if (actor.restaurantId() == null || !actor.restaurantId().value().equals(order.getRestaurantId())) {
+
+            throw new SecurityException("You cannot accept another restaurant's order");
+        }
+
+        OrderStatus previousStatus = order.status();
+
+        order.apply(action);
+
+        repository.save(order);
+
+        OrderStateChanged event = new OrderStateChanged(
+                EventId.random(),
+                order.getOrderId(),
+                previousStatus,
+                order.status(),
+                actor.userId().value(),
+                order.getAcceptedAt());
+
+        eventRepository.save(event);
     }
 }
