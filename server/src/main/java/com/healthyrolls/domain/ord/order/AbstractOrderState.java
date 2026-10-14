@@ -7,7 +7,7 @@ public abstract class AbstractOrderState {
     public abstract OrderStatus status();
 
     public void accept() {
-        throw new UnsupportedOperationException();
+        throw new IllegalStateException("Cannot accept an order in state " + status());
     }
 
     public void markReady() {
@@ -28,6 +28,10 @@ public abstract class AbstractOrderState {
 
     public void startPreparing() {
         throw new UnsupportedOperationException();
+    }
+
+    protected void transitionTo(AbstractOrderState next) {
+        order.changeState(next);
     }
 
 }

@@ -72,7 +72,16 @@ public class Order {
     }
 
     public void apply(OrderAction action) {
-        throw new UnsupportedOperationException();
+        Objects.requireNonNull(action, "Order action is required");
+
+        switch (action) {
+            case ACCEPT -> state.accept();
+            case START_PREPARING -> state.startPreparing();
+            case MARK_READY -> state.markReady();
+            case PICK_UP -> state.markPickedUp();
+            case DELIVER -> state.markDelivered();
+            case CANCEL -> state.cancel();
+        }
     }
 
     public OrderStatus status() {
@@ -80,6 +89,13 @@ public class Order {
     }
 
     void changeState(AbstractOrderState next) {
-        throw new UnsupportedOperationException();
+        Objects.requireNonNull(next, "Next state is required");
+
+        if (next.status() == OrderStatus.ACCEPTED) {
+            acceptedAt = Instant.now();
+        }
+
+        next.order = this;
+        state = next;
     }
 }

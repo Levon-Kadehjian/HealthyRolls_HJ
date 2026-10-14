@@ -13,6 +13,11 @@ public class PlacedState extends AbstractOrderState {
     }
 
     @Override
+    public void accept() {
+        transitionTo(new AcceptedState());
+    }
+
+    @Override
     public OrderStatus status() {
         return OrderStatus.PLACED;
     }

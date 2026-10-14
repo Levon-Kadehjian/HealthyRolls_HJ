@@ -5,10 +5,10 @@ import java.util.UUID;
 public record EventId(UUID value) {
 
     public static EventId parse(String value) {
-        throw new UnsupportedOperationException();
+        return new EventId(UUID.fromString(value));
     }
 
     public static EventId random() {
-        throw new UnsupportedOperationException();
+        return new EventId(UUID.randomUUID());
     }
 }
