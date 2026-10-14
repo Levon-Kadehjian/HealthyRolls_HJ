@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import com.healthyrolls.domain.ord.restaurant.RestaurantStatus;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -17,9 +18,11 @@ public class RestaurantEntity {
     @Id
     private UUID restaurantId;
 
+    @Column(nullable = false)
     private String name;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private RestaurantStatus status;
 
     protected RestaurantEntity() {

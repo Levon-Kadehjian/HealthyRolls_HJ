@@ -5,17 +5,14 @@ import java.util.UUID;
 
 public class OrderFactory {
 
-    private OrderStateFactory stateFactory;
+    private final OrderStateFactory stateFactory = new OrderStateFactory();
 
-    public Order createNew(
-            UUID customerId,
-            UUID restaurantId,
-            List<OrderLine> items) {
+    public Order createNew(UUID customerId, UUID restaurantId, List<OrderLine> items) {
 
         return new Order(customerId, restaurantId, items);
     }
 
     public Order fromRecord(OrderRecord record) {
-        throw new UnsupportedOperationException();
+        return new Order(record, stateFactory);
     }
 }
