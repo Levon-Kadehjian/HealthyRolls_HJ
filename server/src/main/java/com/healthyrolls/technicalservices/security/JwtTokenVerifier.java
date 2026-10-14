@@ -1,9 +1,10 @@
-package com.healthyrolls.domain.reg;
+package com.healthyrolls.technicalservices.security;
 
 import com.healthyrolls.domain.common.AuthenticatedUser;
 import com.healthyrolls.domain.common.RestaurantId;
 import com.healthyrolls.domain.common.UserId;
 import com.healthyrolls.domain.common.UserRole;
+import com.healthyrolls.domain.reg.TokenVerifier;
 
 import org.springframework.security.oauth2.jwt.BadJwtException;
 import org.springframework.security.oauth2.jwt.Jwt;
