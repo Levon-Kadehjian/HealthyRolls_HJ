@@ -9,7 +9,7 @@ import com.healthyrolls.domain.ord.order.Order;
 import com.healthyrolls.domain.ord.order.OrderFactory;
 import com.healthyrolls.domain.ord.order.OrderId;
 import com.healthyrolls.domain.ord.order.OrderAction;
-import com.healthyrolls.domain.ord.order.OrderEventRecorder;
+import com.healthyrolls.technicalservices.persistence.OrderEventRepository;
 import com.healthyrolls.domain.ord.order.OrderLine;
 import com.healthyrolls.technicalservices.persistence.OrderRepository;
 
@@ -17,14 +17,14 @@ public class OrderService {
 
     private final OrderRepository repository;
     private final OrderFactory factory;
-    private final OrderEventRecorder recorder;
+    private final OrderEventRepository eventRepository;
     private final RestaurantService restaurantService;
     private final MenuService menuService;
 
     public OrderService(
             OrderRepository repository,
             OrderFactory factory,
-            OrderEventRecorder recorder,
+            OrderEventRepository eventRepository,
             RestaurantService restaurantService,
             MenuService menuService) {
 
@@ -32,7 +32,7 @@ public class OrderService {
 
         this.factory = Objects.requireNonNull(factory, "Order factory is required");
 
-        this.recorder = Objects.requireNonNull(recorder, "Order event recorder is required");
+        this.eventRepository = Objects.requireNonNull(eventRepository, "Order event repository is required");
 
         this.restaurantService = Objects.requireNonNull(restaurantService, "Restaurant service is required");
 
