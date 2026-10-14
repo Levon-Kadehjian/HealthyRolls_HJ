@@ -9,5 +9,4 @@ public record AccessRule(
         String pathPattern,
         HttpMethod method,
         Set<UserRole> allowedRules,
-        boolean isPublic) {
-}
+        boolean isPublic) {}
