@@ -9,7 +9,16 @@ import com.healthyrolls.domain.ord.order.Order;
 import com.healthyrolls.domain.ord.order.OrderRecord;
 import com.healthyrolls.domain.ord.order.OrderStatus;
 
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderColumn;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "orders")

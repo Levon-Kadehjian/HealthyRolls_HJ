@@ -12,7 +12,7 @@ public class OrderFactory {
         return new Order(customerId, restaurantId, items);
     }
 
-    public Order fromRecord(OrderRecord record) {
+    public Order reconstitute(OrderRecord record) {
         return new Order(record, stateFactory);
     }
 }

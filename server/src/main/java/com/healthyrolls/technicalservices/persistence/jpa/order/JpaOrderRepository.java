@@ -24,7 +24,7 @@ public class JpaOrderRepository implements OrderRepository {
     public Order save(Order order) {
         Objects.requireNonNull(order, "Order is required");
         OrderEntity saved = database.save(new OrderEntity(order));
-        return factory.fromRecord(saved.toRecord());
+        return factory.reconstitute(saved.toRecord());
     }
 
     @Override
@@ -33,7 +33,7 @@ public class JpaOrderRepository implements OrderRepository {
         Objects.requireNonNull(id, "Order ID is required");
         OrderEntity entity = database.findById(id.value())
                 .orElseThrow(() -> new IllegalArgumentException("Order not found"));
-        return factory.fromRecord(entity.toRecord());
+        return factory.reconstitute(entity.toRecord());
     }
 
     @Override
