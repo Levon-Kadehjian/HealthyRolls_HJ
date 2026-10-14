@@ -1,4 +1,4 @@
-package com.healthyrolls.technicalservices.persistence.jpa.event;
+package com.healthyrolls.technicalservices.persistence.ord.jpa.event;
 
 import java.time.Instant;
 import java.util.UUID;

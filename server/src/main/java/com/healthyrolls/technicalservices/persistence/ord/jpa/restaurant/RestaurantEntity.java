@@ -1,4 +1,4 @@
-package com.healthyrolls.technicalservices.persistence.jpa.restaurant;
+package com.healthyrolls.technicalservices.persistence.ord.jpa.restaurant;
 
 import java.util.UUID;
 

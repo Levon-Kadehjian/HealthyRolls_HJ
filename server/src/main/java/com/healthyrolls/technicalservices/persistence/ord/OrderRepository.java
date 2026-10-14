@@ -1,4 +1,4 @@
-package com.healthyrolls.technicalservices.persistence;
+package com.healthyrolls.technicalservices.persistence.ord;
 
 import com.healthyrolls.domain.ord.order.Order;
 import com.healthyrolls.domain.ord.order.OrderId;
