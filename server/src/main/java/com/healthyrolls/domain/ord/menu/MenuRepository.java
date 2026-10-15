@@ -1,8 +1,6 @@
-package com.healthyrolls.technicalservices.persistence.ord;
+package com.healthyrolls.domain.ord.menu;
 
 import java.util.UUID;
-
-import com.healthyrolls.domain.ord.menu.Menu;
 
 public interface MenuRepository {
 

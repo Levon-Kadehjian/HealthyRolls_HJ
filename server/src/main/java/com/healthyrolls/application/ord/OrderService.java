@@ -13,11 +13,12 @@ import com.healthyrolls.domain.ord.order.Order;
 import com.healthyrolls.domain.ord.order.OrderFactory;
 import com.healthyrolls.domain.ord.order.OrderId;
 import com.healthyrolls.domain.ord.order.OrderAction;
+import com.healthyrolls.domain.ord.order.OrderEventRepository;
 import com.healthyrolls.domain.ord.order.OrderLine;
+import com.healthyrolls.domain.ord.order.OrderRepository;
 import com.healthyrolls.domain.ord.order.OrderStateChanged;
 import com.healthyrolls.domain.ord.order.OrderStatus;
-import com.healthyrolls.technicalservices.persistence.ord.OrderEventRepository;
-import com.healthyrolls.technicalservices.persistence.ord.OrderRepository;
+
 import org.springframework.transaction.annotation.Transactional;
 
 public class OrderService {

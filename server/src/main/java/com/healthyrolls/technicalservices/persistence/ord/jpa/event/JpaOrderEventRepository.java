@@ -5,8 +5,8 @@ import java.util.Objects;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.healthyrolls.domain.ord.order.OrderEventRepository;
 import com.healthyrolls.domain.ord.order.OrderStateChanged;
-import com.healthyrolls.technicalservices.persistence.ord.OrderEventRepository;
 
 @Repository
 public class JpaOrderEventRepository implements OrderEventRepository {

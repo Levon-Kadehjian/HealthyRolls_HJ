@@ -7,8 +7,8 @@ import java.util.UUID;
 
 import com.healthyrolls.domain.ord.menu.Menu;
 import com.healthyrolls.domain.ord.menu.MenuItem;
+import com.healthyrolls.domain.ord.menu.MenuRepository;
 import com.healthyrolls.domain.ord.order.OrderLine;
-import com.healthyrolls.technicalservices.persistence.ord.MenuRepository;
 
 public class MenuService {
 

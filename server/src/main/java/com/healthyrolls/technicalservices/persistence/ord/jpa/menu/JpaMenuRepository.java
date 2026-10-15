@@ -10,7 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.healthyrolls.domain.ord.menu.Menu;
 import com.healthyrolls.domain.ord.menu.MenuItem;
-import com.healthyrolls.technicalservices.persistence.ord.MenuRepository;
+import com.healthyrolls.domain.ord.menu.MenuRepository;
 import com.healthyrolls.technicalservices.persistence.ord.jpa.restaurant.SpringDataRestaurantRepository;
 
 @Repository

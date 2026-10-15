@@ -5,7 +5,7 @@ import java.util.UUID;
 import org.springframework.stereotype.Repository;
 
 import com.healthyrolls.domain.ord.restaurant.Restaurant;
-import com.healthyrolls.technicalservices.persistence.ord.RestaurantRepository;
+import com.healthyrolls.domain.ord.restaurant.RestaurantRepository;
 
 @Repository
 public class JpaRestaurantRepository implements RestaurantRepository {

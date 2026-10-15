@@ -1,8 +1,6 @@
-package com.healthyrolls.technicalservices.persistence.ord;
+package com.healthyrolls.domain.ord.restaurant;
 
 import java.util.UUID;
-
-import com.healthyrolls.domain.ord.restaurant.Restaurant;
 
 public interface RestaurantRepository {
 

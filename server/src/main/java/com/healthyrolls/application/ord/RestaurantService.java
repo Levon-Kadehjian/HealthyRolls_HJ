@@ -4,7 +4,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 import com.healthyrolls.domain.ord.restaurant.Restaurant;
-import com.healthyrolls.technicalservices.persistence.ord.RestaurantRepository;
+import com.healthyrolls.domain.ord.restaurant.RestaurantRepository;
 
 public class RestaurantService {
 
