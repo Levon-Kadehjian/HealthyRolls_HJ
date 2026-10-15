@@ -1,8 +1,8 @@
 package com.healthyrolls.domain.ord.order;
 
 import java.time.Instant;
-import java.util.UUID;
 import java.util.List;
+import java.util.UUID;
 
 public record OrderRecord(
         UUID orderId,

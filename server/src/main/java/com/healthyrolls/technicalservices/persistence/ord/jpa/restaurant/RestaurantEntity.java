@@ -1,7 +1,5 @@
 package com.healthyrolls.technicalservices.persistence.ord.jpa.restaurant;
 
-import java.util.UUID;
-
 import com.healthyrolls.domain.ord.restaurant.RestaurantStatus;
 
 import jakarta.persistence.Column;
@@ -10,6 +8,7 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.util.UUID;
 
 @Entity
 @Table(name = "restaurants")

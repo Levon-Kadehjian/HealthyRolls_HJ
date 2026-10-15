@@ -1,11 +1,10 @@
 package com.healthyrolls.technicalservices.persistence.ord.jpa.restaurant;
 
-import java.util.UUID;
-
-import org.springframework.stereotype.Repository;
-
 import com.healthyrolls.domain.ord.restaurant.Restaurant;
 import com.healthyrolls.domain.ord.restaurant.RestaurantRepository;
+
+import java.util.UUID;
+import org.springframework.stereotype.Repository;
 
 @Repository
 public class JpaRestaurantRepository implements RestaurantRepository {

@@ -1,8 +1,5 @@
 package com.healthyrolls.technicalservices.persistence.ord.jpa.order;
 
-import java.math.BigDecimal;
-import java.util.UUID;
-
 import com.healthyrolls.domain.ord.menu.MenuItem;
 import com.healthyrolls.domain.ord.menu.MenuItemStatus;
 import com.healthyrolls.domain.ord.order.OrderLine;
@@ -13,6 +10,8 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.math.BigDecimal;
+import java.util.UUID;
 
 @Entity
 @Table(name = "order_lines")
