@@ -37,6 +37,10 @@ public class User {
         return email;
     }
 
+    public String storedHash() {
+        return storedHash;
+    }
+
     public String name() {
         return name;
     }
