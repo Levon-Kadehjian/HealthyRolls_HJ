@@ -10,6 +10,7 @@ import com.healthyrolls.domain.reg.InvalidCredentialsException;
 import com.healthyrolls.domain.reg.TokenIssuer;
 import com.healthyrolls.domain.reg.User;
 import com.healthyrolls.domain.reg.UserFactory;
+import com.healthyrolls.domain.reg.seed.SeedUser;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -73,6 +74,15 @@ public class UserService {
                 restaurantId);
 
         userRepository.save(user);
+        return true;
+    }
+
+    public boolean loadSeeded(SeedUser seed) {
+        if (userRepository.existsByEmail(seed.email())) {
+            return false;
+        }
+
+        userRepository.save(userFactory.createSeeded(seed));
         return true;
     }
 }

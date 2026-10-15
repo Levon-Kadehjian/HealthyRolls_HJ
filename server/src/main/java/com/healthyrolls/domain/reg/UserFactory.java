@@ -3,6 +3,7 @@ package com.healthyrolls.domain.reg;
 import com.healthyrolls.domain.common.RestaurantId;
 import com.healthyrolls.domain.common.UserId;
 import com.healthyrolls.domain.common.UserRole;
+import com.healthyrolls.domain.reg.seed.SeedUser;
 
 import java.time.Instant;
 
@@ -36,6 +37,11 @@ public class UserFactory {
         }
 
         public User createSeeded(SeedUser seed) {
-                throw new UnsupportedOperationException("Not implemented yet");
+                return create(
+                                seed.email(),
+                                seed.hashedPassword(),
+                                seed.name(),
+                                seed.role(),
+                                seed.restaurantId());
         }
 }
