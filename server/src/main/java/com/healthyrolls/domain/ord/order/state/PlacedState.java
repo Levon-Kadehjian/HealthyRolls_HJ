@@ -18,6 +18,16 @@ public class PlacedState extends AbstractOrderState {
     }
 
     @Override
+    public void reject() {
+        transitionTo(new RejectedState());
+    }
+
+    @Override
+    public void cancel() {
+        transitionTo(new CancelledState());
+    }
+
+    @Override
     public OrderStatus status() {
         return OrderStatus.PLACED;
     }

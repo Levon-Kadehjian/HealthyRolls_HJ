@@ -48,9 +48,9 @@ public class OrderService {
     }
 
     public OrderId placeOrder(
-            AuthenticatedUser actor,
             UUID restaurantId,
-            List<OrderLine> items) {
+            List<OrderLine> items,
+            AuthenticatedUser actor) {
 
         Objects.requireNonNull(actor, "User context is required");
 
@@ -81,28 +81,49 @@ public class OrderService {
     @Transactional
     public void changeOrder(OrderId orderId, OrderAction action, AuthenticatedUser actor) {
 
+        changeOrder(orderId, action, null, actor);
+    }
+
+    @Transactional
+    public void changeOrder(OrderId orderId, OrderAction action, String reason, AuthenticatedUser actor) {
+
         Objects.requireNonNull(orderId, "Order ID is required");
         Objects.requireNonNull(action, "Order action is required");
         Objects.requireNonNull(actor, "User context is required");
         Objects.requireNonNull(actor.userId(), "User ID is required");
 
-        if (actor.role() != UserRole.RESTAURANT_STAFF) {
-            throw new SecurityException("Only restaurant staff can accept orders or mark them ready");
-        }
+        if (action == OrderAction.CANCEL) {
+            if (actor.role() != UserRole.CUSTOMER) {
+                throw new SecurityException(
+                        "Only customer cancellation is currently supported");
+            }
+        } else {
+            if (actor.role() != UserRole.RESTAURANT_STAFF) {
+                throw new SecurityException("Only restaurant staff can accept, reject or mark orders ready");
+            }
 
-        if (action != OrderAction.ACCEPT && action != OrderAction.MARK_READY) {
-            throw new UnsupportedOperationException("Only acceptance and marking ready are supported");
+            if (action != OrderAction.ACCEPT && action != OrderAction.MARK_READY && action != OrderAction.REJECT) {
+                throw new UnsupportedOperationException("This order action is not supported");
+            }
         }
 
         Order order = repository.findById(orderId);
 
-        if (actor.restaurantId() == null || !actor.restaurantId().value().equals(order.getRestaurantId())) {
-
-            throw new SecurityException("You cannot change another restaurant's order");
+        if (action == OrderAction.CANCEL) {
+            if (!actor.userId().value().equals(order.getCustomerId())) {
+                throw new SecurityException(
+                        "You cannot cancel another customer's order");
+            }
+        } else {
+            if (actor.restaurantId() == null || !actor.restaurantId().value().equals(order.getRestaurantId())) {
+                throw new SecurityException("You cannot change another restaurant's order");
+            }
         }
 
-        applyAndRecord(order, action, actor);
-        startNextOrderIfIdle(order.getRestaurantId(), actor);
+        applyAndRecord(order, action, reason, actor);
+        if (action == OrderAction.ACCEPT || action == OrderAction.MARK_READY) {
+            startNextOrderIfIdle(order.getRestaurantId(), actor);
+        }
     }
 
     private void startNextOrderIfIdle(UUID restaurantId, AuthenticatedUser actor) {
@@ -120,11 +141,24 @@ public class OrderService {
     }
 
     private void applyAndRecord(Order order, OrderAction action, AuthenticatedUser actor) {
-        OrderStatus previousStatus = order.status();
+        applyAndRecord(order, action, null, actor);
+    }
 
-        order.apply(action);
+    private void applyAndRecord(Order order, OrderAction action, String reason, AuthenticatedUser actor) {
+
+        final OrderStatus previousStatus = order.status();
+
+        order.apply(action, reason);
 
         repository.save(order);
+
+        Instant occurredAt;
+
+        if (action == OrderAction.ACCEPT) {
+            occurredAt = order.getAcceptedAt();
+        } else {
+            occurredAt = Instant.now();
+        }
 
         OrderStateChanged event = new OrderStateChanged(
                 EventId.random(),
@@ -132,7 +166,7 @@ public class OrderService {
                 previousStatus,
                 order.status(),
                 actor.userId().value(),
-                action == OrderAction.ACCEPT ? order.getAcceptedAt() : Instant.now());
+                occurredAt);
 
         eventRepository.save(event);
     }

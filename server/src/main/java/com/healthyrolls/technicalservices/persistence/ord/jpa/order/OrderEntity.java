@@ -35,6 +35,9 @@ public class OrderEntity {
     private UUID courierId;
     private Instant acceptedAt;
 
+    @Column(columnDefinition = "text")
+    private String rejectionReason;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private OrderStatus status;
@@ -54,6 +57,7 @@ public class OrderEntity {
         this.courierId = order.getCourierId();
         this.acceptedAt = order.getAcceptedAt();
         this.status = order.status();
+        this.rejectionReason = order.getRejectionReason();
         for (var line : order.getItems()) {
             items.add(new OrderLineEntity(line));
         }
@@ -61,6 +65,6 @@ public class OrderEntity {
 
     public OrderRecord toRecord() {
         return new OrderRecord(orderId, status.name(), customerId, restaurantId,
-                courierId, acceptedAt, items.stream().map(OrderLineEntity::toDomain).toList());
+                courierId, acceptedAt, rejectionReason, items.stream().map(OrderLineEntity::toDomain).toList());
     }
 }

@@ -7,6 +7,7 @@ import com.healthyrolls.domain.ord.order.state.PickedUpState;
 import com.healthyrolls.domain.ord.order.state.PlacedState;
 import com.healthyrolls.domain.ord.order.state.PreparingState;
 import com.healthyrolls.domain.ord.order.state.ReadyState;
+import com.healthyrolls.domain.ord.order.state.RejectedState;
 
 public class OrderStateFactory {
 
@@ -19,6 +20,7 @@ public class OrderStateFactory {
             case PICKED_UP -> new PickedUpState();
             case DELIVERED -> new DeliveredState();
             case CANCELLED -> new CancelledState();
+            case REJECTED -> new RejectedState();
         };
         state.order = order;
         return state;
