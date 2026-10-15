@@ -1,8 +1,10 @@
 package com.healthyrolls.application.ord;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.Optional;
 
 import com.healthyrolls.domain.common.AuthenticatedUser;
 import com.healthyrolls.domain.common.UserRole;
@@ -84,20 +86,39 @@ public class OrderService {
         Objects.requireNonNull(actor.userId(), "User ID is required");
 
         if (actor.role() != UserRole.RESTAURANT_STAFF) {
-            throw new SecurityException("Only restaurant staff can accept orders");
+            throw new SecurityException("Only restaurant staff can accept orders or mark them ready");
         }
 
-        if (action != OrderAction.ACCEPT) {
-            throw new UnsupportedOperationException("Only acceptance is implemented so far");
+        if (action != OrderAction.ACCEPT && action != OrderAction.MARK_READY) {
+            throw new UnsupportedOperationException("Only acceptance and marking ready are supported");
         }
 
         Order order = repository.findById(orderId);
 
         if (actor.restaurantId() == null || !actor.restaurantId().value().equals(order.getRestaurantId())) {
 
-            throw new SecurityException("You cannot accept another restaurant's order");
+            throw new SecurityException("You cannot change another restaurant's order");
         }
 
+        applyAndRecord(order, action, actor);
+        startNextOrderIfIdle(order.getRestaurantId(), actor);
+    }
+
+    private void startNextOrderIfIdle(UUID restaurantId, AuthenticatedUser actor) {
+        if (repository.hasPreparingOrder(restaurantId)) {
+            return;
+        }
+
+        Optional<Order> nextOrder = repository.findNextAccepted(restaurantId);
+
+        if (nextOrder.isPresent()) {
+            Order next = nextOrder.get();
+
+            applyAndRecord(next, OrderAction.START_PREPARING, actor);
+        }
+    }
+
+    private void applyAndRecord(Order order, OrderAction action, AuthenticatedUser actor) {
         OrderStatus previousStatus = order.status();
 
         order.apply(action);
@@ -110,7 +131,7 @@ public class OrderService {
                 previousStatus,
                 order.status(),
                 actor.userId().value(),
-                order.getAcceptedAt());
+                action == OrderAction.ACCEPT ? order.getAcceptedAt() : Instant.now());
 
         eventRepository.save(event);
     }

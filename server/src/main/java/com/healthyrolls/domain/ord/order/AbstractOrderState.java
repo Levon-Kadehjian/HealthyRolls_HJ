@@ -10,8 +10,12 @@ public abstract class AbstractOrderState {
         throw new IllegalStateException("Cannot accept an order in state " + status());
     }
 
+    public void startPreparing() {
+        throw new IllegalStateException("Cannot start preparing an order in state " + status());
+    }
+
     public void markReady() {
-        throw new UnsupportedOperationException();
+        throw new IllegalStateException("Cannot mark an order ready in state " + status());
     }
 
     public void markPickedUp() {
@@ -23,10 +27,6 @@ public abstract class AbstractOrderState {
     }
 
     public void cancel() {
-        throw new UnsupportedOperationException();
-    }
-
-    public void startPreparing() {
         throw new UnsupportedOperationException();
     }
 
