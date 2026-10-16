@@ -12,8 +12,8 @@ export default function OrdersPage() {
         <span className="orders-icon">📦</span>
         <h3>No Active Orders</h3>
         <p>You do not have any active orders right now.</p>
-        <Link to="/menu" className="btn-primary">
-          Order Now
+        <Link to="/" className="btn-primary">
+          Back to Home
         </Link>
       </div>
     </div>

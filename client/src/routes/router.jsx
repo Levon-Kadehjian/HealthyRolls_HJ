@@ -2,9 +2,9 @@ import { createBrowserRouter } from 'react-router-dom'
 import Root from '../layouts/Root'
 import ErrorPage from '../pages/ErrorPage'
 import HomePage from '../pages/HomePage'
-import MenuPage from '../pages/MenuPage'
+import AboutPage from '../pages/AboutPage'
 import OrdersPage from '../pages/OrdersPage'
-import { menuLoader } from '../loaders/menuLoader'
+import AccountPage from '../pages/AccountPage'
 
 export const router = createBrowserRouter([
   {
@@ -17,13 +17,16 @@ export const router = createBrowserRouter([
         element: <HomePage />,
       },
       {
-        path: 'menu',
-        element: <MenuPage />,
-        loader: menuLoader,
+        path: 'about',
+        element: <AboutPage />,
       },
       {
         path: 'orders',
         element: <OrdersPage />,
+      },
+      {
+        path: 'account',
+        element: <AccountPage />,
       },
       {
         path: '*',
