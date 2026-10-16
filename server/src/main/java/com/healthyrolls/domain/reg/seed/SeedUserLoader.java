@@ -1,15 +1,17 @@
 package com.healthyrolls.domain.reg.seed;
 
+import tools.jackson.databind.ObjectMapper;
 import com.healthyrolls.application.reg.UserService;
 import com.healthyrolls.domain.common.UserRole;
-
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.springframework.boot.ApplicationArguments;
-import org.springframework.boot.ApplicationRunner;
 
-public class SeedUserLoader implements ApplicationRunner {
+public class SeedUserLoader {
 
     private final SeedUserProperties props;
     private final UserService userService;
@@ -19,13 +21,33 @@ public class SeedUserLoader implements ApplicationRunner {
         this.userService = userService;
     }
 
-    @Override
-    public void run(ApplicationArguments args) {
+    public void run(String[] args) {
+        if (args.length != 2 || !"--seed".equals(args[0])) {
+            return;
+        }
+
+        load(args[1]);
         verifyEveryRolePresent();
         props.getUsers().forEach(userService::loadSeeded);
     }
 
-    public void verifyEveryRolePresent() {
+    private void load(String path) {
+        Path seedFile = Path.of(path);
+
+        if (!Files.isRegularFile(seedFile)) {
+            throw new IllegalArgumentException("Seed file does not exist: " + seedFile);
+        }
+
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            SeedUser[] users = objectMapper.readValue(seedFile.toFile(), SeedUser[].class);
+            props.setUsers(new ArrayList<>(Arrays.asList(users)));
+        } catch (Exception exception) {
+            throw new IllegalArgumentException("Could not deserialize seed file: " + seedFile, exception);
+        }
+    }
+
+    private void verifyEveryRolePresent() {
         Set<UserRole> configuredRoles = props.getUsers().stream()
                 .map(SeedUser::role)
                 .collect(Collectors.toSet());
@@ -37,5 +59,4 @@ public class SeedUserLoader implements ApplicationRunner {
             throw new IllegalStateException("Missing seeded user roles: " + missingRoles);
         }
     }
-
 }
