@@ -9,8 +9,8 @@ export default function HomePage() {
           Crafted with organic ingredients, sustainable packaging, and rich flavors.
         </p>
         <div className="hero-actions">
-          <Link to="/menu" className="btn-primary">
-            Browse Menu
+          <Link to="/about" className="btn-primary">
+            About HealthyRolls
           </Link>
           <Link to="/orders" className="btn-secondary">
             Track Orders
