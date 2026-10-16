@@ -92,9 +92,9 @@ public class OrderService {
         Objects.requireNonNull(actor.userId(), "User ID is required");
 
         if (action == OrderAction.CANCEL) {
-            if (actor.role() != UserRole.CUSTOMER) {
+            if (actor.role() != UserRole.CUSTOMER && actor.role() != UserRole.OPERATOR) {
                 throw new SecurityException(
-                        "Only customer cancellation is currently supported");
+                        "Only customers or operators can cancel orders");
             }
         } else {
             if (actor.role() != UserRole.RESTAURANT_STAFF) {
@@ -109,9 +109,13 @@ public class OrderService {
         Order order = repository.findById(orderId);
 
         if (action == OrderAction.CANCEL) {
-            if (!actor.userId().value().equals(order.getCustomerId())) {
-                throw new SecurityException(
-                        "You cannot cancel another customer's order");
+            if (actor.role() == UserRole.CUSTOMER) {
+                if (!actor.userId().value().equals(order.getCustomerId())) {
+                    throw new SecurityException("You cannot cancel another customer's order");
+                }
+                if (order.status() != OrderStatus.PLACED) {
+                    throw new IllegalStateException("Customers can only cancel placed orders");
+                }
             }
         } else {
             if (actor.restaurantId() == null || !actor.restaurantId().value().equals(order.getRestaurantId())) {
@@ -119,8 +123,9 @@ public class OrderService {
             }
         }
 
+        boolean cancelledPreparingOrder = action == OrderAction.CANCEL && order.status() == OrderStatus.PREPARING;
         applyAndRecord(order, action, reason, actor);
-        if (action == OrderAction.ACCEPT || action == OrderAction.MARK_READY) {
+        if (action == OrderAction.ACCEPT || action == OrderAction.MARK_READY || cancelledPreparingOrder) {
             startNextOrderIfIdle(order.getRestaurantId(), actor);
         }
     }

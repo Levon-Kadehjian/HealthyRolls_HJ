@@ -3,8 +3,12 @@ package com.healthyrolls.application.ord;
 import com.healthyrolls.domain.common.AuthenticatedUser;
 import com.healthyrolls.domain.common.UserRole;
 import com.healthyrolls.domain.ord.restaurant.Restaurant;
+import com.healthyrolls.domain.ord.restaurant.RestaurantEventRepository;
 import com.healthyrolls.domain.ord.restaurant.RestaurantRepository;
+import com.healthyrolls.domain.ord.restaurant.RestaurantStateChanged;
+import com.healthyrolls.domain.ord.restaurant.RestaurantStatus;
 
+import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,8 +17,11 @@ public class RestaurantService {
 
     private final RestaurantRepository repository;
 
-    public RestaurantService(RestaurantRepository repository) {
+    private final RestaurantEventRepository eventRepository;
+
+    public RestaurantService(RestaurantRepository repository, RestaurantEventRepository eventRepository) {
         this.repository = Objects.requireNonNull(repository, "Restaurant repository is required");
+        this.eventRepository = Objects.requireNonNull(eventRepository, "Restaurant event repository is required");
     }
 
     public boolean isOpen(UUID restaurantId) {
@@ -43,9 +50,15 @@ public class RestaurantService {
 
         Restaurant restaurant = repository.findById(restaurantId);
 
+        final RestaurantStatus previousStatus = restaurant.getStatus();
         restaurant.pause();
 
         repository.save(restaurant);
+
+        eventRepository.save(new RestaurantStateChanged(
+                UUID.randomUUID(), restaurantId, previousStatus, restaurant.getStatus(),
+                actor.userId().value(), Instant.now()));
+
     }
 
     @Transactional
@@ -63,9 +76,15 @@ public class RestaurantService {
 
         Restaurant restaurant = repository.findById(restaurantId);
 
+        final RestaurantStatus previousStatus = restaurant.getStatus();
         restaurant.reopen();
 
         repository.save(restaurant);
+
+        eventRepository.save(new RestaurantStateChanged(
+                UUID.randomUUID(), restaurantId, previousStatus, restaurant.getStatus(),
+                actor.userId().value(), Instant.now()));
+
     }
 
 }
