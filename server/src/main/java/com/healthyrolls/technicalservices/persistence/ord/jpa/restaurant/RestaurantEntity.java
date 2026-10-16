@@ -24,17 +24,27 @@ public class RestaurantEntity {
     @Column(nullable = false)
     private RestaurantStatus status;
 
+    @Column(nullable = false)
+    private double latitude;
+
+    @Column(nullable = false)
+    private double longitude;
+
     protected RestaurantEntity() {
     }
 
     public RestaurantEntity(
             UUID restaurantId,
             String name,
-            RestaurantStatus status) {
+            RestaurantStatus status,
+            double latitude,
+            double longitude) {
 
         this.restaurantId = restaurantId;
         this.name = name;
         this.status = status;
+        this.latitude = latitude;
+        this.longitude = longitude;
     }
 
     public UUID getRestaurantId() {
@@ -43,6 +53,14 @@ public class RestaurantEntity {
 
     public String getName() {
         return name;
+    }
+
+    public double getLatitude() {
+        return latitude;
+    }
+
+    public double getLongitude() {
+        return longitude;
     }
 
     public RestaurantStatus getStatus() {

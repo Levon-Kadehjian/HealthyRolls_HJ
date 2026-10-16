@@ -22,15 +22,17 @@ public class JpaRestaurantRepository implements RestaurantRepository {
         RestaurantEntity entity = database.findById(restaurantId)
                 .orElseThrow(() -> new IllegalArgumentException("Restaurant not found"));
 
-        return new Restaurant(entity.getRestaurantId(), entity.getName(), entity.getStatus());
+        return new Restaurant(entity.getRestaurantId(), entity.getName(), entity.getStatus(),
+                entity.getLatitude(), entity.getLongitude());
     }
 
     @Override
     public Restaurant save(Restaurant restaurant) {
 
         RestaurantEntity entity = new RestaurantEntity(restaurant.getRestaurantId(), restaurant.getName(),
-                restaurant.getStatus());
+                restaurant.getStatus(), restaurant.getLatitude(), restaurant.getLongitude());
         RestaurantEntity saved = database.save(entity);
-        return new Restaurant(saved.getRestaurantId(), saved.getName(), saved.getStatus());
+        return new Restaurant(saved.getRestaurantId(), saved.getName(), saved.getStatus(),
+                saved.getLatitude(), saved.getLongitude());
     }
 }
