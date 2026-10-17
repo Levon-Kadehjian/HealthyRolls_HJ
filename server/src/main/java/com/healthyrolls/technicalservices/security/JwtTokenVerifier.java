@@ -9,7 +9,9 @@ import com.healthyrolls.domain.reg.TokenVerifier;
 import org.springframework.security.oauth2.jwt.BadJwtException;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.stereotype.Component;
 
+@Component
 public class JwtTokenVerifier implements TokenVerifier {
 
     private static final String ROLE_CLAIM = "role";

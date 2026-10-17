@@ -8,5 +8,5 @@ public interface SpringDataMenuItemRepository
         extends
             JpaRepository<MenuItemEntity, UUID> {
 
-    List<MenuItemEntity> findByRestaurantRestaurantId(UUID restaurantId);
+    List<MenuItemEntity> findByRestaurantId(UUID restaurantId);
 }

@@ -69,6 +69,10 @@ public class Order {
         return items;
     }
 
+    public Long version() {
+        return version;
+    }
+
     public String getRejectionReason() {
         return rejectionReason;
     }
