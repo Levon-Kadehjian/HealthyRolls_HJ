@@ -1,0 +1,325 @@
+.kitchen-page {
+  --k-mat-edge: #d9c89a;
+  --k-washi: #fffaf0;
+  --k-ink: #2b2420;
+  --k-muted: #7a6a58;
+  --k-red: #c0392b;
+  --k-plate: #ffffff;
+  --k-rice: #f8f4e8;
+  width: 100%;
+  text-align: left;
+}
+
+@media (prefers-color-scheme: dark) {
+  .kitchen-page {
+    --k-mat-edge: #3d3829;
+    --k-washi: #1f1d19;
+    --k-ink: #f1e9da;
+    --k-muted: #a89a85;
+    --k-red: #e0675a;
+    --k-plate: #2f2c27;
+    --k-rice: #2a271f;
+  }
+}
+
+.kitchen-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.kitchen-header p {
+  margin: 0;
+}
+
+.kitchen-load-error {
+  margin: 0 0 20px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1px solid #e0a3a3;
+  background: rgba(192, 57, 43, 0.08);
+  color: #c0392b;
+  font-size: 14px;
+}
+
+.kitchen-board {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .kitchen-board {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 520px) {
+  .kitchen-board {
+    grid-template-columns: 1fr;
+  }
+}
+
+.kitchen-column {
+  --k-col: #e8775a;
+  --k-col-soft: rgba(232, 119, 90, 0.16);
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background-color: var(--k-rice);
+  border-radius: 20px 20px 12px 12px;
+  box-shadow: 0 3px 0 var(--k-mat-edge);
+}
+
+.kitchen-column-accepted {
+  --k-col: #c49a2c;
+  --k-col-soft: rgba(196, 154, 44, 0.18);
+}
+
+.kitchen-column-preparing {
+  --k-col: #3c5a8a;
+  --k-col-soft: rgba(60, 90, 138, 0.16);
+}
+
+.kitchen-column-ready {
+  --k-col: #4f7d4a;
+  --k-col-soft: rgba(79, 125, 74, 0.16);
+}
+
+.kitchen-column-title {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 12px 14px;
+  background-color: var(--k-col);
+  background-image: repeating-linear-gradient(-55deg, rgba(255, 255, 255, 0.32) 0 4px, transparent 4px 16px);
+  border-radius: 20px 20px 0 0;
+  font-size: 15px;
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+.kitchen-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  color: #2b2420;
+  text-shadow: none;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.kitchen-column-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 96px;
+  padding: 20px 14px;
+  text-align: center;
+}
+
+.kitchen-column-empty p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--k-muted);
+}
+
+.kitchen-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 12px;
+  list-style: none;
+}
+
+.kitchen-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px;
+  background: var(--k-washi);
+  border: 1px solid var(--k-mat-edge);
+  border-left: 4px solid var(--k-col);
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(60, 40, 10, 0.08);
+  color: var(--k-ink);
+}
+
+.kitchen-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.kitchen-card-header h4 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 14px;
+  color: var(--k-ink);
+}
+
+.kitchen-badge {
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: var(--k-col-soft);
+  border: 1px solid var(--k-col);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--k-ink);
+  white-space: nowrap;
+}
+
+.kitchen-card-meta,
+.kitchen-card-note {
+  margin: 0;
+  font-size: 12px;
+  color: var(--k-muted);
+}
+
+.kitchen-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 8px 0 0;
+  border-top: 1px dashed var(--k-mat-edge);
+  list-style: none;
+  font-size: 14px;
+  color: var(--k-ink);
+}
+
+.kitchen-line-qty {
+  display: inline-block;
+  min-width: 28px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.kitchen-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.kitchen-btn {
+  flex: 1;
+  padding: 8px 12px;
+  font-size: 14px;
+}
+
+.kitchen-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.kitchen-btn-danger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  border-radius: 8px;
+  border: 1px solid #c0392b;
+  background: #c0392b;
+  color: #fff;
+  cursor: pointer;
+}
+
+.kitchen-btn-danger:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.kitchen-reject-form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.kitchen-reject-form label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--k-ink);
+}
+
+.kitchen-reject-form textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  border: 1px solid var(--k-mat-edge);
+  border-radius: 8px;
+  background: var(--k-plate);
+  color: var(--k-ink);
+  font: inherit;
+  font-size: 14px;
+  resize: vertical;
+}
+
+.kitchen-reject-form textarea:focus {
+  outline: 2px solid var(--k-col);
+  outline-offset: 1px;
+}
+
+.kitchen-action-error {
+  margin: 0 0 6px;
+  font-size: 13px;
+  color: var(--k-red);
+}
+
+.kitchen-closed {
+  margin-top: 24px;
+  padding: 14px;
+  background: var(--k-washi);
+  border: 1px dashed var(--k-mat-edge);
+  border-radius: 12px;
+  color: var(--k-ink);
+}
+
+.kitchen-closed summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--k-ink);
+}
+
+.kitchen-closed ul {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 14px;
+}
+
+.kitchen-closed li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+}
+
+.kitchen-closed li > span:first-child {
+  font-family: var(--mono);
+}
+
+.kitchen-closed-status {
+  text-transform: capitalize;
+  color: var(--k-muted);
+}
+
+.kitchen-closed-reason {
+  font-style: italic;
+}
