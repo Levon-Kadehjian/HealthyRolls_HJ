@@ -11,6 +11,11 @@ public class PreparingState extends AbstractOrderState {
     }
 
     @Override
+    public void cancel() {
+        transitionTo(new CancelledState());
+    }
+
+    @Override
     public OrderStatus status() {
         return OrderStatus.PREPARING;
     }

@@ -11,6 +11,7 @@ public record OrderRecord(
         UUID restaurantId,
         UUID courierId,
         Instant acceptedAt,
+        String rejectionReason,
         List<OrderLine> items) {
     public OrderRecord {
         items = List.copyOf(items);

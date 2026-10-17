@@ -27,7 +27,13 @@ public abstract class AbstractOrderState {
     }
 
     public void cancel() {
-        throw new UnsupportedOperationException();
+        throw new IllegalStateException(
+                "Cannot cancel an order in state " + status());
+    }
+
+    public void reject() {
+        throw new IllegalStateException(
+                "Cannot reject an order in state " + status());
     }
 
     protected void transitionTo(AbstractOrderState next) {

@@ -6,6 +6,11 @@ import com.healthyrolls.domain.ord.order.OrderStatus;
 public class ReadyState extends AbstractOrderState {
 
     @Override
+    public void cancel() {
+        transitionTo(new CancelledState());
+    }
+
+    @Override
     public OrderStatus status() {
         return OrderStatus.READY;
     }
