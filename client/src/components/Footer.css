@@ -1,6 +1,6 @@
 
 .sushi-footer {
-  background-color: #232d2c;
+  background-color: var(--brand-surface);
   border-top: 1px solid rgba(0, 0, 0, 0.25);
   box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.12);
   width: 100%;
