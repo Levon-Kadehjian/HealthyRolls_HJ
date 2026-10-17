@@ -6,7 +6,6 @@ import com.healthyrolls.domain.common.UserRole;
 
 import java.time.Instant;
 import java.util.Optional;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 public class User {
 
@@ -62,7 +61,7 @@ public class User {
         return restaurantId != null && restaurantId.equals(id);
     }
 
-    public boolean passwordMatches(String hashedPassword, PasswordEncoder enc) {
-        return enc.matches(hashedPassword, storedHash);
+    public boolean passwordMatches(String hashedPassword, PasswordHasher hasher) {
+        return hasher.matches(hashedPassword, storedHash);
     }
 }

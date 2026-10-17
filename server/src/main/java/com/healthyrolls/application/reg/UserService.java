@@ -7,12 +7,12 @@ import com.healthyrolls.domain.reg.AuthToken;
 import com.healthyrolls.domain.reg.EmailAlreadyUsedException;
 import com.healthyrolls.domain.reg.IUserRepository;
 import com.healthyrolls.domain.reg.InvalidCredentialsException;
+import com.healthyrolls.domain.reg.PasswordHasher;
 import com.healthyrolls.domain.reg.TokenIssuer;
 import com.healthyrolls.domain.reg.User;
 import com.healthyrolls.domain.reg.UserFactory;
 import com.healthyrolls.domain.reg.seed.SeedUser;
 
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -20,14 +20,14 @@ public class UserService {
 
     private final IUserRepository userRepository;
     private final UserFactory userFactory;
-    private final PasswordEncoder passwordEncoder;
+    private final PasswordHasher passwordHasher;
     private final TokenIssuer tokenIssuer;
 
-    public UserService(IUserRepository userRepository, UserFactory userFactory, PasswordEncoder passwordEncoder,
+    public UserService(IUserRepository userRepository, UserFactory userFactory, PasswordHasher passwordHasher,
             TokenIssuer tokenIssuer) {
         this.userRepository = userRepository;
         this.userFactory = userFactory;
-        this.passwordEncoder = passwordEncoder;
+        this.passwordHasher = passwordHasher;
         this.tokenIssuer = tokenIssuer;
     }
 
@@ -38,7 +38,7 @@ public class UserService {
 
         User user = userFactory.create(
                 email,
-                passwordEncoder.encode(hashedPassword),
+                passwordHasher.hash(hashedPassword),
                 name,
                 UserRole.CUSTOMER,
                 null);
@@ -50,7 +50,7 @@ public class UserService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(InvalidCredentialsException::new);
 
-        if (!user.passwordMatches(hashedPassword, passwordEncoder)) {
+        if (!user.passwordMatches(hashedPassword, passwordHasher)) {
             throw new InvalidCredentialsException();
         }
 
@@ -70,7 +70,7 @@ public class UserService {
 
         User user = userFactory.create(
                 email,
-                passwordEncoder.encode(hashedPassword),
+                passwordHasher.hash(hashedPassword),
                 name,
                 role,
                 restaurantId);
