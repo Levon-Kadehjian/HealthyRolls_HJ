@@ -19,6 +19,8 @@ export default function Navbar() {
     navigate('/')
   }
 
+  const isStaff = session?.role === 'RESTAURANT_STAFF'
+
   return (
     <header className="site-header">
       <div className="site-nav">
@@ -36,6 +38,11 @@ export default function Navbar() {
               Restaurants
             </NavLink>
           )}
+          {isStaff && (
+            <NavLink to="/dashboard/kitchen" className={linkClass}>
+              Kitchen
+            </NavLink>
+          )}
           <NavLink to="/about" className={linkClass}>
             About
           </NavLink>
@@ -44,6 +51,7 @@ export default function Navbar() {
         <div className="nav-actions">
           {session ? (
             <>
+              {isStaff && <span className="nav-role-tag">Staff</span>}
               <NavLink to="/orders" className={linkClass}>
                 Orders
               </NavLink>

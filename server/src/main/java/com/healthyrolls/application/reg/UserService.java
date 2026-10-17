@@ -33,15 +33,21 @@ public class UserService {
     }
 
     public UserId register(String email, String hashedPassword, String name) {
+        return register(email, hashedPassword, name, UserRole.CUSTOMER);
+    }
+
+    public UserId register(String email, String hashedPassword, String name, UserRole role) {
         if (userRepository.existsByEmail(email)) {
             throw new EmailAlreadyUsedException(email);
         }
+
+        UserRole effectiveRole = role != null ? role : UserRole.CUSTOMER;
 
         User user = userFactory.create(
                 email,
                 passwordHasher.hash(hashedPassword),
                 name,
-                UserRole.CUSTOMER,
+                effectiveRole,
                 null);
 
         return userRepository.save(user).id();
