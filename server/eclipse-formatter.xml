@@ -9,5 +9,7 @@
         <setting id="org.eclipse.jdt.core.formatter.join_wrapped_lines" value="false"/>
         <setting id="org.eclipse.jdt.core.formatter.alignment_for_enum_constants" value="49"/>
         <setting id="org.eclipse.jdt.core.formatter.keep_record_declaration_on_one_line" value="one_line_if_empty"/>
+        <setting id="org.eclipse.jdt.core.formatter.insert_space_before_colon_in_case" value="do not insert"/>
+        <setting id="org.eclipse.jdt.core.formatter.insert_space_before_colon_in_default" value="do not insert"/>
     </profile>
 </profiles>
