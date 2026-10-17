@@ -39,9 +39,24 @@ export function getSession() {
   }
 }
 
-export function saveSession({ accessToken, expiresAt, userId, role }) {
+export function saveSession(data) {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ accessToken, expiresAt, userId, role }))
+    const existing = getSession() || {}
+    const isSameUser = existing.userId && data.userId && existing.userId === data.userId
+    const nextSession = isSameUser ? { ...existing, ...data } : data
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(nextSession))
+  } catch {
+    return
+  }
+  notify()
+}
+
+export function updateSession(partial) {
+  try {
+    const existing = getSession()
+    if (!existing) return
+    const updated = { ...existing, ...partial }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated))
   } catch {
     return
   }
