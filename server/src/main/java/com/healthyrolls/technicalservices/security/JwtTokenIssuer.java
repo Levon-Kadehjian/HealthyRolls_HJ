@@ -22,9 +22,9 @@ public class JwtTokenIssuer implements TokenIssuer {
     private final JwtEncoder encoder;
     private final Duration ttl;
 
-    public JwtTokenIssuer(JwtEncoder encoder, Duration ttl) {
+    public JwtTokenIssuer(JwtEncoder encoder, JwtProperties properties) {
         this.encoder = encoder;
-        this.ttl = ttl;
+        this.ttl = properties.ttl();
     }
 
     @Override
