@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate, redirect } from 'react-router-dom'
+import { createBrowserRouter, redirect } from 'react-router-dom'
 import Root from '../layouts/Root'
 import Dashboard from '../layouts/Dashboard'
 import ErrorPage from '../pages/ErrorPage'
@@ -11,6 +11,7 @@ import RestaurantMenuPage from '../pages/RestaurantMenuPage'
 import RestaurantsPage from '../pages/RestaurantsPage'
 import RestaurantOrdersPage from '../pages/RestaurantOrdersPage'
 import ConsolePage from '../pages/ConsolePage'
+import AuthPage from '../pages/AuthPage'
 import { getRestaurant, getRestaurants } from '../api/restaurants'
 import { applyOrderAction, listOrders } from '../api/orders'
 import { getSession } from '../auth/session'
@@ -42,6 +43,11 @@ const loginRequiredLoader = () => {
 }
 
 const dashboardLoader = () => ({ session: requireLogin() })
+
+const dashboardIndexLoader = () => {
+  const session = getSession()
+  return redirect(session?.role === 'RESTAURANT_STAFF' ? 'kitchen' : 'orders')
+}
 
 const restaurantOrdersLoader = async () => {
   const session = requireLogin()
@@ -119,6 +125,14 @@ export const router = createBrowserRouter([
         element: <HomePage />,
       },
       {
+        path: 'login',
+        element: <AuthPage initialMode="login" />,
+      },
+      {
+        path: 'signup',
+        element: <AuthPage initialMode="signup" />,
+      },
+      {
         path: 'about',
         element: <AboutPage />,
       },
@@ -158,7 +172,7 @@ export const router = createBrowserRouter([
         children: [
           {
             index: true,
-            element: <Navigate to="orders" replace />,
+            loader: dashboardIndexLoader,
           },
           {
             path: 'orders',
