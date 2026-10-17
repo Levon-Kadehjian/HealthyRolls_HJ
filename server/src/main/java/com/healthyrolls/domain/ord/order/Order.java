@@ -49,10 +49,6 @@ public class Order {
         return id;
     }
 
-    public OrderId getOrderId() {
-        return id;
-    }
-
     public UUID getCustomerId() {
         return customerId;
     }
@@ -76,7 +72,7 @@ public class Order {
     public Long version() {
         return version;
     }
-  
+
     public String getRejectionReason() {
         return rejectionReason;
     }
