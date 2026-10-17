@@ -39,9 +39,6 @@ export default function Navbar() {
           <NavLink to="/about" className={linkClass}>
             About
           </NavLink>
-          <NavLink to="/console" className={linkClass}>
-            Console
-          </NavLink>
         </nav>
 
         <div className="nav-actions">
