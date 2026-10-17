@@ -6,6 +6,7 @@ import com.healthyrolls.domain.ord.order.OrderId;
 import com.healthyrolls.domain.ord.order.OrderRepository;
 import com.healthyrolls.domain.ord.order.OrderStatus;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -31,7 +32,7 @@ public class JpaOrderRepository implements OrderRepository {
 
     @Override
     @Transactional(readOnly = true)
-    public Order findById(OrderId id) {
+    public Order findByOrderId(OrderId id) {
         Objects.requireNonNull(id, "Order ID is required");
 
         Optional<OrderEntity> result = database.findById(id.value());
@@ -42,6 +43,23 @@ public class JpaOrderRepository implements OrderRepository {
 
         OrderEntity entity = result.get();
         return factory.reconstitute(entity.toRecord());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Order> findByCustomerId(UUID customerId) {
+        Objects.requireNonNull(customerId, "Order ID is required");
+
+        return database.findByCustomerId(customerId).stream().map(entity -> factory.reconstitute(entity.toRecord()))
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Order> findByRestaurantId(UUID restaurantId) {
+        Objects.requireNonNull(restaurantId, "Order ID is required");
+        return database.findByCustomerId(restaurantId).stream().map(entity -> factory.reconstitute(entity.toRecord()))
+                .toList();
     }
 
     @Override

@@ -2,6 +2,7 @@ package com.healthyrolls.application.ord;
 
 import com.healthyrolls.domain.common.AuthenticatedUser;
 import com.healthyrolls.domain.common.UserRole;
+import com.healthyrolls.domain.ord.exceptions.OrderNotFoundException;
 import com.healthyrolls.domain.ord.order.EventId;
 import com.healthyrolls.domain.ord.order.Order;
 import com.healthyrolls.domain.ord.order.OrderAction;
@@ -108,7 +109,7 @@ public class OrderService {
             }
         }
 
-        Order order = repository.findById(orderId);
+        Order order = repository.findByOrderId(orderId);
 
         if (action == OrderAction.CANCEL) {
             if (actor.role() == UserRole.CUSTOMER) {
@@ -130,6 +131,35 @@ public class OrderService {
         if (action == OrderAction.ACCEPT || action == OrderAction.MARK_READY || cancelledPreparingOrder) {
             startNextOrderIfIdle(order.getRestaurantId(), actor);
         }
+    }
+
+    @Transactional(readOnly = true)
+    public Order getOrder(OrderId orderId, AuthenticatedUser actor) {
+
+        Objects.requireNonNull(orderId, "Order ID is required");
+        Objects.requireNonNull(actor, "User context is required");
+        Objects.requireNonNull(actor.userId(), "User ID is required");
+
+        Order o = repository.findByOrderId(orderId);
+
+        switch (actor.role()) {
+            case CUSTOMER:
+                if (!actor.userId().value().equals(o.getCustomerId())) {
+                    throw new OrderNotFoundException(orderId); // we dont want other users to know this order exists
+                }
+                break;
+            case RESTAURANT_STAFF:
+                if (actor.restaurantId() == null || !actor.restaurantId().value().equals(o.getRestaurantId())) {
+                    throw new OrderNotFoundException(orderId);
+                }
+                break;
+            case OPERATOR:
+                break;
+            default:
+                throw new SecurityException("You are not allowed to view orders");
+        }
+
+        return o;
     }
 
     private void startNextOrderIfIdle(UUID restaurantId, AuthenticatedUser actor) {
