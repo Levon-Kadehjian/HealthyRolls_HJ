@@ -4,7 +4,9 @@ import java.util.List;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "healthyrolls.security.access")
-public class AccessRuleProperties {
+public record AccessRuleProperties(List<AccessRule> rules) {
 
-    public List<AccessRule> rules;
+    public AccessRuleProperties {
+        rules = rules == null ? List.of() : List.copyOf(rules);
+    }
 }
