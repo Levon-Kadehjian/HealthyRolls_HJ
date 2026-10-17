@@ -39,7 +39,7 @@ public class EventController {
             @RequestAttribute(AuthenticatedUser.REQUEST_ATTRIBUTE) AuthenticatedUser user,
             @PathVariable UUID orderId) {
 
-        List<OrderEventResponse> events = eventService.historyOf(new OrderId(orderId), user).stream()
+        List<OrderEventResponse> events = eventService.historyOf(new OrderId(orderId)).stream()
                 .map(OrderEventResponse::from)
                 .toList();
 
