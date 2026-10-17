@@ -1,0 +1,38 @@
+.console-fab {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background-color: var(--brand-surface);
+  color: #c7edcd;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transition: transform 0.15s ease, background-color 0.15s ease;
+}
+
+.console-fab:hover {
+  background-color: #232d2c;
+  transform: translateY(-2px);
+}
+
+.console-fab:focus-visible {
+  outline: 2px solid #c7edcd;
+  outline-offset: 3px;
+}
+
+.console-fab-icon {
+  width: 20px;
+  height: 20px;
+}
+
+@media (max-width: 600px) {
+  .console-fab {
+    right: 16px;
+    bottom: 16px;
+  }
+}
