@@ -9,5 +9,4 @@ public record OrderStateChanged(
         OrderStatus fromStatus,
         OrderStatus toStatus,
         UUID userId,
-        Instant occurredAt) {
-}
+        Instant occurredAt) {}

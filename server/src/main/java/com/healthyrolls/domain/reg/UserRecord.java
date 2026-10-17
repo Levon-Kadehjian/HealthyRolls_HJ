@@ -12,5 +12,4 @@ public record UserRecord(
         String name,
         UserRole role,
         UUID restaurantId,
-        Instant createdAt) {
-}
+        Instant createdAt) {}
