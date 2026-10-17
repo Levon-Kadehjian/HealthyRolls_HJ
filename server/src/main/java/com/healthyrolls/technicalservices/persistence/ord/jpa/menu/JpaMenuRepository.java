@@ -1,17 +1,16 @@
 package com.healthyrolls.technicalservices.persistence.ord.jpa.menu;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
-
-import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.healthyrolls.domain.ord.menu.Menu;
 import com.healthyrolls.domain.ord.menu.MenuItem;
 import com.healthyrolls.domain.ord.menu.MenuRepository;
 import com.healthyrolls.technicalservices.persistence.ord.jpa.restaurant.SpringDataRestaurantRepository;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 public class JpaMenuRepository implements MenuRepository {
@@ -36,7 +35,7 @@ public class JpaMenuRepository implements MenuRepository {
             throw new IllegalArgumentException("Restaurant not found");
         }
 
-        List<MenuItemEntity> entities = database.findByRestaurant_RestaurantId(restaurantId);
+        List<MenuItemEntity> entities = database.findByRestaurantId(restaurantId);
 
         List<MenuItem> items = new ArrayList<>();
 

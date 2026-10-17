@@ -1,11 +1,11 @@
 package com.healthyrolls.domain.ord.order;
 
+import com.healthyrolls.domain.ord.order.state.PlacedState;
+
 import java.time.Instant;
-import java.util.UUID;
 import java.util.List;
 import java.util.Objects;
-
-import com.healthyrolls.domain.ord.order.state.PlacedState;
+import java.util.UUID;
 
 public class Order {
 
@@ -35,16 +35,16 @@ public class Order {
         this.state = new PlacedState(this);
     }
 
-    public OrderId getOrderId() {
-        return id;
-    }
-
     Order(OrderRecord record, OrderStateFactory stateFactory) {
         this(record.customerId(), record.restaurantId(), record.items());
         this.id = new OrderId(Objects.requireNonNull(record.orderId()));
         this.courierId = record.courierId();
         this.acceptedAt = record.acceptedAt();
         this.state = stateFactory.fromStatus(OrderStatus.valueOf(record.status()), this);
+    }
+
+    public OrderId getOrderId() {
+        return id;
     }
 
     public UUID getCustomerId() {
@@ -67,6 +67,10 @@ public class Order {
         return items;
     }
 
+    public Long version() {
+        return version;
+    }
+
     public void assignCourier(UUID id) {
         throw new UnsupportedOperationException();
     }
@@ -81,6 +85,7 @@ public class Order {
             case PICK_UP -> state.markPickedUp();
             case DELIVER -> state.markDelivered();
             case CANCEL -> state.cancel();
+            default -> throw new IllegalStateException("Unhandled action: " + action);
         }
     }
 

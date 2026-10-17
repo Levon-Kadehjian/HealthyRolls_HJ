@@ -1,15 +1,17 @@
 package com.healthyrolls.application.ord;
 
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Objects;
-import java.util.UUID;
-
 import com.healthyrolls.domain.ord.menu.Menu;
 import com.healthyrolls.domain.ord.menu.MenuItem;
 import com.healthyrolls.domain.ord.menu.MenuRepository;
 import com.healthyrolls.domain.ord.order.OrderLine;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
+import org.springframework.stereotype.Service;
+
+@Service
 public class MenuService {
 
     private final MenuRepository repository;

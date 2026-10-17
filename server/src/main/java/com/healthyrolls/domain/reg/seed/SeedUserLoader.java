@@ -1,8 +1,8 @@
 package com.healthyrolls.domain.reg.seed;
 
-import tools.jackson.databind.ObjectMapper;
 import com.healthyrolls.application.reg.UserService;
 import com.healthyrolls.domain.common.UserRole;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -10,7 +10,10 @@ import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.springframework.stereotype.Component;
+import tools.jackson.databind.ObjectMapper;
 
+@Component
 public class SeedUserLoader {
 
     private final SeedUserProperties props;

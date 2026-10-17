@@ -1,7 +1,8 @@
 package com.healthyrolls.technicalservices.persistence.reg;
 
-import java.time.Instant;
-import java.util.UUID;
+import com.healthyrolls.domain.common.UserRole;
+import com.healthyrolls.domain.reg.User;
+import com.healthyrolls.domain.reg.UserRecord;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -9,10 +10,8 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-
-import com.healthyrolls.domain.common.UserRole;
-import com.healthyrolls.domain.reg.User;
-import com.healthyrolls.domain.reg.UserRecord;
+import java.time.Instant;
+import java.util.UUID;
 
 @Entity
 @Table(name = "users")

@@ -1,11 +1,13 @@
 package com.healthyrolls.application.ord;
 
-import java.util.Objects;
-import java.util.UUID;
-
 import com.healthyrolls.domain.ord.restaurant.Restaurant;
 import com.healthyrolls.domain.ord.restaurant.RestaurantRepository;
 
+import java.util.Objects;
+import java.util.UUID;
+import org.springframework.stereotype.Service;
+
+@Service
 public class RestaurantService {
 
     private final RestaurantRepository repository;

@@ -1,8 +1,8 @@
 package com.healthyrolls.domain.ord.order;
 
-import java.util.Objects;
-
 import com.healthyrolls.domain.ord.menu.MenuItem;
+
+import java.util.Objects;
 
 public record OrderLine(MenuItem menuItem, int quantity) {
 

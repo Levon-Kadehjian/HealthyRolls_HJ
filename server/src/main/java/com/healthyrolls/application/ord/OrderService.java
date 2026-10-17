@@ -1,26 +1,27 @@
 package com.healthyrolls.application.ord;
 
-import java.time.Instant;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
-import java.util.Optional;
-
 import com.healthyrolls.domain.common.AuthenticatedUser;
 import com.healthyrolls.domain.common.UserRole;
 import com.healthyrolls.domain.ord.order.EventId;
 import com.healthyrolls.domain.ord.order.Order;
-import com.healthyrolls.domain.ord.order.OrderFactory;
-import com.healthyrolls.domain.ord.order.OrderId;
 import com.healthyrolls.domain.ord.order.OrderAction;
 import com.healthyrolls.domain.ord.order.OrderEventRepository;
+import com.healthyrolls.domain.ord.order.OrderFactory;
+import com.healthyrolls.domain.ord.order.OrderId;
 import com.healthyrolls.domain.ord.order.OrderLine;
 import com.healthyrolls.domain.ord.order.OrderRepository;
 import com.healthyrolls.domain.ord.order.OrderStateChanged;
 import com.healthyrolls.domain.ord.order.OrderStatus;
 
+import java.time.Instant;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Service
 public class OrderService {
 
     private final OrderRepository repository;

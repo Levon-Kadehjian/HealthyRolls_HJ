@@ -1,15 +1,14 @@
 package com.healthyrolls.technicalservices.persistence.reg;
 
-import java.util.Objects;
-import java.util.Optional;
-
-import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.healthyrolls.domain.common.UserId;
 import com.healthyrolls.domain.reg.IUserRepository;
 import com.healthyrolls.domain.reg.User;
 import com.healthyrolls.domain.reg.UserFactory;
+
+import java.util.Objects;
+import java.util.Optional;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 public class JpaUserRepository implements IUserRepository {
