@@ -1,6 +1,7 @@
 import { Outlet, useNavigation } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
+import ConsoleButton from '../components/ConsoleButton'
 
 export default function Root() {
   const navigation = useNavigation()
@@ -18,6 +19,7 @@ export default function Root() {
         <Outlet />
       </main>
       <Footer />
+      <ConsoleButton />
     </div>
   )
 }

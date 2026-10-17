@@ -6,6 +6,7 @@
   --code-bg: #f4f3ec;
   --accent: #232d2c;
   --accent-mint: #c7edcd;
+  --brand-surface: #2e423d;
   --accent-bg: rgba(35, 45, 44, 0.08);
   --accent-border: rgba(35, 45, 44, 0.4);
   --social-bg: rgba(244, 243, 236, 0.6);
@@ -41,6 +42,11 @@
     --shadow:
       rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
   }
+}
+
+html {
+  overflow-y: scroll;
+  scrollbar-gutter: stable;
 }
 
 body {

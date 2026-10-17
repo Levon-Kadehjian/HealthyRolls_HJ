@@ -1,0 +1,122 @@
+.restaurant-back-link {
+  display: inline-block;
+  margin-bottom: 16px;
+  color: var(--text);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.restaurant-back-link:hover {
+  color: var(--text-h);
+}
+
+.restaurant-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.restaurant-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.restaurant-title-row h2 {
+  margin: 0;
+}
+
+.restaurant-status {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+.restaurant-status-open {
+  background: rgba(46, 160, 67, 0.15);
+  color: #2e7d40;
+}
+
+.restaurant-status-paused {
+  background: rgba(217, 119, 6, 0.15);
+  color: #b45309;
+}
+
+.restaurant-status-closed {
+  background: rgba(185, 28, 28, 0.12);
+  color: #b91c1c;
+}
+
+.restaurant-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 14px 18px;
+  margin-bottom: 20px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  font-size: 14px;
+  text-align: left;
+  color: var(--text-h);
+}
+
+.restaurant-banner-warning {
+  background: rgba(217, 119, 6, 0.1);
+  border-color: rgba(217, 119, 6, 0.4);
+}
+
+.restaurant-banner-success {
+  background: rgba(46, 160, 67, 0.1);
+  border-color: rgba(46, 160, 67, 0.4);
+}
+
+.restaurant-banner-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.menu-card-unavailable {
+  opacity: 0.6;
+}
+
+.menu-card-unavailable .menu-price {
+  text-decoration: line-through;
+}
+
+.menu-tag-sold-out {
+  background: rgba(185, 28, 28, 0.12);
+  color: #b91c1c;
+}
+
+.btn-add:disabled {
+  background: var(--border);
+  color: var(--text);
+  cursor: not-allowed;
+  transform: none;
+  opacity: 1;
+}
+
+@media (prefers-color-scheme: dark) {
+  .restaurant-status-open {
+    color: #6fcf86;
+  }
+
+  .restaurant-status-paused {
+    color: #f5b25c;
+  }
+
+  .restaurant-status-closed,
+  .menu-tag-sold-out {
+    color: #f28b8b;
+  }
+}
