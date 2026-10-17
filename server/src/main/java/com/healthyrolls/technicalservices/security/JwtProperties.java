@@ -9,12 +9,6 @@ import org.springframework.validation.annotation.Validated;
 
 @Validated
 @ConfigurationProperties(prefix = "healthyrolls.security.jwt")
-public class JwtProperties {
-
-    @NotBlank
-    @Size(min = 32, message = "JWT secret must be 256 bits. We are using HS256")
-    public String secret;
-
-    @NotNull
-    private Duration ttl;
-}
+public record JwtProperties(
+        @NotBlank @Size(min = 32, message = "JWT secret must be 256 bits. We are using HS256") String secret,
+        @NotNull Duration ttl) {}

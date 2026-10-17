@@ -30,11 +30,11 @@ public class SecurityConfig {
 
     @Bean
     public RouteAccessPolicy accessPolicy(AccessRuleProperties p) {
-        return new RouteAccessPolicy(p.rules);
+        return new RouteAccessPolicy(p.rules());
     }
 
     private SecretKey signingKey(JwtProperties p) {
-        return new SecretKeySpec(p.secret.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
+        return new SecretKeySpec(p.secret().getBytes(StandardCharsets.UTF_8), "HmacSHA256");
     }
 
     @Bean
