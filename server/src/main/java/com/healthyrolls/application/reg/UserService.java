@@ -13,7 +13,9 @@ import com.healthyrolls.domain.reg.UserFactory;
 import com.healthyrolls.domain.reg.seed.SeedUser;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
+@Service
 public class UserService {
 
     private final IUserRepository userRepository;
