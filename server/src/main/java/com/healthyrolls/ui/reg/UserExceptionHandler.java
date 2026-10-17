@@ -13,7 +13,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-@RestControllerAdvice
+@RestControllerAdvice(basePackages = "com.healthyrolls.ui.reg")
 public class UserExceptionHandler {
 
     @ExceptionHandler(EmailAlreadyUsedException.class)
