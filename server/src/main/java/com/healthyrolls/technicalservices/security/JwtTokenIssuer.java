@@ -11,7 +11,9 @@ import org.springframework.security.oauth2.jwt.JwsHeader;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
+import org.springframework.stereotype.Component;
 
+@Component
 public class JwtTokenIssuer implements TokenIssuer {
 
     private static final String ROLE_CLAIM = "role";
