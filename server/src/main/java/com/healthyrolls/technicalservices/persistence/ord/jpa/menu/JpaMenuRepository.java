@@ -35,7 +35,7 @@ public class JpaMenuRepository implements MenuRepository {
             throw new IllegalArgumentException("Restaurant not found");
         }
 
-        List<MenuItemEntity> entities = database.findByRestaurantId(restaurantId);
+        List<MenuItemEntity> entities = database.findByRestaurantRestaurantId(restaurantId);
 
         List<MenuItem> items = new ArrayList<>();
 
