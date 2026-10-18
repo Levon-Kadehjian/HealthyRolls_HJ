@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface OrderRepository {
+public interface IOrderRepository {
 
     Order save(Order order);
 

@@ -7,7 +7,7 @@ import com.healthyrolls.domain.ord.order.Order;
 import com.healthyrolls.domain.ord.order.OrderAccessPolicy;
 import com.healthyrolls.domain.ord.order.OrderEventRecorder;
 import com.healthyrolls.domain.ord.order.OrderId;
-import com.healthyrolls.domain.ord.order.OrderRepository;
+import com.healthyrolls.domain.ord.order.IOrderRepository;
 import com.healthyrolls.domain.ord.order.OrderStateChanged;
 
 import java.util.Comparator;
@@ -19,16 +19,16 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class EventService implements OrderEventRecorder {
 
-    private final IEventRepository repository;
-    private final OrderRepository orderRepository;
+    private final IEventRepository eventRepository;
+    private final IOrderRepository orderRepository;
     private final OrderAccessPolicy accessPolicy;
 
     public EventService(
-            IEventRepository repository,
-            OrderRepository orderRepository,
+            IEventRepository eventRepository,
+            IOrderRepository orderRepository,
             OrderAccessPolicy accessPolicy) {
 
-        this.repository = Objects.requireNonNull(repository, "Event repository is required");
+        this.eventRepository = Objects.requireNonNull(eventRepository, "Event repository is required");
         this.orderRepository = Objects.requireNonNull(orderRepository, "Order repository is required");
         this.accessPolicy = Objects.requireNonNull(accessPolicy, "Order access policy is required");
     }
@@ -36,7 +36,7 @@ public class EventService implements OrderEventRecorder {
     @Override
     public void record(OrderStateChanged event) {
         Objects.requireNonNull(event, "Order event is required");
-        repository.save(event);
+        eventRepository.save(event);
     }
 
     @Transactional(readOnly = true)
@@ -46,7 +46,7 @@ public class EventService implements OrderEventRecorder {
         return visibleOrders(user).stream()
                 .filter(order -> accessPolicy.canView(user, order))
                 .map(Order::getOrderId)
-                .flatMap(orderId -> repository.findByOrderId(orderId).stream())
+                .flatMap(orderId -> eventRepository.findByOrderId(orderId).stream())
                 .sorted(Comparator.comparing(OrderStateChanged::occurredAt))
                 .toList();
     }
@@ -62,7 +62,7 @@ public class EventService implements OrderEventRecorder {
             throw new OrderNotFoundException(orderId);
         }
 
-        return repository.findByOrderId(orderId);
+        return eventRepository.findByOrderId(orderId);
     }
 
     private List<Order> visibleOrders(AuthenticatedUser user) {

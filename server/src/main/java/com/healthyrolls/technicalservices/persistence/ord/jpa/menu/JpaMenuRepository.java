@@ -2,7 +2,7 @@ package com.healthyrolls.technicalservices.persistence.ord.jpa.menu;
 
 import com.healthyrolls.domain.ord.menu.Menu;
 import com.healthyrolls.domain.ord.menu.MenuItem;
-import com.healthyrolls.domain.ord.menu.MenuRepository;
+import com.healthyrolls.domain.ord.menu.IMenuRepository;
 import com.healthyrolls.technicalservices.persistence.ord.jpa.restaurant.SpringDataRestaurantRepository;
 
 import java.util.ArrayList;
@@ -13,7 +13,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 @Repository
-public class JpaMenuRepository implements MenuRepository {
+public class JpaMenuRepository implements IMenuRepository {
 
     private final SpringDataMenuItemRepository database;
     private final SpringDataRestaurantRepository restaurants;

@@ -3,8 +3,8 @@ package com.healthyrolls.application.ord;
 import com.healthyrolls.domain.common.AuthenticatedUser;
 import com.healthyrolls.domain.common.UserRole;
 import com.healthyrolls.domain.ord.restaurant.Restaurant;
-import com.healthyrolls.domain.ord.restaurant.RestaurantEventRepository;
-import com.healthyrolls.domain.ord.restaurant.RestaurantRepository;
+import com.healthyrolls.domain.ord.restaurant.IRestaurantEventRepository;
+import com.healthyrolls.domain.ord.restaurant.IRestaurantRepository;
 import com.healthyrolls.domain.ord.restaurant.RestaurantStateChanged;
 import com.healthyrolls.domain.ord.restaurant.RestaurantStatus;
 
@@ -17,11 +17,11 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class RestaurantService {
 
-    private final RestaurantRepository repository;
+    private final IRestaurantRepository repository;
 
-    private final RestaurantEventRepository eventRepository;
+    private final IRestaurantEventRepository eventRepository;
 
-    public RestaurantService(RestaurantRepository repository, RestaurantEventRepository eventRepository) {
+    public RestaurantService(IRestaurantRepository repository, IRestaurantEventRepository eventRepository) {
         this.repository = Objects.requireNonNull(repository, "Restaurant repository is required");
         this.eventRepository = Objects.requireNonNull(eventRepository, "Restaurant event repository is required");
     }
