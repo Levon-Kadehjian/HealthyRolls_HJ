@@ -1,10 +1,9 @@
 package com.healthyrolls.technicalservices.security;
 
-import java.util.Set;
-
-import org.springframework.http.HttpMethod;
-
 import com.healthyrolls.domain.common.UserRole;
+
+import java.util.Set;
+import org.springframework.http.HttpMethod;
 
 public record AccessRule(
         String pathPattern,

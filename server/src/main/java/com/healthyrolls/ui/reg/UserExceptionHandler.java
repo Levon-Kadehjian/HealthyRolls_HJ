@@ -1,17 +1,18 @@
 package com.healthyrolls.ui.reg;
 
+import java.util.stream.Collectors;
+
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CONFLICT;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
-
-import com.healthyrolls.domain.reg.EmailAlreadyUsedException;
-import com.healthyrolls.domain.reg.InvalidCredentialsException;
-
-import java.util.stream.Collectors;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import com.healthyrolls.domain.reg.EmailAlreadyUsedException;
+import com.healthyrolls.domain.reg.InvalidCredentialsException;
+import com.healthyrolls.domain.reg.UserNotFoundException;
 
 @RestControllerAdvice(basePackages = "com.healthyrolls.ui.reg")
 public class UserExceptionHandler {
@@ -26,6 +27,14 @@ public class UserExceptionHandler {
     @ExceptionHandler(InvalidCredentialsException.class)
     public ProblemDetail onBadCredentials(InvalidCredentialsException e) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(UNAUTHORIZED, e.getMessage());
+        problem.setTitle("Authentication failed");
+        return problem;
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ProblemDetail onUnknownUser(UserNotFoundException e) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(UNAUTHORIZED,
+                "Your session is no longer valid");
         problem.setTitle("Authentication failed");
         return problem;
     }

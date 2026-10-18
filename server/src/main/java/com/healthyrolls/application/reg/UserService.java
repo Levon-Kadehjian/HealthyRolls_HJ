@@ -11,6 +11,7 @@ import com.healthyrolls.domain.reg.PasswordHasher;
 import com.healthyrolls.domain.reg.TokenIssuer;
 import com.healthyrolls.domain.reg.User;
 import com.healthyrolls.domain.reg.UserFactory;
+import com.healthyrolls.domain.reg.UserNotFoundException;
 import com.healthyrolls.domain.reg.seed.SeedUser;
 
 import org.springframework.stereotype.Service;
@@ -59,7 +60,7 @@ public class UserService {
     }
 
     public User findById(UserId id) {
-        return userRepository.findById(id).orElseThrow();
+        return userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
     }
 
     public boolean loadSeeded(String email, String hashedPassword, String name, UserRole role,

@@ -1,10 +1,5 @@
 package com.healthyrolls.technicalservices.persistence.ord.jpa.order;
 
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-
 import com.healthyrolls.domain.ord.order.Order;
 import com.healthyrolls.domain.ord.order.OrderRecord;
 import com.healthyrolls.domain.ord.order.OrderStatus;
@@ -20,6 +15,10 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderColumn;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Table(name = "orders")
