@@ -2,7 +2,7 @@ package com.healthyrolls.application.ord;
 
 import com.healthyrolls.domain.ord.menu.Menu;
 import com.healthyrolls.domain.ord.menu.MenuItem;
-import com.healthyrolls.domain.ord.menu.MenuRepository;
+import com.healthyrolls.domain.ord.menu.IMenuRepository;
 import com.healthyrolls.domain.ord.order.OrderLine;
 
 import java.util.ArrayList;
@@ -14,9 +14,9 @@ import org.springframework.stereotype.Service;
 @Service
 public class MenuService {
 
-    private final MenuRepository repository;
+    private final IMenuRepository repository;
 
-    public MenuService(MenuRepository repository) {
+    public MenuService(IMenuRepository repository) {
         this.repository = Objects.requireNonNull(repository, "Menu repository is required");
     }
 

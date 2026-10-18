@@ -11,7 +11,7 @@ import com.healthyrolls.domain.ord.order.OrderEventRecorder;
 import com.healthyrolls.domain.ord.order.OrderFactory;
 import com.healthyrolls.domain.ord.order.OrderId;
 import com.healthyrolls.domain.ord.order.OrderLine;
-import com.healthyrolls.domain.ord.order.OrderRepository;
+import com.healthyrolls.domain.ord.order.IOrderRepository;
 import com.healthyrolls.domain.ord.order.OrderStateChanged;
 import com.healthyrolls.domain.ord.order.OrderStatus;
 
@@ -26,7 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class OrderService {
 
-    private final OrderRepository repository;
+    private final IOrderRepository repository;
     private final OrderFactory factory;
     private final OrderEventRecorder recorder;
     private final RestaurantService restaurantService;
@@ -34,7 +34,7 @@ public class OrderService {
     private final OrderAccessPolicy policy;
 
     public OrderService(
-            OrderRepository repository,
+            IOrderRepository repository,
             OrderFactory factory,
             OrderEventRecorder recorder,
             RestaurantService restaurantService,

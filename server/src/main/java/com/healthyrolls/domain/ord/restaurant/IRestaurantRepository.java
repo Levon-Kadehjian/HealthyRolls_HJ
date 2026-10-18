@@ -2,7 +2,7 @@ package com.healthyrolls.domain.ord.restaurant;
 
 import java.util.UUID;
 
-public interface RestaurantRepository {
+public interface IRestaurantRepository {
 
     Restaurant findById(UUID restaurantId);
 

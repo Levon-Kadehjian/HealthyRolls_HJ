@@ -1,5 +1,5 @@
 package com.healthyrolls.domain.ord.restaurant;
 
-public interface RestaurantEventRepository {
+public interface IRestaurantEventRepository {
     void save(RestaurantStateChanged event);
 }

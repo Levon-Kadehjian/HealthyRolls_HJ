@@ -3,7 +3,7 @@ package com.healthyrolls.technicalservices.persistence.ord.jpa.order;
 import com.healthyrolls.domain.ord.order.Order;
 import com.healthyrolls.domain.ord.order.OrderFactory;
 import com.healthyrolls.domain.ord.order.OrderId;
-import com.healthyrolls.domain.ord.order.OrderRepository;
+import com.healthyrolls.domain.ord.order.IOrderRepository;
 import com.healthyrolls.domain.ord.order.OrderStatus;
 
 import java.util.List;
@@ -14,7 +14,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 @Repository
-public class JpaOrderRepository implements OrderRepository {
+public class JpaOrderRepository implements IOrderRepository {
     private final SpringDataOrderRepository database;
     private final OrderFactory factory = new OrderFactory();
 
