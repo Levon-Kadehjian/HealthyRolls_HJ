@@ -1,5 +1,6 @@
 package com.healthyrolls.technicalservices;
 
+import com.healthyrolls.domain.ord.order.OrderAccessPolicy;
 import com.healthyrolls.domain.ord.order.OrderFactory;
 import com.healthyrolls.domain.reg.UserFactory;
 
@@ -17,5 +18,10 @@ public class DomainConfig {
     @Bean
     public OrderFactory orderFactory() {
         return new OrderFactory();
+    }
+
+    @Bean
+    public OrderAccessPolicy orderAccessPolicy() {
+        return new OrderAccessPolicy();
     }
 }

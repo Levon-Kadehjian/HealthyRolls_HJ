@@ -5,6 +5,7 @@ import com.healthyrolls.domain.common.UserRole;
 import com.healthyrolls.domain.ord.exceptions.OrderNotFoundException;
 import com.healthyrolls.domain.ord.order.EventId;
 import com.healthyrolls.domain.ord.order.Order;
+import com.healthyrolls.domain.ord.order.OrderAccessPolicy;
 import com.healthyrolls.domain.ord.order.OrderAction;
 import com.healthyrolls.domain.ord.order.OrderEventRepository;
 import com.healthyrolls.domain.ord.order.OrderFactory;
@@ -30,13 +31,15 @@ public class OrderService {
     private final OrderEventRepository eventRepository;
     private final RestaurantService restaurantService;
     private final MenuService menuService;
+    private final OrderAccessPolicy policy;
 
     public OrderService(
             OrderRepository repository,
             OrderFactory factory,
             OrderEventRepository eventRepository,
             RestaurantService restaurantService,
-            MenuService menuService) {
+            MenuService menuService,
+            OrderAccessPolicy policy) {
 
         this.repository = Objects.requireNonNull(repository, "Order repository is required");
 
@@ -47,6 +50,8 @@ public class OrderService {
         this.restaurantService = Objects.requireNonNull(restaurantService, "Restaurant service is required");
 
         this.menuService = Objects.requireNonNull(menuService, "Menu service is required");
+
+        this.policy = Objects.requireNonNull(policy, "Order access policy is required");
     }
 
     public OrderId placeOrder(
@@ -94,36 +99,14 @@ public class OrderService {
         Objects.requireNonNull(actor, "User context is required");
         Objects.requireNonNull(actor.userId(), "User ID is required");
 
-        if (action == OrderAction.CANCEL) {
-            if (actor.role() != UserRole.CUSTOMER && actor.role() != UserRole.OPERATOR) {
-                throw new SecurityException(
-                        "Only customers or operators can cancel orders");
-            }
-        } else {
-            if (actor.role() != UserRole.RESTAURANT_STAFF) {
-                throw new SecurityException("Only restaurant staff can accept, reject or mark orders ready");
-            }
-
-            if (action != OrderAction.ACCEPT && action != OrderAction.MARK_READY && action != OrderAction.REJECT) {
-                throw new UnsupportedOperationException("This order action is not supported");
-            }
-        }
-
         Order order = repository.findByOrderId(orderId);
 
-        if (action == OrderAction.CANCEL) {
-            if (actor.role() == UserRole.CUSTOMER) {
-                if (!actor.userId().value().equals(order.getCustomerId())) {
-                    throw new SecurityException("You cannot cancel another customer's order");
-                }
-                if (order.status() != OrderStatus.PLACED) {
-                    throw new IllegalStateException("Customers can only cancel placed orders");
-                }
-            }
-        } else {
-            if (actor.restaurantId() == null || !actor.restaurantId().value().equals(order.getRestaurantId())) {
-                throw new SecurityException("You cannot change another restaurant's order");
-            }
+        if (!policy.canView(actor, order)) {
+            throw new OrderNotFoundException(orderId);
+        }
+
+        if (!policy.canPerform(actor, order, action)) {
+            throw new SecurityException("You are not allowed to perform this action on this order");
         }
 
         boolean cancelledPreparingOrder = action == OrderAction.CANCEL && order.status() == OrderStatus.PREPARING;
@@ -142,21 +125,8 @@ public class OrderService {
 
         Order o = repository.findByOrderId(orderId);
 
-        switch (actor.role()) {
-            case CUSTOMER:
-                if (!actor.userId().value().equals(o.getCustomerId())) {
-                    throw new OrderNotFoundException(orderId); // we dont want other users to know this order exists
-                }
-                break;
-            case RESTAURANT_STAFF:
-                if (actor.restaurantId() == null || !actor.restaurantId().value().equals(o.getRestaurantId())) {
-                    throw new OrderNotFoundException(orderId);
-                }
-                break;
-            case OPERATOR:
-                break;
-            default:
-                throw new SecurityException("You are not allowed to view orders");
+        if (!policy.canView(actor, o)) {
+            throw new OrderNotFoundException(orderId);
         }
 
         return o;
