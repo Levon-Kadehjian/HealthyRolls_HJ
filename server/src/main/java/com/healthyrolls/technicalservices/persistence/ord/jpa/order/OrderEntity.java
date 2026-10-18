@@ -1,5 +1,10 @@
 package com.healthyrolls.technicalservices.persistence.ord.jpa.order;
 
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
 import com.healthyrolls.domain.ord.order.Order;
 import com.healthyrolls.domain.ord.order.OrderRecord;
 import com.healthyrolls.domain.ord.order.OrderStatus;
@@ -14,10 +19,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderColumn;
 import jakarta.persistence.Table;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import jakarta.persistence.Version;
 
 @Entity
 @Table(name = "orders")
@@ -41,10 +43,13 @@ public class OrderEntity {
     @Column(nullable = false)
     private OrderStatus status;
 
+    @Version
+    private long version;
+
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "order_id", nullable = false)
     @OrderColumn(name = "line_position")
-    private List<OrderLineEntity> items = new ArrayList<>();
+    private final List<OrderLineEntity> items = new ArrayList<>();
 
     protected OrderEntity() {
     }
@@ -57,6 +62,7 @@ public class OrderEntity {
         this.acceptedAt = order.getAcceptedAt();
         this.status = order.status();
         this.rejectionReason = order.getRejectionReason();
+        this.version = order.version();
         for (var line : order.getItems()) {
             items.add(new OrderLineEntity(line));
         }
@@ -64,6 +70,7 @@ public class OrderEntity {
 
     public OrderRecord toRecord() {
         return new OrderRecord(orderId, status.name(), customerId, restaurantId,
-                courierId, acceptedAt, rejectionReason, items.stream().map(OrderLineEntity::toDomain).toList());
+                courierId, acceptedAt, rejectionReason, version,
+                items.stream().map(OrderLineEntity::toDomain).toList());
     }
 }
