@@ -143,7 +143,7 @@ export default function HomePage() {
                     to={session ? `/restaurants/${restaurant.id}` : '/login'}
                     className="landing-preview-link"
                   >
-                    <span>{session ? 'View menu' : 'Sign in to order'}</span>
+                    <span>Order</span>
                     <span aria-hidden="true">&rarr;</span>
                   </Link>
                 </div>

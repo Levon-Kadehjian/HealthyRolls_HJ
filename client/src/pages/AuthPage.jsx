@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import sushiLogo from '../assets/sushi-logo.png'
 import { useSession } from '../auth/useSession'
 import { loginUser, registerUser } from '../api/auth'
+import PasswordInput from '../components/PasswordInput'
 import './AuthPage.css'
 
 export default function AuthPage({ initialMode = 'login' }) {
@@ -204,7 +205,6 @@ export default function AuthPage({ initialMode = 'login' }) {
 
           {error && (
             <div className="auth-error" role="alert">
-              <span>⚠️</span>
               <span>{error}</span>
             </div>
           )}
@@ -241,9 +241,8 @@ export default function AuthPage({ initialMode = 'login' }) {
 
           <div className="auth-field">
             <label htmlFor="auth-password">Password</label>
-            <input
+            <PasswordInput
               id="auth-password"
-              type="password"
               className="auth-input"
               placeholder={mode === 'signup' ? 'At least 6 characters' : 'Enter your password'}
               value={password}
@@ -256,9 +255,8 @@ export default function AuthPage({ initialMode = 'login' }) {
           {mode === 'signup' && (
             <div className="auth-field">
               <label htmlFor="auth-confirm-password">Confirm Password</label>
-              <input
+              <PasswordInput
                 id="auth-confirm-password"
-                type="password"
                 className="auth-input"
                 placeholder="Repeat your password"
                 value={confirmPassword}
@@ -279,21 +277,21 @@ export default function AuthPage({ initialMode = 'login' }) {
         </form>
 
         <div className="auth-demo-bar">
-          <span className="auth-demo-label">Quick autofill demo:</span>
+          <span className="auth-demo-label">Quick autofill:</span>
           <div className="auth-demo-buttons">
             <button
               type="button"
               className="auth-demo-btn"
               onClick={() => handleQuickFill('CUSTOMER')}
             >
-              👤 Fill Customer
+              Fill Customer
             </button>
             <button
               type="button"
               className="auth-demo-btn"
               onClick={() => handleQuickFill('RESTAURANT_STAFF')}
             >
-              👨‍🍳 Fill Staff
+              Fill Staff
             </button>
           </div>
         </div>
