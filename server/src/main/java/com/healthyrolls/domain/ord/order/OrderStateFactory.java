@@ -13,6 +13,7 @@ public class OrderStateFactory {
 
     public AbstractOrderState fromStatus(OrderStatus status, Order order) {
         AbstractOrderState state = switch (status) {
+            case NONE -> throw new IllegalArgumentException("NONE is not a state an order can be in");
             case PLACED -> new PlacedState(order);
             case ACCEPTED -> new AcceptedState();
             case PREPARING -> new PreparingState();

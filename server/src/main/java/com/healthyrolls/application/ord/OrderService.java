@@ -7,7 +7,7 @@ import com.healthyrolls.domain.ord.order.EventId;
 import com.healthyrolls.domain.ord.order.Order;
 import com.healthyrolls.domain.ord.order.OrderAccessPolicy;
 import com.healthyrolls.domain.ord.order.OrderAction;
-import com.healthyrolls.domain.ord.order.OrderEventRepository;
+import com.healthyrolls.domain.ord.order.OrderEventRecorder;
 import com.healthyrolls.domain.ord.order.OrderFactory;
 import com.healthyrolls.domain.ord.order.OrderId;
 import com.healthyrolls.domain.ord.order.OrderLine;
@@ -28,7 +28,7 @@ public class OrderService {
 
     private final OrderRepository repository;
     private final OrderFactory factory;
-    private final OrderEventRepository eventRepository;
+    private final OrderEventRecorder recorder;
     private final RestaurantService restaurantService;
     private final MenuService menuService;
     private final OrderAccessPolicy policy;
@@ -36,7 +36,7 @@ public class OrderService {
     public OrderService(
             OrderRepository repository,
             OrderFactory factory,
-            OrderEventRepository eventRepository,
+            OrderEventRecorder recorder,
             RestaurantService restaurantService,
             MenuService menuService,
             OrderAccessPolicy policy) {
@@ -45,7 +45,7 @@ public class OrderService {
 
         this.factory = Objects.requireNonNull(factory, "Order factory is required");
 
-        this.eventRepository = Objects.requireNonNull(eventRepository, "Order event repository is required");
+        this.recorder = Objects.requireNonNull(recorder, "Order event recorder is required");
 
         this.restaurantService = Objects.requireNonNull(restaurantService, "Restaurant service is required");
 
@@ -81,6 +81,14 @@ public class OrderService {
         OrderId orderId = order.getOrderId();
 
         repository.save(order);
+
+        recorder.record(new OrderStateChanged(
+                EventId.random(),
+                orderId,
+                OrderStatus.NONE,
+                OrderStatus.PLACED,
+                customerId,
+                Instant.now()));
 
         return orderId;
     }
@@ -174,6 +182,6 @@ public class OrderService {
                 actor.userId().value(),
                 occurredAt);
 
-        eventRepository.save(event);
+        recorder.record(event);
     }
 }

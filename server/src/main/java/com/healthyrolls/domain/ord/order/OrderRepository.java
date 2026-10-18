@@ -14,6 +14,8 @@ public interface OrderRepository {
 
     List<Order> findByRestaurantId(UUID restaurantId);
 
+    List<Order> findAll();
+
     boolean hasPreparingOrder(UUID restaurantId);
 
     Optional<Order> findNextAccepted(UUID restaurantId);
