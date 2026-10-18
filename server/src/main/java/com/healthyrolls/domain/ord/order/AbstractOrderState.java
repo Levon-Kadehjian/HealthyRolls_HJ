@@ -1,5 +1,7 @@
 package com.healthyrolls.domain.ord.order;
 
+import com.healthyrolls.domain.ord.exceptions.InvalidTransitionException;
+
 public abstract class AbstractOrderState {
 
     protected Order order;
@@ -7,15 +9,15 @@ public abstract class AbstractOrderState {
     public abstract OrderStatus status();
 
     public void accept() {
-        throw new IllegalStateException("Cannot accept an order in state " + status());
+        throw new InvalidTransitionException("Cannot accept an order in state " + status());
     }
 
     public void startPreparing() {
-        throw new IllegalStateException("Cannot start preparing an order in state " + status());
+        throw new InvalidTransitionException("Cannot start preparing an order in state " + status());
     }
 
     public void markReady() {
-        throw new IllegalStateException("Cannot mark an order ready in state " + status());
+        throw new InvalidTransitionException("Cannot mark an order ready in state " + status());
     }
 
     public void markPickedUp() {
@@ -27,12 +29,12 @@ public abstract class AbstractOrderState {
     }
 
     public void cancel() {
-        throw new IllegalStateException(
+        throw new InvalidTransitionException(
                 "Cannot cancel an order in state " + status());
     }
 
     public void reject() {
-        throw new IllegalStateException(
+        throw new InvalidTransitionException(
                 "Cannot reject an order in state " + status());
     }
 
