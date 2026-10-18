@@ -2,9 +2,9 @@ package com.healthyrolls.application.ord;
 
 import com.healthyrolls.domain.common.AuthenticatedUser;
 import com.healthyrolls.domain.common.UserRole;
-import com.healthyrolls.domain.ord.restaurant.Restaurant;
 import com.healthyrolls.domain.ord.restaurant.IRestaurantEventRepository;
 import com.healthyrolls.domain.ord.restaurant.IRestaurantRepository;
+import com.healthyrolls.domain.ord.restaurant.Restaurant;
 import com.healthyrolls.domain.ord.restaurant.RestaurantStateChanged;
 import com.healthyrolls.domain.ord.restaurant.RestaurantStatus;
 

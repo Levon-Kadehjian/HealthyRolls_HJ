@@ -4,6 +4,7 @@ import com.healthyrolls.domain.common.AuthenticatedUser;
 import com.healthyrolls.domain.common.UserRole;
 import com.healthyrolls.domain.ord.exceptions.OrderNotFoundException;
 import com.healthyrolls.domain.ord.order.EventId;
+import com.healthyrolls.domain.ord.order.IOrderRepository;
 import com.healthyrolls.domain.ord.order.Order;
 import com.healthyrolls.domain.ord.order.OrderAccessPolicy;
 import com.healthyrolls.domain.ord.order.OrderAction;
@@ -11,7 +12,6 @@ import com.healthyrolls.domain.ord.order.OrderEventRecorder;
 import com.healthyrolls.domain.ord.order.OrderFactory;
 import com.healthyrolls.domain.ord.order.OrderId;
 import com.healthyrolls.domain.ord.order.OrderLine;
-import com.healthyrolls.domain.ord.order.IOrderRepository;
 import com.healthyrolls.domain.ord.order.OrderStateChanged;
 import com.healthyrolls.domain.ord.order.OrderStatus;
 

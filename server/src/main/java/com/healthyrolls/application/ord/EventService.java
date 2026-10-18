@@ -3,11 +3,11 @@ package com.healthyrolls.application.ord;
 import com.healthyrolls.domain.common.AuthenticatedUser;
 import com.healthyrolls.domain.ord.event.IEventRepository;
 import com.healthyrolls.domain.ord.exceptions.OrderNotFoundException;
+import com.healthyrolls.domain.ord.order.IOrderRepository;
 import com.healthyrolls.domain.ord.order.Order;
 import com.healthyrolls.domain.ord.order.OrderAccessPolicy;
 import com.healthyrolls.domain.ord.order.OrderEventRecorder;
 import com.healthyrolls.domain.ord.order.OrderId;
-import com.healthyrolls.domain.ord.order.IOrderRepository;
 import com.healthyrolls.domain.ord.order.OrderStateChanged;
 
 import java.util.Comparator;
