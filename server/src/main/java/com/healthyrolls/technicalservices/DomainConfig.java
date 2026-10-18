@@ -2,6 +2,7 @@ package com.healthyrolls.technicalservices;
 
 import com.healthyrolls.domain.ord.order.OrderAccessPolicy;
 import com.healthyrolls.domain.ord.order.OrderFactory;
+import com.healthyrolls.domain.ord.restaurant.RestaurantAccessPolicy;
 import com.healthyrolls.domain.reg.UserFactory;
 
 import org.springframework.context.annotation.Bean;
@@ -23,5 +24,10 @@ public class DomainConfig {
     @Bean
     public OrderAccessPolicy orderAccessPolicy() {
         return new OrderAccessPolicy();
+    }
+
+    @Bean
+    public RestaurantAccessPolicy restaurantAccessPolicy() {
+        return new RestaurantAccessPolicy();
     }
 }

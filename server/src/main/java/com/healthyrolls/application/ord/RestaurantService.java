@@ -1,11 +1,11 @@
 package com.healthyrolls.application.ord;
 
 import com.healthyrolls.domain.common.AuthenticatedUser;
-import com.healthyrolls.domain.common.UserRole;
 import com.healthyrolls.domain.ord.exceptions.ActionNotPermittedException;
 import com.healthyrolls.domain.ord.restaurant.IRestaurantEventRepository;
 import com.healthyrolls.domain.ord.restaurant.IRestaurantRepository;
 import com.healthyrolls.domain.ord.restaurant.Restaurant;
+import com.healthyrolls.domain.ord.restaurant.RestaurantAccessPolicy;
 import com.healthyrolls.domain.ord.restaurant.RestaurantStateChanged;
 import com.healthyrolls.domain.ord.restaurant.RestaurantStatus;
 
@@ -22,9 +22,13 @@ public class RestaurantService {
 
     private final IRestaurantEventRepository eventRepository;
 
-    public RestaurantService(IRestaurantRepository repository, IRestaurantEventRepository eventRepository) {
+    private final RestaurantAccessPolicy accessPolicy;
+
+    public RestaurantService(IRestaurantRepository repository, IRestaurantEventRepository eventRepository,
+            RestaurantAccessPolicy accessPolicy) {
         this.repository = Objects.requireNonNull(repository, "Restaurant repository is required");
         this.eventRepository = Objects.requireNonNull(eventRepository, "Restaurant event repository is required");
+        this.accessPolicy = Objects.requireNonNull(accessPolicy, "Restaurant access policy is required");
     }
 
     public boolean isOpen(UUID restaurantId) {
@@ -43,12 +47,8 @@ public class RestaurantService {
         Objects.requireNonNull(actor, "Authenticated user is required");
         Objects.requireNonNull(actor.userId(), "User ID is required");
 
-        if (actor.role() == UserRole.RESTAURANT_STAFF) {
-            if (actor.restaurantId() == null || !actor.restaurantId().value().equals(restaurantId)) {
-                throw new ActionNotPermittedException("You can only pause your own restaurant");
-            }
-        } else if (actor.role() != UserRole.OPERATOR) {
-            throw new ActionNotPermittedException("Only restaurant staff or operators can pause restaurants");
+        if (!accessPolicy.canManage(actor, restaurantId)) {
+            throw new ActionNotPermittedException("You are not allowed to pause this restaurant");
         }
 
         Restaurant restaurant = repository.findById(restaurantId);
@@ -73,8 +73,8 @@ public class RestaurantService {
         Objects.requireNonNull(actor, "Authenticated user is required");
         Objects.requireNonNull(actor.userId(), "User ID is required");
 
-        if (actor.role() != UserRole.OPERATOR) {
-            throw new ActionNotPermittedException("Only operators can reopen restaurants");
+        if (!accessPolicy.canManage(actor, restaurantId)) {
+            throw new ActionNotPermittedException("You are not allowed to reopen this restaurant");
         }
 
         Restaurant restaurant = repository.findById(restaurantId);
