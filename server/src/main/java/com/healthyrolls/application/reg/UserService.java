@@ -80,11 +80,11 @@ public class UserService {
     }
 
     public boolean loadSeeded(SeedUser seed) {
-        if (userRepository.existsByEmail(seed.email())) {
-            return false;
-        }
-
-        userRepository.save(userFactory.createSeeded(seed));
-        return true;
+        return loadSeeded(
+                seed.email(),
+                seed.hashedPassword(),
+                seed.name(),
+                seed.role(),
+                seed.restaurantId());
     }
 }
