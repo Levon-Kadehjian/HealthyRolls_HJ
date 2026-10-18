@@ -2,7 +2,9 @@ package com.healthyrolls.application.ord;
 
 import com.healthyrolls.domain.common.AuthenticatedUser;
 import com.healthyrolls.domain.common.UserRole;
+import com.healthyrolls.domain.ord.exceptions.ActionNotPermittedException;
 import com.healthyrolls.domain.ord.exceptions.OrderNotFoundException;
+import com.healthyrolls.domain.ord.exceptions.RestaurantUnavailableException;
 import com.healthyrolls.domain.ord.order.EventId;
 import com.healthyrolls.domain.ord.order.IOrderRepository;
 import com.healthyrolls.domain.ord.order.Order;
@@ -62,13 +64,13 @@ public class OrderService {
         Objects.requireNonNull(actor, "User context is required");
 
         if (actor.role() != UserRole.CUSTOMER) {
-            throw new SecurityException("Only customers can place orders");
+            throw new ActionNotPermittedException("Only customers can place orders");
         }
 
         UUID customerId = actor.userId().value();
 
         if (!restaurantService.isOpen(restaurantId)) {
-            throw new IllegalStateException("Restaurant is not open");
+            throw new RestaurantUnavailableException(restaurantId);
         }
 
         List<OrderLine> validatedItems = menuService.validateAndResolveItems(restaurantId, items);
@@ -114,7 +116,7 @@ public class OrderService {
         }
 
         if (!policy.canPerform(actor, order, action)) {
-            throw new SecurityException("You are not allowed to perform this action on this order");
+            throw new ActionNotPermittedException("You are not allowed to perform this action on this order");
         }
 
         boolean cancelledPreparingOrder = action == OrderAction.CANCEL && order.status() == OrderStatus.PREPARING;

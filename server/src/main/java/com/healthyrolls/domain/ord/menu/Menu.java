@@ -1,5 +1,7 @@
 package com.healthyrolls.domain.ord.menu;
 
+import com.healthyrolls.domain.ord.exceptions.MenuItemSoldOutException;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -44,7 +46,7 @@ public class Menu {
         MenuItem item = findItem(itemId);
 
         if (item.getStatus() != MenuItemStatus.AVAILABLE) {
-            throw new IllegalStateException("Menu item is sold out");
+            throw new MenuItemSoldOutException(itemId);
         }
 
         return item;

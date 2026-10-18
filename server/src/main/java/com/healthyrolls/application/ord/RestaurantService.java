@@ -2,6 +2,7 @@ package com.healthyrolls.application.ord;
 
 import com.healthyrolls.domain.common.AuthenticatedUser;
 import com.healthyrolls.domain.common.UserRole;
+import com.healthyrolls.domain.ord.exceptions.ActionNotPermittedException;
 import com.healthyrolls.domain.ord.restaurant.IRestaurantEventRepository;
 import com.healthyrolls.domain.ord.restaurant.IRestaurantRepository;
 import com.healthyrolls.domain.ord.restaurant.Restaurant;
@@ -44,10 +45,10 @@ public class RestaurantService {
 
         if (actor.role() == UserRole.RESTAURANT_STAFF) {
             if (actor.restaurantId() == null || !actor.restaurantId().value().equals(restaurantId)) {
-                throw new SecurityException("You can only pause your own restaurant");
+                throw new ActionNotPermittedException("You can only pause your own restaurant");
             }
         } else if (actor.role() != UserRole.OPERATOR) {
-            throw new SecurityException("Only restaurant staff or operators can pause restaurants");
+            throw new ActionNotPermittedException("Only restaurant staff or operators can pause restaurants");
         }
 
         Restaurant restaurant = repository.findById(restaurantId);
@@ -73,7 +74,7 @@ public class RestaurantService {
         Objects.requireNonNull(actor.userId(), "User ID is required");
 
         if (actor.role() != UserRole.OPERATOR) {
-            throw new SecurityException("Only operators can reopen restaurants");
+            throw new ActionNotPermittedException("Only operators can reopen restaurants");
         }
 
         Restaurant restaurant = repository.findById(restaurantId);
