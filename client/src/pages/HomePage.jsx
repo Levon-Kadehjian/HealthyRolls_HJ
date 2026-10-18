@@ -1,7 +1,26 @@
 import { Link } from 'react-router-dom'
 import sushiLogo from '../assets/sushi-logo.png'
 import { useSession } from '../auth/useSession'
+import seedData from '../api/seedData.json'
 import './HomePage.css'
+
+const RESTAURANT_INFO = {
+  'cabd0420-8902-4826-a50e-0492f049622a': {
+    neighborhood: 'Old Montreal',
+    cuisine: 'Traditional Izakaya & Specialty Maki',
+    tags: ['Salmon Avocado', 'Dragon Roll', 'Izakaya'],
+  },
+  '6305aadf-08f1-4f77-819e-8a54d437fd9e': {
+    neighborhood: 'Plateau-Mont-Royal',
+    cuisine: 'Creative Rolls, Bowls & Tartares',
+    tags: ['Poke Bowls', 'California Roll', 'Edamame'],
+  },
+  'a931edab-ffd4-4b47-a4c1-6533b237a8cc': {
+    neighborhood: 'Downtown Montreal',
+    cuisine: 'Classic Nigiri, Sashimi & Tempura',
+    tags: ['Nigiri Platters', 'Crispy Tempura', 'Miso'],
+  },
+}
 
 const highlights = [
   {
@@ -35,6 +54,20 @@ export default function HomePage() {
   const session = useSession()
   const isStaff = session?.role === 'RESTAURANT_STAFF'
 
+  const previews = seedData.restaurants.slice(0, 3).map((restaurant) => {
+    const info = RESTAURANT_INFO[restaurant.id] || {
+      neighborhood: 'Montreal',
+      cuisine: 'Japanese Cuisine',
+      tags: ['Sushi', 'Maki', 'Fresh Catch'],
+    }
+    return {
+      ...restaurant,
+      neighborhood: info.neighborhood,
+      cuisine: info.cuisine,
+      tags: info.tags,
+    }
+  })
+
   return (
     <div className="landing">
       <section className="landing-hero">
@@ -67,6 +100,56 @@ export default function HomePage() {
               </Link>
             </>
           )}
+        </div>
+      </section>
+
+      {/* Restaurant Previews */}
+      <section className="landing-previews" aria-labelledby="previews-title">
+        <div className="landing-section-header">
+          <h2 id="previews-title" className="landing-section-title">Partner Kitchens</h2>
+          <p className="landing-section-subtitle">Hand-picked sushi kitchens across Montreal, made to order.</p>
+        </div>
+
+        <div className="landing-preview-grid">
+          {previews.map((restaurant) => (
+            <article key={restaurant.id} className="landing-preview-card">
+              <div className="landing-preview-banner">
+                <img
+                  src={sushiLogo}
+                  alt={restaurant.name}
+                  loading="lazy"
+                />
+                <div className="landing-preview-overlay">
+                  <span className="landing-preview-badge-location">{restaurant.neighborhood}</span>
+                  <span className="landing-preview-badge-status">
+                    <span className="landing-status-dot" aria-hidden="true" />
+                    Open
+                  </span>
+                </div>
+              </div>
+
+              <div className="landing-preview-body">
+                <h3 className="landing-preview-name">{restaurant.name}</h3>
+                <p className="landing-preview-cuisine">{restaurant.cuisine}</p>
+
+                <div className="landing-preview-tags">
+                  {restaurant.tags.map((tag) => (
+                    <span key={tag} className="landing-preview-tag">{tag}</span>
+                  ))}
+                </div>
+
+                <div className="landing-preview-action">
+                  <Link
+                    to={session ? `/restaurants/${restaurant.id}` : '/login'}
+                    className="landing-preview-link"
+                  >
+                    <span>{session ? 'View menu' : 'Sign in to order'}</span>
+                    <span aria-hidden="true">&rarr;</span>
+                  </Link>
+                </div>
+              </div>
+            </article>
+          ))}
         </div>
       </section>
 
