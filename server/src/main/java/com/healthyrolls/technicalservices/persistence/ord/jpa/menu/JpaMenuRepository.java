@@ -1,8 +1,8 @@
 package com.healthyrolls.technicalservices.persistence.ord.jpa.menu;
 
+import com.healthyrolls.domain.ord.menu.IMenuRepository;
 import com.healthyrolls.domain.ord.menu.Menu;
 import com.healthyrolls.domain.ord.menu.MenuItem;
-import com.healthyrolls.domain.ord.menu.IMenuRepository;
 import com.healthyrolls.technicalservices.persistence.ord.jpa.restaurant.SpringDataRestaurantRepository;
 
 import java.util.ArrayList;

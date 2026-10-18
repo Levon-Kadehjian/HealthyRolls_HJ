@@ -1,7 +1,7 @@
 package com.healthyrolls.technicalservices.persistence.ord.jpa.restaurant;
 
-import com.healthyrolls.domain.ord.restaurant.Restaurant;
 import com.healthyrolls.domain.ord.restaurant.IRestaurantRepository;
+import com.healthyrolls.domain.ord.restaurant.Restaurant;
 
 import java.util.UUID;
 import org.springframework.stereotype.Repository;
