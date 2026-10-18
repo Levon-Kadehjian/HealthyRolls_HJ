@@ -58,7 +58,14 @@ public class JpaOrderRepository implements OrderRepository {
     @Transactional(readOnly = true)
     public List<Order> findByRestaurantId(UUID restaurantId) {
         Objects.requireNonNull(restaurantId, "Order ID is required");
-        return database.findByCustomerId(restaurantId).stream().map(entity -> factory.reconstitute(entity.toRecord()))
+        return database.findByRestaurantId(restaurantId).stream().map(entity -> factory.reconstitute(entity.toRecord()))
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Order> findAll() {
+        return database.findAll().stream().map(entity -> factory.reconstitute(entity.toRecord()))
                 .toList();
     }
 
