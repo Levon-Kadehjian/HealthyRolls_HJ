@@ -12,6 +12,7 @@ public record OrderRecord(
         UUID courierId,
         Instant acceptedAt,
         String rejectionReason,
+        long version,
         List<OrderLine> items) {
     public OrderRecord {
         items = List.copyOf(items);

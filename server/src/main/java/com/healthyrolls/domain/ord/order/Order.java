@@ -43,6 +43,7 @@ public class Order {
         this.acceptedAt = record.acceptedAt();
         this.state = stateFactory.fromStatus(OrderStatus.valueOf(record.status()), this);
         this.rejectionReason = record.rejectionReason();
+        this.version = record.version();
     }
 
     public OrderId getOrderId() {
