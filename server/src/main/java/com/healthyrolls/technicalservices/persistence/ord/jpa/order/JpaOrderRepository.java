@@ -1,5 +1,6 @@
 package com.healthyrolls.technicalservices.persistence.ord.jpa.order;
 
+import com.healthyrolls.domain.ord.exceptions.OrderNotFoundException;
 import com.healthyrolls.domain.ord.order.IOrderRepository;
 import com.healthyrolls.domain.ord.order.Order;
 import com.healthyrolls.domain.ord.order.OrderFactory;
@@ -38,7 +39,7 @@ public class JpaOrderRepository implements IOrderRepository {
         Optional<OrderEntity> result = database.findById(id.value());
 
         if (result.isEmpty()) {
-            throw new IllegalArgumentException("Order not found");
+            throw new OrderNotFoundException(id);
         }
 
         OrderEntity entity = result.get();
