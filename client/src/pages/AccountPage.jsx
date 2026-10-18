@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useSession } from '../auth/useSession'
 import { updateSession } from '../auth/session'
 import { recordCommand } from '../console/consoleStore'
+import PasswordInput from '../components/PasswordInput'
 import './AccountPage.css'
 
 export default function AccountPage() {
@@ -195,9 +196,8 @@ export default function AccountPage() {
             <div className="account-grid-2">
               <div className="account-field">
                 <label htmlFor="account-new-password">New Password</label>
-                <input
+                <PasswordInput
                   id="account-new-password"
-                  type="password"
                   className="account-input"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
@@ -208,9 +208,8 @@ export default function AccountPage() {
 
               <div className="account-field">
                 <label htmlFor="account-confirm-password">Confirm New Password</label>
-                <input
+                <PasswordInput
                   id="account-confirm-password"
-                  type="password"
                   className="account-input"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
