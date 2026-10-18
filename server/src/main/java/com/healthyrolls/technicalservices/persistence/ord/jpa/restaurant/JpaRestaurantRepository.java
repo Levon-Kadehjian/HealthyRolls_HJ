@@ -1,6 +1,7 @@
 package com.healthyrolls.technicalservices.persistence.ord.jpa.restaurant;
 
 import com.healthyrolls.domain.ord.restaurant.IRestaurantRepository;
+import com.healthyrolls.domain.ord.exceptions.RestaurantNotFoundException;
 import com.healthyrolls.domain.ord.restaurant.Restaurant;
 
 import java.util.UUID;
@@ -20,7 +21,7 @@ public class JpaRestaurantRepository implements IRestaurantRepository {
     public Restaurant findById(UUID restaurantId) {
 
         RestaurantEntity entity = database.findById(restaurantId)
-                .orElseThrow(() -> new IllegalArgumentException("Restaurant not found"));
+                .orElseThrow(() -> new RestaurantNotFoundException(restaurantId));
 
         return new Restaurant(entity.getRestaurantId(), entity.getName(), entity.getStatus(),
                 entity.getLatitude(), entity.getLongitude());

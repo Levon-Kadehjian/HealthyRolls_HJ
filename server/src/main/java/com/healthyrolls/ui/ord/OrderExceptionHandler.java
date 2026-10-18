@@ -9,6 +9,7 @@ import com.healthyrolls.domain.ord.exceptions.InvalidTransitionException;
 import com.healthyrolls.domain.ord.exceptions.MenuItemSoldOutException;
 import com.healthyrolls.domain.ord.exceptions.NoAcceptedOrderException;
 import com.healthyrolls.domain.ord.exceptions.OrderNotFoundException;
+import com.healthyrolls.domain.ord.exceptions.RestaurantNotFoundException;
 import com.healthyrolls.domain.ord.exceptions.RestaurantUnavailableException;
 
 import org.springframework.http.ProblemDetail;
@@ -22,6 +23,13 @@ public class OrderExceptionHandler {
     public ProblemDetail onNotFound(OrderNotFoundException e) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(NOT_FOUND, e.getMessage());
         problem.setTitle("Order not found");
+        return problem;
+    }
+
+    @ExceptionHandler(RestaurantNotFoundException.class)
+    public ProblemDetail onRestaurantNotFound(RestaurantNotFoundException e) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(NOT_FOUND, e.getMessage());
+        problem.setTitle("Restaurant not found");
         return problem;
     }
 

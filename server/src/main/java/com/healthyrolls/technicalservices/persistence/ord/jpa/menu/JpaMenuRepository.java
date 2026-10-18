@@ -1,6 +1,7 @@
 package com.healthyrolls.technicalservices.persistence.ord.jpa.menu;
 
 import com.healthyrolls.domain.ord.menu.IMenuRepository;
+import com.healthyrolls.domain.ord.exceptions.RestaurantNotFoundException;
 import com.healthyrolls.domain.ord.menu.Menu;
 import com.healthyrolls.domain.ord.menu.MenuItem;
 import com.healthyrolls.technicalservices.persistence.ord.jpa.restaurant.SpringDataRestaurantRepository;
@@ -32,7 +33,7 @@ public class JpaMenuRepository implements IMenuRepository {
         Objects.requireNonNull(restaurantId, "Restaurant ID is required");
 
         if (!restaurants.existsById(restaurantId)) {
-            throw new IllegalArgumentException("Restaurant not found");
+            throw new RestaurantNotFoundException(restaurantId);
         }
 
         List<MenuItemEntity> entities = database.findByRestaurantRestaurantId(restaurantId);
