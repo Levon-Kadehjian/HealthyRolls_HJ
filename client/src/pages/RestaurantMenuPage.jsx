@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Link, useLoaderData } from 'react-router-dom'
+import { Link, useLoaderData, useNavigate } from 'react-router-dom'
+import { useSession } from '../auth/useSession'
 import { useCart } from '../cart/useCart'
 import './RestaurantMenuPage.css'
 
@@ -16,6 +17,8 @@ export default function RestaurantMenuPage() {
   const restaurant = useLoaderData()
   const { restaurant: cartRestaurant, lines, itemCount, addItem, replaceCart } = useCart()
   const [notice, setNotice] = useState(null)
+  const session = useSession()
+  const navigate = useNavigate()
 
   const isOpen = restaurant.status === 'OPEN'
   const cartIsHere = cartRestaurant?.id === restaurant.id
@@ -30,7 +33,9 @@ export default function RestaurantMenuPage() {
   }
 
   function handleAdd(item) {
-    if (addItem(cartSummary, item)) {
+    if (!session) {
+      navigate('/login')
+    } else if (addItem(cartSummary, item)) {
       showResult(true, item)
     } else if (cartRestaurant && !cartIsHere && lines.length > 0) {
       setNotice({ type: 'conflict', item })

@@ -10,3 +10,13 @@ export function applyOrderAction(orderId, action, reason = null) {
     body: { action, reason },
   })
 }
+
+export function placeOrder(restaurantId, lines) {
+  return apiRequest('/api/orders', {
+    method: 'POST',
+    body: {
+      restaurantId,
+      lines: lines.map(({ item, quantity }) => ({ menuItemId: item.itemId, quantity })),
+    },
+  })
+}

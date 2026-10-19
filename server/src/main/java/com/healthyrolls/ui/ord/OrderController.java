@@ -49,16 +49,16 @@ public class OrderController {
         return ResponseEntity.status(CREATED).body(OrderResponse.from(order));
     }
 
-    // @GetMapping
-    // public ResponseEntity<List<OrderResponse>> listOrders(
-    // @RequestAttribute(AuthenticatedUser.REQUEST_ATTRIBUTE) AuthenticatedUser user) {
+    @GetMapping
+    public ResponseEntity<List<OrderResponse>> listOrders(
+            @RequestAttribute(AuthenticatedUser.REQUEST_ATTRIBUTE) AuthenticatedUser user) {
 
-    // List<OrderResponse> orders = orderService.listOrders(user).stream()
-    // .map(OrderResponse::from)
-    // .toList();
+        List<OrderResponse> orders = orderService.listOrders(user).stream()
+                .map(OrderResponse::from)
+                .toList();
 
-    // return ResponseEntity.ok(orders);
-    // }
+        return ResponseEntity.ok(orders);
+    }
 
     @GetMapping("/{orderId}")
     public ResponseEntity<OrderResponse> getOrder(

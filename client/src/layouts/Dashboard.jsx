@@ -2,14 +2,17 @@ import { NavLink, Outlet, useLoaderData } from 'react-router-dom'
 import './Dashboard.css'
 
 const menuItems = [
-  { to: 'orders', label: 'Orders' },
+  { to: 'orders', label: 'Orders', hiddenFor: ['RESTAURANT_STAFF'] },
   { to: 'kitchen', label: 'Kitchen', roles: ['RESTAURANT_STAFF'] },
   { to: 'account', label: 'Account' },
 ]
 
 export default function Dashboard() {
   const { session } = useLoaderData()
-  const visibleItems = menuItems.filter((item) => !item.roles || item.roles.includes(session?.role))
+  const visibleItems = menuItems.filter(
+    (item) =>
+      (!item.roles || item.roles.includes(session?.role)) && !item.hiddenFor?.includes(session?.role),
+  )
 
   return (
     <div className="dashboard">
