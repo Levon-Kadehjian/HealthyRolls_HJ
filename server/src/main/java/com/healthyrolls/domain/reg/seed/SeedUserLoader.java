@@ -1,8 +1,5 @@
 package com.healthyrolls.domain.reg.seed;
 
-import com.healthyrolls.application.reg.UserService;
-import com.healthyrolls.domain.common.UserRole;
-
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -10,11 +7,20 @@ import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+
+import com.healthyrolls.application.reg.UserService;
+import com.healthyrolls.domain.common.UserRole;
+
 import tools.jackson.databind.ObjectMapper;
 
 @Component
 public class SeedUserLoader {
+
+    private static final Logger log = LoggerFactory.getLogger(SeedUserLoader.class);
 
     private final SeedUserProperties props;
     private final UserService userService;
@@ -26,12 +32,20 @@ public class SeedUserLoader {
 
     public void run(String[] args) {
         if (args.length != 2 || !"--seed".equals(args[0])) {
+            log.info("No '--seed <file>'' argument given, skipping user seeding");
             return;
         }
 
         load(args[1]);
         verifyEveryRolePresent();
-        props.getUsers().forEach(userService::loadSeeded);
+
+        long created = 0;
+        for (SeedUser seed : props.getUsers()) {
+            if (userService.loadSeeded(seed)) {
+                created++;
+            }
+        }
+        log.info("Seeded {} of {} users from {}", created, props.getUsers().size(), args[1]);
     }
 
     private void load(String path) {
