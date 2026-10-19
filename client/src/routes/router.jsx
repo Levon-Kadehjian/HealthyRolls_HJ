@@ -7,6 +7,7 @@ import AboutPage from '../pages/AboutPage'
 import OrdersPage from '../pages/OrdersPage'
 import AccountPage from '../pages/AccountPage'
 import CartPage from '../pages/CartPage'
+import CheckoutPage from '../pages/CheckoutPage'
 import RestaurantMenuPage from '../pages/RestaurantMenuPage'
 import RestaurantsPage from '../pages/RestaurantsPage'
 import RestaurantOrdersPage from '../pages/RestaurantOrdersPage'
@@ -16,6 +17,7 @@ import { getRestaurant, getRestaurants } from '../api/restaurants'
 import { applyOrderAction, listOrders } from '../api/orders'
 import { getSession } from '../auth/session'
 import { describeError, recordCommand, runCommand } from '../console/consoleStore'
+
 
 const ORDER_COMMANDS = {
   ACCEPT: 'ACCEPT_ORDER',
@@ -150,6 +152,11 @@ export const router = createBrowserRouter([
         path: 'cart',
         loader: loginRequiredLoader,
         element: <CartPage />,
+      },
+      {
+        path: 'checkout',
+        loader: loginRequiredLoader,
+        element: <CheckoutPage />,
       },
       {
         path: 'console',
