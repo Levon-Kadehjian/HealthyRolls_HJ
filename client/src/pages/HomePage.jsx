@@ -50,6 +50,8 @@ const highlights = [
   },
 ]
 
+const STATUS_LABELS = { OPEN: 'Open', PAUSED: 'Paused', CLOSED: 'Closed' }
+
 export default function HomePage() {
   const session = useSession()
 
@@ -103,15 +105,15 @@ export default function HomePage() {
             <article key={restaurant.id} className="landing-preview-card">
               <div className="landing-preview-banner">
                 <img
-                  src={sushiLogo}
+                  src={restaurant.imageUrl}
                   alt={restaurant.name}
                   loading="lazy"
                 />
                 <div className="landing-preview-overlay">
                   <span className="landing-preview-badge-location">{restaurant.neighborhood}</span>
                   <span className="landing-preview-badge-status">
-                    <span className="landing-status-dot" aria-hidden="true" />
-                    Open
+                    <span className={`landing-status-dot landing-status-dot-${restaurant.status.toLowerCase()}`} aria-hidden="true" />
+                    {STATUS_LABELS[restaurant.status] ?? restaurant.status}
                   </span>
                 </div>
               </div>
@@ -127,13 +129,19 @@ export default function HomePage() {
                 </div>
 
                 <div className="landing-preview-action">
-                  <Link
-                    to={session ? `/restaurants/${restaurant.id}` : '/login'}
-                    className="landing-preview-link"
-                  >
-                    <span>Order</span>
-                    <span aria-hidden="true">&rarr;</span>
-                  </Link>
+                  {restaurant.status === 'OPEN' ? (
+                    <Link
+                      to={session ? `/restaurants/${restaurant.id}` : '/login'}
+                      className="landing-preview-link"
+                    >
+                      <span>Order</span>
+                      <span aria-hidden="true">&rarr;</span>
+                    </Link>
+                  ) : (
+                    <span className="landing-preview-link landing-preview-link-disabled" aria-disabled="true">
+                      <span>{restaurant.status === 'PAUSED' ? 'Not taking orders' : 'Closed'}</span>
+                    </span>
+                  )}
                 </div>
               </div>
             </article>
