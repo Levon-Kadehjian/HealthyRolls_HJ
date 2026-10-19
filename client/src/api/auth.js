@@ -1,8 +1,20 @@
 import { saveSession } from '../auth/session'
 import { recordCommand } from '../console/consoleStore'
 
-export async function loginUser({ email, password, role = 'CUSTOMER' }) {
+async function fetchProfile(accessToken) {
+  try {
+    const response = await fetch('/api/users/me', {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    })
+    return response.ok ? await response.json() : null
+  } catch {
+    return null
+  }
+}
+
+export async function loginUser({ email, password, role = 'CUSTOMER', name }) {
   let authData = null
+  let profile = null
   let backendFailed = false
 
   try {
@@ -14,6 +26,7 @@ export async function loginUser({ email, password, role = 'CUSTOMER' }) {
 
     if (response.ok) {
       authData = await response.json()
+      profile = await fetchProfile(authData.accessToken)
     } else if (response.status === 401 || response.status === 400) {
       const errJson = await response.json().catch(() => ({}))
       const msg = errJson.detail || errJson.message || 'Invalid email or password.'
@@ -27,12 +40,14 @@ export async function loginUser({ email, password, role = 'CUSTOMER' }) {
   }
 
   const effectiveRole = authData?.role || role || 'CUSTOMER'
+  const resolvedName = profile?.name || name
   const session = {
     accessToken: authData?.accessToken || `mock-token-${Date.now()}`,
     expiresAt: authData?.expiresAt || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
     userId: authData?.userId?.value || authData?.userId || `user-${Date.now()}`,
     role: effectiveRole,
     email,
+    ...(resolvedName && { name: resolvedName }),
   }
 
   saveSession(session)
@@ -56,7 +71,7 @@ export async function registerUser({ name, email, password, role = 'CUSTOMER' })
 
     if (response.ok) {
       recordCommand('REGISTER', `role=${role} email=${email}`, 'ok', `Created user ${name}`)
-      return loginUser({ email, password, role })
+      return loginUser({ email, password, role, name })
     }
 
     if (response.status === 409) {
@@ -77,5 +92,5 @@ export async function registerUser({ name, email, password, role = 'CUSTOMER' })
     recordCommand('REGISTER', `role=${role} email=${email} (offline)`, 'ok', `Created local session for ${name}`)
   }
 
-  return loginUser({ email, password, role })
+  return loginUser({ email, password, role, name })
 }
