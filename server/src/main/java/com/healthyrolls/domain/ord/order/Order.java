@@ -33,7 +33,7 @@ public class Order {
 
         this.items = List.copyOf(items);
         this.id = OrderId.random();
-        this.state = new PlacedState();
+        this.state = PlacedState.INSTANCE;
     }
 
     Order(OrderRecord record, OrderStateFactory stateFactory) {

@@ -4,16 +4,21 @@ import com.healthyrolls.domain.ord.order.AbstractOrderState;
 import com.healthyrolls.domain.ord.order.Order;
 import com.healthyrolls.domain.ord.order.OrderStatus;
 
-public class AcceptedState extends AbstractOrderState {
+public final class AcceptedState extends AbstractOrderState {
+
+    public static final AcceptedState INSTANCE = new AcceptedState();
+
+    private AcceptedState() {
+    }
 
     @Override
     public void startPreparing(Order order) {
-        transitionTo(order, new PreparingState());
+        transitionTo(order, PreparingState.INSTANCE);
     }
 
     @Override
     public void cancel(Order order) {
-        transitionTo(order, new CancelledState());
+        transitionTo(order, CancelledState.INSTANCE);
     }
 
     @Override
