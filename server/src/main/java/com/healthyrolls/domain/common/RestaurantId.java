@@ -13,6 +13,10 @@ public record RestaurantId(UUID value) {
         return new RestaurantId(UUID.fromString(s));
     }
 
+    public static RestaurantId fromString(String s) {
+        return parse(s);
+    }
+
     public static RestaurantId random() {
         return new RestaurantId(UUID.randomUUID());
     }
