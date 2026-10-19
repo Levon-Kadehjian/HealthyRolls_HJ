@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import sushiLogo from '../assets/sushi-logo.png'
 import { useSession } from '../auth/useSession'
 import { loginUser, registerUser } from '../api/auth'
@@ -99,6 +99,10 @@ export default function AuthPage({ initialMode = 'login' }) {
   return (
     <div className="auth-page">
       <div className="auth-card">
+        <Link to="/" className="auth-back" aria-label="Back to home">
+          <span aria-hidden="true">&larr;</span>
+          Back
+        </Link>
         <header className="auth-header">
           <img src={sushiLogo} alt="HealthyRolls" className="auth-logo" />
           <h2>{mode === 'signup' ? 'Create an Account' : 'Welcome to HealthyRolls'}</h2>
