@@ -14,14 +14,14 @@ public class OrderStateFactory {
     public AbstractOrderState fromStatus(OrderStatus status) {
         AbstractOrderState state = switch (status) {
             case NONE -> throw new IllegalArgumentException("NONE is not a state an order can be switched to");
-            case PLACED -> new PlacedState();
-            case ACCEPTED -> new AcceptedState();
-            case PREPARING -> new PreparingState();
-            case READY -> new ReadyState();
-            case PICKED_UP -> new PickedUpState();
-            case DELIVERED -> new DeliveredState();
-            case CANCELLED -> new CancelledState();
-            case REJECTED -> new RejectedState();
+            case PLACED -> PlacedState.INSTANCE;
+            case ACCEPTED -> AcceptedState.INSTANCE;
+            case PREPARING -> PreparingState.INSTANCE;
+            case READY -> ReadyState.INSTANCE;
+            case PICKED_UP -> PickedUpState.INSTANCE;
+            case DELIVERED -> DeliveredState.INSTANCE;
+            case CANCELLED -> CancelledState.INSTANCE;
+            case REJECTED -> RejectedState.INSTANCE;
         };
         return state;
     }
