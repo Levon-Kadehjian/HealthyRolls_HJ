@@ -24,16 +24,18 @@ export default function Navbar() {
   return (
     <header className="site-header">
       <div className="site-nav">
-        <Link to="/" className="site-brand" aria-label="HealthyRolls home">
+        <Link to={isStaff ? '/dashboard/kitchen' : '/'} className="site-brand" aria-label="HealthyRolls home">
           <img src={sushiLogo} alt="" className="site-brand-logo" />
           <span className="site-brand-name">HealthyRolls</span>
         </Link>
 
         <nav className="nav-links" aria-label="Main">
-          <NavLink to="/" end className={linkClass}>
-            Home
-          </NavLink>
-          {session && (
+          {!isStaff && (
+            <NavLink to="/" end className={linkClass}>
+              Home
+            </NavLink>
+          )}
+          {session && !isStaff && (
             <NavLink to="/restaurants" className={linkClass}>
               Restaurants
             </NavLink>
@@ -52,26 +54,30 @@ export default function Navbar() {
           {session ? (
             <>
               {isStaff && <span className="nav-role-tag">Staff</span>}
-              <NavLink to="/orders" className={linkClass}>
-                Orders
-              </NavLink>
-              <NavLink to="/cart" className={({ isActive }) => `nav-icon-link ${isActive ? 'nav-link-active' : ''}`} aria-label={`Cart, ${itemCount} items`}>
-                <svg
-                  className="nav-icon"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.9"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <circle cx="9" cy="20" r="1.5" />
-                  <circle cx="18" cy="20" r="1.5" />
-                  <path d="M2 3h3l2.7 12.4a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 2-1.5L21 8H6" />
-                </svg>
-                {itemCount > 0 && <span className="nav-badge" aria-hidden="true">{itemCount}</span>}
-              </NavLink>
+              {!isStaff && (
+                <NavLink to="/orders" className={linkClass}>
+                  Orders
+                </NavLink>
+              )}
+              {!isStaff && (
+                <NavLink to="/cart" className={({ isActive }) => `nav-icon-link ${isActive ? 'nav-link-active' : ''}`} aria-label={`Cart, ${itemCount} items`}>
+                  <svg
+                    className="nav-icon"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.9"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <circle cx="9" cy="20" r="1.5" />
+                    <circle cx="18" cy="20" r="1.5" />
+                    <path d="M2 3h3l2.7 12.4a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 2-1.5L21 8H6" />
+                  </svg>
+                  {itemCount > 0 && <span className="nav-badge" aria-hidden="true">{itemCount}</span>}
+                </NavLink>
+              )}
               <NavLink to="/account" className={({ isActive }) => `nav-icon-link ${isActive ? 'nav-link-active' : ''}`} aria-label="My account">
                 <svg
                   className="nav-icon"
