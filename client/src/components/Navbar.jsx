@@ -82,7 +82,7 @@ export default function Navbar() {
         </nav>
 
         <div className="nav-actions">
-          {session ? (
+          {session && (
             <>
               {isStaff && <span className="nav-role-tag">Staff</span>}
               {!isStaff && (
@@ -166,10 +166,6 @@ export default function Navbar() {
                 )}
               </div>
             </>
-          ) : (
-            <Link to="/login" className="nav-button">
-              Log in
-            </Link>
           )}
         </div>
       </div>

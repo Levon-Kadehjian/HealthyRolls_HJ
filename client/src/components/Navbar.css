@@ -123,40 +123,6 @@
   margin-right: 4px;
 }
 
-.nav-button {
-  display: inline-flex;
-  align-items: center;
-  min-height: 40px;
-  margin-left: 8px;
-  padding: 0 18px;
-  border: 1px solid #c7edcd;
-  border-radius: 8px;
-  background-color: #c7edcd;
-  color: #232d2c;
-  font: inherit;
-  font-size: 15px;
-  font-weight: 600;
-  text-decoration: none;
-  cursor: pointer;
-  transition: background-color 0.2s ease, color 0.2s ease;
-}
-
-.nav-button:hover {
-  background-color: #ffffff;
-  border-color: #ffffff;
-}
-
-.nav-button-ghost {
-  background-color: transparent;
-  border-color: rgba(255, 255, 255, 0.2);
-  color: #ffffff;
-}
-
-.nav-button-ghost:hover {
-  background-color: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.35);
-}
-
 .nav-account {
   position: relative;
   margin-left: 8px;
@@ -267,7 +233,6 @@
 .site-brand:focus-visible,
 .nav-link:focus-visible,
 .nav-icon-link:focus-visible,
-.nav-button:focus-visible,
 .nav-avatar:focus-visible,
 .nav-menu-item:focus-visible {
   outline: 2px solid #c7edcd;
