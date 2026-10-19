@@ -9,5 +9,4 @@ public class CancelledState extends AbstractOrderState {
     public OrderStatus status() {
         return OrderStatus.CANCELLED;
     }
-
 }

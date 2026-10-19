@@ -4,27 +4,21 @@ import com.healthyrolls.domain.ord.order.AbstractOrderState;
 import com.healthyrolls.domain.ord.order.Order;
 import com.healthyrolls.domain.ord.order.OrderStatus;
 
-import java.util.Objects;
-
 public class PlacedState extends AbstractOrderState {
 
-    public PlacedState(Order order) {
-        this.order = Objects.requireNonNull(order);
+    @Override
+    public void accept(Order order) {
+        transitionTo(order, new AcceptedState());
     }
 
     @Override
-    public void accept() {
-        transitionTo(new AcceptedState());
+    public void reject(Order order) {
+        transitionTo(order, new RejectedState());
     }
 
     @Override
-    public void reject() {
-        transitionTo(new RejectedState());
-    }
-
-    @Override
-    public void cancel() {
-        transitionTo(new CancelledState());
+    public void cancel(Order order) {
+        transitionTo(order, new CancelledState());
     }
 
     @Override
