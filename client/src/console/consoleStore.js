@@ -1,14 +1,67 @@
-const MAX_ENTRIES = 200
+const MAX_ENTRIES = 1000
+const STORAGE_KEY = 'healthyrolls.console'
 
-let entries = []
-let nextId = 1
+function parseEntries(raw) {
+  try {
+    const stored = JSON.parse(raw)
+    if (!Array.isArray(stored)) {
+      return []
+    }
+    return stored.map((entry) => ({ ...entry, time: new Date(entry.time) }))
+  } catch {
+    return []
+  }
+}
+
+function readStoredEntries() {
+  try {
+    return localStorage.getItem(STORAGE_KEY)
+  } catch {
+    return null
+  }
+}
+
+function loadEntries() {
+  return parseEntries(readStoredEntries()).map((entry) =>
+    entry.status === 'pending' ? { ...entry, status: 'error', result: 'interrupted by page reload' } : entry,
+  )
+}
+
+function saveEntries() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(entries))
+  } catch {
+    return
+  }
+}
+
+function highestId(list) {
+  return list.reduce((max, entry) => Math.max(max, entry.id), 0)
+}
+
+let entries = loadEntries()
+let nextId = highestId(entries) + 1
 const listeners = new Set()
 const loggedErrors = new WeakSet()
 
-function setEntries(next) {
-  entries = next
+function notify() {
   listeners.forEach((listener) => listener())
 }
+
+function setEntries(next) {
+  entries = next
+  saveEntries()
+  notify()
+}
+
+window.addEventListener('storage', (event) => {
+  if (event.key !== STORAGE_KEY && event.key !== null) {
+    return
+  }
+  entries = parseEntries(event.newValue ?? readStoredEntries())
+  nextId = Math.max(nextId, highestId(entries) + 1)
+  notify()
+})
 
 export function subscribe(listener) {
   listeners.add(listener)

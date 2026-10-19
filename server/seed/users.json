@@ -1,0 +1,30 @@
+[
+  {
+    "email": "customer@healthyrolls.com",
+    "hashedPassword": "customer123",
+    "name": "Test Customer",
+    "role": "CUSTOMER",
+    "restaurantId": null
+  },
+  {
+    "email": "staff@kyo.bar",
+    "hashedPassword": "staff123",
+    "name": "Kyo Bar Staff",
+    "role": "RESTAURANT_STAFF",
+    "restaurantId": { "value": "cabd0420-8902-4826-a50e-0492f049622a" }
+  },
+  {
+    "email": "courier@healthyrolls.com",
+    "hashedPassword": "courier123",
+    "name": "Test Courier",
+    "role": "COURIER",
+    "restaurantId": null
+  },
+  {
+    "email": "operator@healthyrolls.com",
+    "hashedPassword": "operator123",
+    "name": "Test Operator",
+    "role": "OPERATOR",
+    "restaurantId": null
+  }
+]

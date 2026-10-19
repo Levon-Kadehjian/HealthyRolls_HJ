@@ -142,6 +142,19 @@ public class OrderService {
         return o;
     }
 
+    @Transactional(readOnly = true)
+    public List<Order> listOrders(AuthenticatedUser actor) {
+
+        Objects.requireNonNull(actor, "User context is required");
+        Objects.requireNonNull(actor.userId(), "User ID is required");
+
+        return switch (actor.role()) {
+            case CUSTOMER -> repository.findByCustomerId(actor.userId().value());
+            case RESTAURANT_STAFF -> repository.findByRestaurantId(actor.restaurantId().value());
+            default -> List.of();
+        };
+    }
+
     private void startNextOrderIfIdle(UUID restaurantId, AuthenticatedUser actor) {
         if (repository.hasPreparingOrder(restaurantId)) {
             return;

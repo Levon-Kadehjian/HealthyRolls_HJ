@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { CartContext } from './useCart'
 import { recordCommand } from '../console/consoleStore'
+import { useSession } from '../auth/useSession'
 
 const STORAGE_KEY = 'healthyrolls.cart'
 const MAX_QUANTITY = 99
@@ -21,6 +22,7 @@ function clampQuantity(quantity) {
 
 export default function CartProvider({ children }) {
   const [cart, setCart] = useState(loadCart)
+  const userId = useSession()?.userId
   const { restaurant, lines } = cart
   const itemName = (itemId) => lines.find((line) => line.item.itemId === itemId)?.item.name ?? String(itemId)
 
@@ -31,6 +33,12 @@ export default function CartProvider({ children }) {
       return
     }
   }, [cart])
+
+  useEffect(() => {
+    if (!userId) {
+      setCart(EMPTY_CART)
+    }
+  }, [userId])
 
   function addItem(target, item, quantity = 1) {
     const error =

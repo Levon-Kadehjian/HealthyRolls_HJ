@@ -25,6 +25,16 @@ const ORDER_COMMANDS = {
   MARK_READY: 'MARK_ORDER_READY',
 }
 
+const KITCHEN_PATH = '/dashboard/kitchen'
+
+const isStaffSession = (session) => session?.role === 'RESTAURANT_STAFF'
+
+const redirectStaffToKitchen = () => {
+  if (isStaffSession(getSession())) {
+    throw redirect(KITCHEN_PATH)
+  }
+}
+
 const requireLogin = () => {
   const session = getSession()
   if (!session) {
@@ -44,16 +54,27 @@ const loginRequiredLoader = () => {
   return null
 }
 
+const customerOnlyLoader = () => {
+  requireLogin()
+  redirectStaffToKitchen()
+  return null
+}
+
+const homeLoader = () => {
+  redirectStaffToKitchen()
+  return null
+}
+
 const dashboardLoader = () => ({ session: requireLogin() })
 
 const dashboardIndexLoader = () => {
   const session = getSession()
-  return redirect(session?.role === 'RESTAURANT_STAFF' ? 'kitchen' : 'orders')
+  return redirect(isStaffSession(session) ? 'kitchen' : 'orders')
 }
 
 const restaurantOrdersLoader = async () => {
   const session = requireLogin()
-  if (session?.role !== 'RESTAURANT_STAFF') {
+  if (!isStaffSession(session)) {
     recordCommand('OPEN_KITCHEN', `role=${session?.role ?? 'none'}`, 'error', 'restaurant staff only')
     throw redirect('/dashboard')
   }
@@ -90,8 +111,9 @@ const restaurantOrdersAction = async ({ request }) => {
   }
 }
 
-const restaurantsLoader = () =>
-  runCommand(
+const restaurantsLoader = () => {
+  redirectStaffToKitchen()
+  return runCommand(
     'BROWSE_RESTAURANTS',
     '',
     async () => {
@@ -100,9 +122,11 @@ const restaurantsLoader = () =>
     },
     (restaurants) => `${restaurants.length} restaurants`,
   )
+}
 
-const restaurantLoader = ({ params }) =>
-  runCommand(
+const restaurantLoader = ({ params }) => {
+  redirectStaffToKitchen()
+  return runCommand(
     'BROWSE_MENU',
     `restaurant=${params.restaurantId}`,
     async () => {
@@ -115,6 +139,7 @@ const restaurantLoader = ({ params }) =>
     },
     (restaurant) => `${restaurant.name} (${restaurant.status}), ${restaurant.menu.length} items`,
   )
+}
 
 export const router = createBrowserRouter([
   {
@@ -124,6 +149,7 @@ export const router = createBrowserRouter([
     children: [
       {
         index: true,
+        loader: homeLoader,
         element: <HomePage />,
       },
       {
@@ -140,7 +166,7 @@ export const router = createBrowserRouter([
       },
       {
         path: 'orders',
-        loader: loginRequiredLoader,
+        loader: customerOnlyLoader,
         element: <OrdersPage />,
       },
       {
@@ -150,12 +176,12 @@ export const router = createBrowserRouter([
       },
       {
         path: 'cart',
-        loader: loginRequiredLoader,
+        loader: customerOnlyLoader,
         element: <CartPage />,
       },
       {
         path: 'checkout',
-        loader: loginRequiredLoader,
+        loader: customerOnlyLoader,
         element: <CheckoutPage />,
       },
       {
@@ -183,6 +209,7 @@ export const router = createBrowserRouter([
           },
           {
             path: 'orders',
+            loader: customerOnlyLoader,
             element: <OrdersPage />,
           },
           {

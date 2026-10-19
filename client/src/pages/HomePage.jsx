@@ -52,7 +52,6 @@ const highlights = [
 
 export default function HomePage() {
   const session = useSession()
-  const isStaff = session?.role === 'RESTAURANT_STAFF'
 
   const previews = seedData.restaurants.slice(0, 3).map((restaurant) => {
     const info = RESTAURANT_INFO[restaurant.id] || {
@@ -76,20 +75,9 @@ export default function HomePage() {
         <p className="landing-subtitle">Fresh, healthy rolls from Montreal's best restaurants, delivered to you.</p>
         <div className="landing-actions">
           {session ? (
-            isStaff ? (
-              <>
-                <Link to="/dashboard/kitchen" className="btn-primary">
-                  Kitchen Dashboard
-                </Link>
-                <Link to="/restaurants" className="btn-secondary">
-                  Browse restaurants
-                </Link>
-              </>
-            ) : (
-              <Link to="/restaurants" className="btn-primary">
-                Browse restaurants
-              </Link>
-            )
+            <Link to="/restaurants" className="btn-primary">
+              Browse restaurants
+            </Link>
           ) : (
             <>
               <Link to="/login" className="btn-primary">
