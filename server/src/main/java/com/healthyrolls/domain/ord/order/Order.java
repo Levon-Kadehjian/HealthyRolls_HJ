@@ -1,11 +1,11 @@
 package com.healthyrolls.domain.ord.order;
 
-import com.healthyrolls.domain.ord.order.state.PlacedState;
-
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+
+import com.healthyrolls.domain.ord.order.state.PlacedState;
 
 public class Order {
 
@@ -33,7 +33,7 @@ public class Order {
 
         this.items = List.copyOf(items);
         this.id = OrderId.random();
-        this.state = new PlacedState(this);
+        this.state = new PlacedState();
     }
 
     Order(OrderRecord record, OrderStateFactory stateFactory) {
@@ -41,7 +41,7 @@ public class Order {
         this.id = new OrderId(Objects.requireNonNull(record.orderId()));
         this.courierId = record.courierId();
         this.acceptedAt = record.acceptedAt();
-        this.state = stateFactory.fromStatus(OrderStatus.valueOf(record.status()), this);
+        this.state = stateFactory.fromStatus(OrderStatus.valueOf(record.status()));
         this.rejectionReason = record.rejectionReason();
         this.version = record.version();
     }
@@ -90,7 +90,7 @@ public class Order {
         Objects.requireNonNull(action, "Order action is required");
 
         switch (action) {
-            case ACCEPT -> state.accept();
+            case ACCEPT -> state.accept(this);
 
             case REJECT -> {
                 if (reason == null || reason.isBlank()) {
@@ -98,15 +98,15 @@ public class Order {
                             "A rejection reason is required");
                 }
 
-                state.reject();
+                state.reject(this);
                 rejectionReason = reason.strip();
             }
 
-            case START_PREPARING -> state.startPreparing();
-            case MARK_READY -> state.markReady();
-            case PICK_UP -> state.markPickedUp();
-            case DELIVER -> state.markDelivered();
-            case CANCEL -> state.cancel();
+            case START_PREPARING -> state.startPreparing(this);
+            case MARK_READY -> state.markReady(this);
+            case PICK_UP -> state.markPickedUp(this);
+            case DELIVER -> state.markDelivered(this);
+            case CANCEL -> state.cancel(this);
             default -> throw new UnsupportedOperationException("Unsupported order action: " + action);
         }
     }
@@ -122,7 +122,6 @@ public class Order {
             acceptedAt = Instant.now();
         }
 
-        next.order = this;
         state = next;
     }
 }

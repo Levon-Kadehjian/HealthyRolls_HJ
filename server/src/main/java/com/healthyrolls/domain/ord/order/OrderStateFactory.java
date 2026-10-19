@@ -11,10 +11,10 @@ import com.healthyrolls.domain.ord.order.state.RejectedState;
 
 public class OrderStateFactory {
 
-    public AbstractOrderState fromStatus(OrderStatus status, Order order) {
+    public AbstractOrderState fromStatus(OrderStatus status) {
         AbstractOrderState state = switch (status) {
-            case NONE -> throw new IllegalArgumentException("NONE is not a state an order can be in");
-            case PLACED -> new PlacedState(order);
+            case NONE -> throw new IllegalArgumentException("NONE is not a state an order can be switched to");
+            case PLACED -> new PlacedState();
             case ACCEPTED -> new AcceptedState();
             case PREPARING -> new PreparingState();
             case READY -> new ReadyState();
@@ -23,7 +23,6 @@ public class OrderStateFactory {
             case CANCELLED -> new CancelledState();
             case REJECTED -> new RejectedState();
         };
-        state.order = order;
         return state;
     }
 }
