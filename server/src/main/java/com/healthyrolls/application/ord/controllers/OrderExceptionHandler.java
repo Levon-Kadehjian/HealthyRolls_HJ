@@ -1,4 +1,4 @@
-package com.healthyrolls.ui.ord;
+package com.healthyrolls.application.ord.controllers;
 
 import static org.springframework.http.HttpStatus.CONFLICT;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
@@ -16,7 +16,7 @@ import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-@RestControllerAdvice(basePackages = "com.healthyrolls.ui.ord")
+@RestControllerAdvice(basePackages = "com.healthyrolls.application.ord.controllers")
 public class OrderExceptionHandler {
 
     @ExceptionHandler(OrderNotFoundException.class)

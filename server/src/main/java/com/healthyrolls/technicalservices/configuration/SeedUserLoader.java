@@ -1,4 +1,4 @@
-package com.healthyrolls.domain.reg.seed;
+package com.healthyrolls.technicalservices.configuration;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 
 import com.healthyrolls.application.reg.UserService;
 import com.healthyrolls.domain.common.UserRole;
+import com.healthyrolls.domain.reg.seed.SeedUser;
 
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
