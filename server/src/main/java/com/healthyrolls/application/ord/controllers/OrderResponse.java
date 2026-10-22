@@ -1,4 +1,4 @@
-package com.healthyrolls.ui.ord;
+package com.healthyrolls.application.ord.controllers;
 
 import com.healthyrolls.domain.ord.order.Order;
 import com.healthyrolls.domain.ord.order.OrderStatus;

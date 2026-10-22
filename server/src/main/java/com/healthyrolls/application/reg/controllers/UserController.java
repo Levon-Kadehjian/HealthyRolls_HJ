@@ -1,4 +1,4 @@
-package com.healthyrolls.ui.reg;
+package com.healthyrolls.application.reg.controllers;
 
 import static org.springframework.http.HttpStatus.CREATED;
 

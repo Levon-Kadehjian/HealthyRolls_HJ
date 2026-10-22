@@ -1,4 +1,4 @@
-package com.healthyrolls.ui.reg;
+package com.healthyrolls.application.reg.controllers;
 
 import com.healthyrolls.domain.common.RestaurantId;
 import com.healthyrolls.domain.common.UserId;
