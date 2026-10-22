@@ -5,21 +5,25 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 
 import com.healthyrolls.application.reg.UserService;
 import com.healthyrolls.domain.common.UserRole;
 import com.healthyrolls.domain.reg.seed.SeedUser;
 
+import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
 
 @Component
-public class SeedUserLoader {
+public class SeedUserLoader implements ApplicationRunner {
 
     private static final Logger log = LoggerFactory.getLogger(SeedUserLoader.class);
 
@@ -31,13 +35,18 @@ public class SeedUserLoader {
         this.userService = userService;
     }
 
-    public void run(String[] args) {
-        if (args.length != 2 || !"--seed".equals(args[0])) {
-            log.info("No '--seed <file>'' argument given, skipping user seeding");
+    @Override
+    public void run(ApplicationArguments args) {
+        List<String> values = args.getOptionValues("seed");
+
+        if (values == null || values.isEmpty()) {
+            log.info("No '--seed=<file>' argument given, skipping user seeding");
             return;
         }
 
-        load(args[1]);
+        String path = values.getLast();
+
+        load(path);
         verifyEveryRolePresent();
 
         long created = 0;
@@ -46,7 +55,7 @@ public class SeedUserLoader {
                 created++;
             }
         }
-        log.info("Seeded {} of {} users from {}", created, props.getUsers().size(), args[1]);
+        log.info("Seeded {} of {} users from {}", created, props.getUsers().size(), path);
     }
 
     private void load(String path) {
@@ -60,7 +69,7 @@ public class SeedUserLoader {
             ObjectMapper objectMapper = new ObjectMapper();
             SeedUser[] users = objectMapper.readValue(seedFile.toFile(), SeedUser[].class);
             props.setUsers(new ArrayList<>(Arrays.asList(users)));
-        } catch (Exception exception) {
+        } catch (JacksonException exception) {
             throw new IllegalArgumentException("Could not deserialize seed file: " + seedFile, exception);
         }
     }

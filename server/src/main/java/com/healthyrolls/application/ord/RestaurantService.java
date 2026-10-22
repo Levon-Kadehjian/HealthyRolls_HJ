@@ -1,5 +1,14 @@
 package com.healthyrolls.application.ord;
 
+import java.time.Instant;
+import java.util.Objects;
+import java.util.UUID;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.healthyrolls.domain.common.AuthenticatedUser;
 import com.healthyrolls.domain.ord.exceptions.ActionNotPermittedException;
 import com.healthyrolls.domain.ord.restaurant.IRestaurantEventRepository;
@@ -9,14 +18,10 @@ import com.healthyrolls.domain.ord.restaurant.RestaurantAccessPolicy;
 import com.healthyrolls.domain.ord.restaurant.RestaurantStateChanged;
 import com.healthyrolls.domain.ord.restaurant.RestaurantStatus;
 
-import java.time.Instant;
-import java.util.Objects;
-import java.util.UUID;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 @Service
 public class RestaurantService {
+
+    private static final Logger log = LoggerFactory.getLogger(RestaurantService.class);
 
     private final IRestaurantRepository repository;
 
@@ -48,6 +53,7 @@ public class RestaurantService {
         Objects.requireNonNull(actor.userId(), "User ID is required");
 
         if (!accessPolicy.canManage(actor, restaurantId)) {
+            log.warn("User {} was denied pausing restaurant {}", actor.userId().value(), restaurantId);
             throw new ActionNotPermittedException("You are not allowed to pause this restaurant");
         }
 
@@ -74,6 +80,7 @@ public class RestaurantService {
         Objects.requireNonNull(actor.userId(), "User ID is required");
 
         if (!accessPolicy.canManage(actor, restaurantId)) {
+            log.warn("User {} was denied reopening restaurant {}", actor.userId().value(), restaurantId);
             throw new ActionNotPermittedException("You are not allowed to reopen this restaurant");
         }
 

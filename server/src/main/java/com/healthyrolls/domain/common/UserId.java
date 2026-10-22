@@ -13,6 +13,10 @@ public record UserId(UUID value) {
         return new UserId(UUID.fromString(s));
     }
 
+    public static UserId fromString(String s) {
+        return parse(s);
+    }
+
     public static UserId random() {
         return new UserId(UUID.randomUUID());
     }
