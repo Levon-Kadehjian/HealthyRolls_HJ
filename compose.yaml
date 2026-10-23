@@ -1,0 +1,19 @@
+services:
+  db:
+    image: postgres:18
+    environment:
+      POSTGRES_DB: healthyrolls
+      POSTGRES_USER: healthyrolls
+      POSTGRES_PASSWORD: healthyrolls
+    ports:
+      - "5433:5432"
+    volumes:
+      - healthyrolls-db:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U healthyrolls -d healthyrolls"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  healthyrolls-db:

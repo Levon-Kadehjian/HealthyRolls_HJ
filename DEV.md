@@ -29,3 +29,45 @@ chmod +x mvnw   # mark mvnw as executable
 ./mvnw spotless:apply
 ./mvnw spotless:check
 ```
+
+## Database
+
+Postgres is the default. Start it first:
+```sh
+docker compose up -d # from the repo root
+```
+
+Then run the server:
+```sh
+cd server
+./mvnw spring-boot:run
+```
+
+Port used: **5433**
+Connect a client with
+`postgresql://healthyrolls:healthyrolls@localhost:5433/healthyrolls`.
+
+Data lives in the `healthyrolls-db` volume and survives restarts. To wipe it:
+```sh
+docker compose down -v
+```
+
+### Seeding
+
+To seed, pass `--seed`:
+```sh
+./mvnw spring-boot:run "-Dspring-boot.run.arguments=--seed"
+```
+
+Restaurants seed and users seed is located in `server/src/main/resources/seed/` folder as `restaurants.json` and `seed/users.json` respectively. Restaurants are skipped when the table is non-empty. Users are matched on email, so re-running `--seed` is safe.
+
+### Running without Docker
+
+The `dev` profile uses an in-memory H2 database instead. It does not persist between restarts.
+```sh
+# mac/linux
+SPRING_PROFILES_ACTIVE=dev ./mvnw spring-boot:run
+
+# windows ps
+$env:SPRING_PROFILES_ACTIVE="dev"; ./mvnw spring-boot:run
+```
