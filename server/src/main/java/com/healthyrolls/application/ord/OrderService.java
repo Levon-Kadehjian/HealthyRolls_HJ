@@ -61,6 +61,7 @@ public class OrderService {
         this.policy = Objects.requireNonNull(policy, "Order access policy is required");
     }
 
+    @Transactional
     public OrderId placeOrder(
             UUID restaurantId,
             List<OrderLine> items,
@@ -161,6 +162,7 @@ public class OrderService {
         return switch (actor.role()) {
             case CUSTOMER -> repository.findByCustomerId(actor.userId().value());
             case RESTAURANT_STAFF -> repository.findByRestaurantId(actor.restaurantId().value());
+            case OPERATOR -> repository.findAll();
             default -> List.of();
         };
     }

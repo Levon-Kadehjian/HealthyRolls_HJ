@@ -106,7 +106,7 @@ public class RestaurantService {
         Objects.requireNonNull(actor, "Authenticated user is required");
         Objects.requireNonNull(actor.userId(), "User ID is required");
 
-        if (!accessPolicy.canManage(actor, restaurantId)) {
+        if (!accessPolicy.canReopen(actor)) {
             log.warn("User {} was denied reopening restaurant {}", actor.userId().value(), restaurantId);
             throw new ActionNotPermittedException("You are not allowed to reopen this restaurant");
         }

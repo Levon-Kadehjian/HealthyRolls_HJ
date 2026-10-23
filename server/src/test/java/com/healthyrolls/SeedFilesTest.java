@@ -46,4 +46,19 @@ class SeedFilesTest {
 
         assertTrue(missing.isEmpty(), "users.json is missing roles: " + missing);
     }
+
+    @Test
+    void seededStaffBelongsToAnExistingRestaurant() throws Exception {
+        SeedRestaurant[] restaurants = read("seed/restaurants.json", SeedRestaurant[].class);
+        SeedUser[] users = read("seed/users.json", SeedUser[].class);
+
+        for (SeedUser user : users) {
+            if (user.role() == UserRole.RESTAURANT_STAFF) {
+                assertTrue(user.restaurantId() != null, "staff needs a restaurant assignment");
+                assertTrue(Stream.of(restaurants)
+                        .anyMatch(restaurant -> restaurant.id().equals(user.restaurantId().value())),
+                        "staff assignment must reference a seeded restaurant");
+            }
+        }
+    }
 }
