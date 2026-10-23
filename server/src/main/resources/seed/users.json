@@ -1,27 +1,30 @@
 [
   {
-    "email": "customer@healthyrolls.test",
-    "hashedPassword": "demo-password",
-    "name": "Demo Customer",
-    "role": "CUSTOMER"
+    "email": "customer@healthyrolls.com",
+    "hashedPassword": "customer123",
+    "name": "Test Customer",
+    "role": "CUSTOMER",
+    "restaurantId": null
   },
   {
-    "email": "staff@healthyrolls.test",
-    "hashedPassword": "demo-password",
-    "name": "Demo Staff",
+    "email": "staff@kyo.bar",
+    "hashedPassword": "staff123",
+    "name": "Kyo Bar Staff",
     "role": "RESTAURANT_STAFF",
-    "restaurantId": "cabd0420-8902-4826-a50e-0492f049622a"
+    "restaurantId": { "value": "cabd0420-8902-4826-a50e-0492f049622a" }
   },
   {
-    "email": "courier@healthyrolls.test",
-    "hashedPassword": "demo-password",
-    "name": "Demo Courier",
-    "role": "COURIER"
+    "email": "courier@healthyrolls.com",
+    "hashedPassword": "courier123",
+    "name": "Test Courier",
+    "role": "COURIER",
+    "restaurantId": null
   },
   {
-    "email": "operator@healthyrolls.test",
-    "hashedPassword": "demo-password",
-    "name": "Demo Operator",
-    "role": "OPERATOR"
+    "email": "operator@healthyrolls.com",
+    "hashedPassword": "operator123",
+    "name": "Test Operator",
+    "role": "OPERATOR",
+    "restaurantId": null
   }
 ]

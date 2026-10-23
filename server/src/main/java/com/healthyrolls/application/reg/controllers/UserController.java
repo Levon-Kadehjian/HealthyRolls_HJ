@@ -28,7 +28,7 @@ public class UserController {
 
     @PostMapping("/register")
     public ResponseEntity<UserResponse> register(@Valid @RequestBody RegisterRequest req) {
-        UserId id = userService.register(req.email(), req.hashedPassword(), req.name(), req.role());
+        UserId id = userService.register(req.email(), req.hashedPassword(), req.name());
         return ResponseEntity.status(CREATED).body(UserResponse.from(userService.findById(id)));
     }
 
