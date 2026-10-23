@@ -62,6 +62,7 @@ public class SeedUserLoader implements ApplicationRunner {
         Path seedFile = Path.of(path);
 
         if (!Files.isRegularFile(seedFile)) {
+            log.error("Seed file does not exist: {}", seedFile);
             throw new IllegalArgumentException("Seed file does not exist: " + seedFile);
         }
 
@@ -70,6 +71,7 @@ public class SeedUserLoader implements ApplicationRunner {
             SeedUser[] users = objectMapper.readValue(seedFile.toFile(), SeedUser[].class);
             props.setUsers(new ArrayList<>(Arrays.asList(users)));
         } catch (JacksonException exception) {
+            log.error("Could not deserialize seed file: {}", seedFile, exception);
             throw new IllegalArgumentException("Could not deserialize seed file: " + seedFile, exception);
         }
     }
@@ -83,6 +85,7 @@ public class SeedUserLoader implements ApplicationRunner {
         missingRoles.removeAll(configuredRoles);
 
         if (!missingRoles.isEmpty()) {
+            log.warn("Missing seeded user roles: {}", missingRoles);
             throw new IllegalStateException("Missing seeded user roles: " + missingRoles);
         }
     }
