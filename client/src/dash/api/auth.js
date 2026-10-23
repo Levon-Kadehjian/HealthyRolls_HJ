@@ -41,6 +41,7 @@ export async function loginUser({ email, password, role = 'CUSTOMER', name }) {
 
   const effectiveRole = authData?.role || role || 'CUSTOMER'
   const resolvedName = profile?.name || name
+  const restaurantId = profile?.restaurantId?.value || profile?.restaurantId || null
   const session = {
     accessToken: authData?.accessToken || `mock-token-${Date.now()}`,
     expiresAt: authData?.expiresAt || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
@@ -48,6 +49,7 @@ export async function loginUser({ email, password, role = 'CUSTOMER', name }) {
     role: effectiveRole,
     email,
     ...(resolvedName && { name: resolvedName }),
+    ...(restaurantId && { restaurantId }),
   }
 
   saveSession(session)
@@ -61,17 +63,17 @@ export async function loginUser({ email, password, role = 'CUSTOMER', name }) {
   return { ok: true, session }
 }
 
-export async function registerUser({ name, email, password, role = 'CUSTOMER' }) {
+export async function registerUser({ name, email, password }) {
   try {
     const response = await fetch('/api/users/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email, hashedPassword: password, role }),
+      body: JSON.stringify({ name, email, hashedPassword: password }),
     })
 
     if (response.ok) {
-      recordCommand('REGISTER', `role=${role} email=${email}`, 'ok', `Created user ${name}`)
-      return loginUser({ email, password, role, name })
+      recordCommand('REGISTER', `role=CUSTOMER email=${email}`, 'ok', `Created user ${name}`)
+      return loginUser({ email, password, name })
     }
 
     if (response.status === 409) {
@@ -89,8 +91,8 @@ export async function registerUser({ name, email, password, role = 'CUSTOMER' })
     }
   } catch {
     // Backend offline: log registration and create local session
-    recordCommand('REGISTER', `role=${role} email=${email} (offline)`, 'ok', `Created local session for ${name}`)
+    recordCommand('REGISTER', `role=CUSTOMER email=${email} (offline)`, 'ok', `Created local session for ${name}`)
   }
 
-  return loginUser({ email, password, role, name })
+  return loginUser({ email, password, name })
 }

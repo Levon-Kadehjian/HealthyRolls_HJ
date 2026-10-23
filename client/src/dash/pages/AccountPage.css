@@ -5,6 +5,10 @@
   text-align: left;
 }
 
+.dashboard-content .account-page {
+  margin: 0;
+}
+
 .account-card {
   background: var(--social-bg);
   border: 1px solid var(--border);
@@ -112,9 +116,6 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-top: 24px;
-  padding-top: 20px;
-  border-top: 1px solid var(--border);
 }
 
 .account-actions-nav {
