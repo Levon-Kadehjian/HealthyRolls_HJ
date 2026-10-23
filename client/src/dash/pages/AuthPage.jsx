@@ -43,11 +43,11 @@ export default function AuthPage({ initialMode = 'login' }) {
     if (targetRole === 'CUSTOMER') {
       setEmail('customer@healthyrolls.com')
       setPassword('customer123')
-      setName('Alex Customer')
+      setName('Test Customer')
     } else if (targetRole === 'RESTAURANT_STAFF') {
       setEmail('staff@kyo.bar')
       setPassword('staff123')
-      setName('Chef Kenji')
+      setName('Kyo Bar Staff')
     }
   }
 
