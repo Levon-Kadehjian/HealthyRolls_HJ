@@ -1,11 +1,9 @@
 package com.healthyrolls.technicalservices.configuration;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -13,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
 import com.healthyrolls.application.reg.UserService;
@@ -26,6 +25,7 @@ import tools.jackson.databind.ObjectMapper;
 public class SeedUserLoader implements ApplicationRunner {
 
     private static final Logger log = LoggerFactory.getLogger(SeedUserLoader.class);
+    private static final String SEED_FILE = "seed/users.json";
 
     private final SeedUserProperties props;
     private final UserService userService;
@@ -37,16 +37,12 @@ public class SeedUserLoader implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) {
-        List<String> values = args.getOptionValues("seed");
-
-        if (values == null || values.isEmpty()) {
-            log.info("No '--seed=<file>' argument given, skipping user seeding");
+        if (!args.containsOption("seed")) {
+            log.info("No '--seed' argument given, skipping user seeding");
             return;
         }
 
-        String path = values.getLast();
-
-        load(path);
+        load();
         verifyEveryRolePresent();
 
         long created = 0;
@@ -55,24 +51,19 @@ public class SeedUserLoader implements ApplicationRunner {
                 created++;
             }
         }
-        log.info("Seeded {} of {} users from {}", created, props.getUsers().size(), path);
+        log.info("Seeded {} of {} users from {}", created, props.getUsers().size(), SEED_FILE);
     }
 
-    private void load(String path) {
-        Path seedFile = Path.of(path);
-
-        if (!Files.isRegularFile(seedFile)) {
-            log.error("Seed file does not exist: {}", seedFile);
-            throw new IllegalArgumentException("Seed file does not exist: " + seedFile);
-        }
-
-        try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            SeedUser[] users = objectMapper.readValue(seedFile.toFile(), SeedUser[].class);
+    private void load() {
+        try (InputStream input = new ClassPathResource(SEED_FILE).getInputStream()) {
+            SeedUser[] users = new ObjectMapper().readValue(input, SeedUser[].class);
             props.setUsers(new ArrayList<>(Arrays.asList(users)));
         } catch (JacksonException exception) {
-            log.error("Could not deserialize seed file: {}", seedFile, exception);
-            throw new IllegalArgumentException("Could not deserialize seed file: " + seedFile, exception);
+            log.error("Could not deserialize seed file: {}", SEED_FILE, exception);
+            throw new IllegalArgumentException("Could not deserialize seed file: " + SEED_FILE, exception);
+        } catch (Exception exception) {
+            log.error("Could not load user seed file: {}", SEED_FILE, exception);
+            throw new IllegalStateException("Could not load user seed file: " + SEED_FILE, exception);
         }
     }
 

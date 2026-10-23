@@ -6,9 +6,6 @@ import com.healthyrolls.technicalservices.persistence.ord.jpa.restaurant.Restaur
 import com.healthyrolls.technicalservices.persistence.ord.jpa.restaurant.SpringDataRestaurantRepository;
 
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,11 +37,17 @@ public class RestaurantSeedLoader implements ApplicationRunner {
     @Override
     @Transactional
     public void run(ApplicationArguments args) {
-        if (restaurants.count() > 0) {
+        if (!args.containsOption("seed")) {
+            log.info("No '--seed' argument given, skipping restaurant seeding");
             return;
         }
 
-        SeedRestaurant[] seeds = read(args);
+        if (restaurants.count() > 0) {
+            log.info("Restaurants already present, skipping restaurant seeding");
+            return;
+        }
+
+        SeedRestaurant[] seeds = read();
 
         for (SeedRestaurant seed : seeds) {
             RestaurantEntity restaurant = restaurants.save(new RestaurantEntity(
@@ -64,37 +67,18 @@ public class RestaurantSeedLoader implements ApplicationRunner {
             }
         }
 
-        log.info("Seeded {} restaurants", seeds.length);
+        log.info("Seeded {} restaurants from {}", seeds.length, SEED_FILE);
     }
 
-    private SeedRestaurant[] read(ApplicationArguments args) {
-        List<String> values = args.getOptionValues("seed");
-
-        if (values == null || values.isEmpty()) {
-            try (InputStream input = new ClassPathResource(SEED_FILE).getInputStream()) {
-                return new ObjectMapper().readValue(input, SeedRestaurant[].class);
-            } catch (JacksonException exception) {
-                log.error("Could not deserialize seed file: {}", SEED_FILE, exception);
-                throw new IllegalArgumentException("Could not deserialize seed file: " + SEED_FILE, exception);
-            } catch (Exception exception) {
-                log.error("Could not load restaurant seed file: {}", SEED_FILE, exception);
-                throw new IllegalStateException("Could not load restaurant seed file: " + SEED_FILE, exception);
-            }
-        }
-
-        Path seedFile = Path.of(values.getLast());
-
-        if (!Files.isRegularFile(seedFile)) {
-            log.error("Seed file does not exist: {}", seedFile);
-            throw new IllegalArgumentException("Seed file does not exist: " + seedFile);
-        }
-
-        try {
-            SeedRestaurant[] restaurants = new ObjectMapper().readValue(seedFile.toFile(), SeedRestaurant[].class);
-            return restaurants;
+    private SeedRestaurant[] read() {
+        try (InputStream input = new ClassPathResource(SEED_FILE).getInputStream()) {
+            return new ObjectMapper().readValue(input, SeedRestaurant[].class);
         } catch (JacksonException exception) {
-            log.error("Could not deserialize seed file: {}", seedFile, exception);
-            throw new IllegalArgumentException("Could not deserialize seed file: " + seedFile, exception);
+            log.error("Could not deserialize seed file: {}", SEED_FILE, exception);
+            throw new IllegalArgumentException("Could not deserialize seed file: " + SEED_FILE, exception);
+        } catch (Exception exception) {
+            log.error("Could not load restaurant seed file: {}", SEED_FILE, exception);
+            throw new IllegalStateException("Could not load restaurant seed file: " + SEED_FILE, exception);
         }
     }
 }
