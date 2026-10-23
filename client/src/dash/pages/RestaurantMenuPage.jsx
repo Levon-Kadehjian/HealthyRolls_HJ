@@ -1,5 +1,5 @@
 import sushiLogo from '../assets/sushi-logo.png'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useLoaderData, useNavigate } from 'react-router-dom'
 import { useSession } from '../auth/useSession'
 import { useCart } from '../cart/useCart'
@@ -24,6 +24,14 @@ export default function RestaurantMenuPage() {
   const isOpen = restaurant.status === 'OPEN'
   const cartIsHere = cartRestaurant?.id === restaurant.id
   const cartSummary = { id: restaurant.id, name: restaurant.name, status: restaurant.status }
+
+  useEffect(() => {
+    if (!notice || notice.type === 'conflict') {
+      return undefined
+    }
+    const timer = setTimeout(() => setNotice(null), 3500)
+    return () => clearTimeout(timer)
+  }, [notice])
 
   function showResult(added, item, prefix = '') {
     setNotice(
@@ -77,9 +85,9 @@ export default function RestaurantMenuPage() {
         </div>
       )}
 
-      <div className="restaurant-notice" aria-live="polite">
+      <div className="restaurant-toast-region" aria-live="polite">
         {notice?.type === 'conflict' ? (
-          <div className="restaurant-banner restaurant-banner-warning">
+          <div className="restaurant-toast restaurant-toast-warning">
             <span>
               Your cart has items from <strong>{cartRestaurant.name}</strong>. An order can only
               come from one restaurant.
@@ -98,7 +106,26 @@ export default function RestaurantMenuPage() {
             </div>
           </div>
         ) : (
-          notice && <div className={`restaurant-banner restaurant-banner-${notice.type}`}>{notice.message}</div>
+          notice && (
+            <div className={`restaurant-toast restaurant-toast-${notice.type}`}>
+              <span>{notice.message}</span>
+              <div className="restaurant-banner-actions">
+                {notice.type === 'success' && (
+                  <Link to="/cart" className="restaurant-toast-link">
+                    View Cart
+                  </Link>
+                )}
+                <button
+                  type="button"
+                  className="restaurant-toast-close"
+                  aria-label="Dismiss"
+                  onClick={() => setNotice(null)}
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+          )
         )}
       </div>
 

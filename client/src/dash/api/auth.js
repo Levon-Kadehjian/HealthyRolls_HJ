@@ -41,6 +41,7 @@ export async function loginUser({ email, password, role = 'CUSTOMER', name }) {
 
   const effectiveRole = authData?.role || role || 'CUSTOMER'
   const resolvedName = profile?.name || name
+  const restaurantId = profile?.restaurantId?.value || profile?.restaurantId || null
   const session = {
     accessToken: authData?.accessToken || `mock-token-${Date.now()}`,
     expiresAt: authData?.expiresAt || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
@@ -48,6 +49,7 @@ export async function loginUser({ email, password, role = 'CUSTOMER', name }) {
     role: effectiveRole,
     email,
     ...(resolvedName && { name: resolvedName }),
+    ...(restaurantId && { restaurantId }),
   }
 
   saveSession(session)

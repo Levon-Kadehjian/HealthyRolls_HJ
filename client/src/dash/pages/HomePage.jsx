@@ -108,8 +108,9 @@ export default function HomePage() {
         {canBrowse && error && <p role="alert">{error}</p>}
         {canBrowse && !loading && !error && previews.length === 0 && <p>No restaurants have been loaded yet.</p>}
 
+        {canBrowse && previews.length > 0 && (
         <div className="landing-preview-grid">
-          {(canBrowse ? previews : []).map((restaurant) => (
+          {previews.map((restaurant) => (
             <article key={restaurant.id} className="landing-preview-card">
               <div className="landing-preview-banner">
                 <img
@@ -146,6 +147,7 @@ export default function HomePage() {
             </article>
           ))}
         </div>
+        )}
       </section>
 
       <section className="landing-highlights" aria-label="Why HealthyRolls">
