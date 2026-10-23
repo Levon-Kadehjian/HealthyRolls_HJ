@@ -56,6 +56,10 @@ public class Restaurant {
     }
 
     public void pause() {
+        if (status != RestaurantStatus.OPEN) {
+            throw new IllegalStateException("Only open restaurants can be paused");
+        }
+
         status = RestaurantStatus.PAUSED;
     }
 

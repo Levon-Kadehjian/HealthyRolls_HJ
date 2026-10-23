@@ -1,4 +1,4 @@
-package com.healthyrolls.technicalservices;
+package com.healthyrolls.technicalservices.configuration;
 
 import com.healthyrolls.domain.ord.order.OrderAccessPolicy;
 import com.healthyrolls.domain.ord.order.OrderFactory;

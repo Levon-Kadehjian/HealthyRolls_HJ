@@ -1,4 +1,4 @@
-package com.healthyrolls.ui.reg;
+package com.healthyrolls.application.reg.controllers;
 
 import java.util.stream.Collectors;
 
@@ -14,7 +14,7 @@ import com.healthyrolls.domain.reg.EmailAlreadyUsedException;
 import com.healthyrolls.domain.reg.InvalidCredentialsException;
 import com.healthyrolls.domain.reg.UserNotFoundException;
 
-@RestControllerAdvice(basePackages = "com.healthyrolls.ui.reg")
+@RestControllerAdvice(basePackages = "com.healthyrolls.application.reg.controllers")
 public class UserExceptionHandler {
 
     @ExceptionHandler(EmailAlreadyUsedException.class)

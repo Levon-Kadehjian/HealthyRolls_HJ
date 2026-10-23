@@ -1,4 +1,4 @@
-package com.healthyrolls.ui.ord;
+package com.healthyrolls.application.ord.controllers;
 
 import com.healthyrolls.application.ord.EventService;
 import com.healthyrolls.domain.common.AuthenticatedUser;

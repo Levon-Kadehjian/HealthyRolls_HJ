@@ -1,4 +1,6 @@
-package com.healthyrolls.domain.reg.seed;
+package com.healthyrolls.technicalservices.configuration;
+
+import com.healthyrolls.domain.reg.seed.SeedUser;
 
 import java.util.ArrayList;
 import java.util.List;

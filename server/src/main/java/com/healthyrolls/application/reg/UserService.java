@@ -1,5 +1,9 @@
 package com.healthyrolls.application.reg;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+
 import com.healthyrolls.domain.common.RestaurantId;
 import com.healthyrolls.domain.common.UserId;
 import com.healthyrolls.domain.common.UserRole;
@@ -14,10 +18,10 @@ import com.healthyrolls.domain.reg.UserFactory;
 import com.healthyrolls.domain.reg.UserNotFoundException;
 import com.healthyrolls.domain.reg.seed.SeedUser;
 
-import org.springframework.stereotype.Service;
-
 @Service
 public class UserService {
+
+    private static final Logger log = LoggerFactory.getLogger(UserService.class);
 
     private final IUserRepository userRepository;
     private final UserFactory userFactory;
@@ -50,14 +54,20 @@ public class UserService {
                 effectiveRole,
                 null);
 
-        return userRepository.save(user).id();
+        UserId id = userRepository.save(user).id();
+        log.info("Registered user {} with role {}", id.value(), effectiveRole);
+        return id;
     }
 
     public LoginResult login(String email, String hashedPassword) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(InvalidCredentialsException::new);
+                .orElseThrow(() -> {
+                    log.warn("Login failed, no account for {}", email);
+                    return new InvalidCredentialsException();
+                });
 
         if (!user.passwordMatches(hashedPassword, passwordHasher)) {
+            log.warn("Login failed, wrong password for user {}", user.id().value());
             throw new InvalidCredentialsException();
         }
 
