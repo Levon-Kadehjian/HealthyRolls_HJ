@@ -22,7 +22,7 @@ public class OrderAccessPolicy {
         return switch (user.role()) {
             case CUSTOMER -> action == OrderAction.CANCEL && order.status() == OrderStatus.PLACED;
             case RESTAURANT_STAFF -> switch (action) {
-                case ACCEPT, REJECT, START_PREPARING, MARK_READY -> true;
+                case ACCEPT, REJECT, MARK_READY -> true;
                 default -> false;
             };
             case OPERATOR -> action == OrderAction.CANCEL;

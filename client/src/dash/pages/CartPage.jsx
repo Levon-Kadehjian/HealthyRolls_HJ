@@ -1,3 +1,4 @@
+import sushiLogo from '../assets/sushi-logo.png'
 import { Link } from 'react-router-dom'
 import { useCart } from '../cart/useCart'
 import './CartPage.css'
@@ -39,7 +40,7 @@ export default function CartPage() {
               return (
                 <li key={item.itemId} className={`cart-line ${soldOut ? 'cart-line-sold-out' : ''}`}>
                   <div className="cart-line-image">
-                    {item.imageUrl && <img src={item.imageUrl} alt={item.name} loading="lazy" />}
+                    <img src={sushiLogo} alt="" loading="lazy" />
                   </div>
                   <div className="cart-line-info">
                     <h3>{item.name}</h3>

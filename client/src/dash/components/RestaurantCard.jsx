@@ -1,3 +1,4 @@
+import sushiLogo from '../assets/sushi-logo.png'
 import { Link } from 'react-router-dom'
 import './RestaurantCard.css'
 
@@ -16,8 +17,8 @@ export default function RestaurantCard({ restaurant }) {
     >
       <div className="restaurant-card-image">
         <img
-          src={restaurant.imageUrl}
-          alt={restaurant.name}
+          src={sushiLogo}
+          alt=""
           loading="lazy"
         />
         {statusLabel && <span className="restaurant-card-badge">{statusLabel}</span>}

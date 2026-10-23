@@ -1,3 +1,4 @@
+import sushiLogo from '../assets/sushi-logo.png'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useCart } from '../cart/useCart'
@@ -259,7 +260,7 @@ export default function CheckoutPage() {
                             {lines.map(({ item, quantity }) => (
                                 <li key={item.itemId} className="checkout-line">
                                     <div className="checkout-line-image">
-                                        {item.imageUrl && <img src={item.imageUrl} alt={item.name} loading="lazy" />}
+                                        <img src={sushiLogo} alt="" loading="lazy" />
                                     </div>
                                     <div className="checkout-line-info">
                                         <h3>{item.name}</h3>

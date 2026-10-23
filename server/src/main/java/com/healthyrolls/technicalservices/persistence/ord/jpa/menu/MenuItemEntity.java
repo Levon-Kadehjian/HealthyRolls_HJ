@@ -29,7 +29,7 @@ public class MenuItemEntity {
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false, columnDefinition = "numeric")
+    @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal price;
 
     @Enumerated(EnumType.STRING)

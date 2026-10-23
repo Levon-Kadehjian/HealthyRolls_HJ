@@ -26,7 +26,7 @@ healthyrolls:
         - { path-pattern: /api/restaurants/*/reopen, method: POST, allowed-rules: [RESTAURANT_STAFF, OPERATOR] }
 
         - { path-pattern: /api/orders/preparation/next, method: POST, allowed-rules: [RESTAURANT_STAFF] }
-        - { path-pattern: /api/orders/*/actions, method: POST, allowed-rules: [CUSTOMER, RESTAURANT_STAFF, COURIER] }
+        - { path-pattern: /api/orders/*/actions, method: POST, allowed-rules: [CUSTOMER, RESTAURANT_STAFF, COURIER, OPERATOR] }
         - { path-pattern: /api/orders, method: POST, allowed-rules: [CUSTOMER] }
         - { path-pattern: /api/orders/**, method: GET, allowed-rules: [CUSTOMER, RESTAURANT_STAFF, OPERATOR] }
 

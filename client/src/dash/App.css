@@ -213,13 +213,6 @@
   color: var(--accent);
 }
 
-.menu-desc {
-  font-size: 14px;
-  color: var(--text);
-  line-height: 1.4;
-  margin-bottom: 20px;
-}
-
 .menu-card-footer {
   display: flex;
   justify-content: space-between;

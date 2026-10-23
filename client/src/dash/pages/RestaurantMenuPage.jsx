@@ -1,3 +1,4 @@
+import sushiLogo from '../assets/sushi-logo.png'
 import { useState } from 'react'
 import { Link, useLoaderData, useNavigate } from 'react-router-dom'
 import { useSession } from '../auth/useSession'
@@ -117,7 +118,7 @@ export default function RestaurantMenuPage() {
               <article key={item.itemId} className={`menu-card ${unavailable ? 'menu-card-unavailable' : ''}`}>
                 <div>
                   <div className="menu-card-image">
-                    <img src={item.imageUrl} alt={item.name} loading="lazy" />
+                    <img src={sushiLogo} alt="" loading="lazy" />
                   </div>
                   <div className="menu-card-top">
                     <h3>{item.name}</h3>
@@ -127,7 +128,6 @@ export default function RestaurantMenuPage() {
                       inCart > 0 && <span className="menu-tag">{inCart} in cart</span>
                     )}
                   </div>
-                  <p className="menu-desc">{item.description}</p>
                 </div>
 
                 <div className="menu-card-footer">
