@@ -48,9 +48,9 @@ public class UserEntity {
     public UserEntity(UUID userId, String email, String storedHash, String name, UserRole role,
             UUID restaurantId, Instant createdAt) {
         this(userId, email, storedHash, name, role, restaurantId, null, null, createdAt);
-        }
+    }
 
-        public UserEntity(UUID userId, String email, String storedHash, String name, UserRole role,
+    public UserEntity(UUID userId, String email, String storedHash, String name, UserRole role,
             UUID restaurantId, Double latitude, Double longitude, Instant createdAt) {
         this.userId = userId;
         this.email = email;
