@@ -1,6 +1,8 @@
 package com.healthyrolls.application.ord;
 
 import com.healthyrolls.domain.ord.menu.IMenuRepository;
+import com.healthyrolls.domain.common.AuthenticatedUser;
+import org.springframework.transaction.annotation.Transactional;
 import com.healthyrolls.domain.ord.menu.Menu;
 import com.healthyrolls.domain.ord.menu.MenuItem;
 import com.healthyrolls.domain.ord.order.OrderLine;
@@ -15,9 +17,17 @@ import org.springframework.stereotype.Service;
 public class MenuService {
 
     private final IMenuRepository repository;
+    private final RestaurantService restaurantService;
 
-    public MenuService(IMenuRepository repository) {
+    public MenuService(IMenuRepository repository, RestaurantService restaurantService) {
         this.repository = Objects.requireNonNull(repository, "Menu repository is required");
+        this.restaurantService = Objects.requireNonNull(restaurantService, "Restaurant service is required");
+    }
+
+    @Transactional(readOnly = true)
+    public Menu browseMenu(UUID restaurantId, AuthenticatedUser actor) {
+        restaurantService.getForBrowsing(restaurantId, actor);
+        return repository.findByRestaurantId(restaurantId);
     }
 
     public List<OrderLine> validateAndResolveItems(UUID restaurantId, List<OrderLine> items) {

@@ -124,7 +124,6 @@ export default function RestaurantMenuPage() {
                       inCart > 0 && <span className="menu-tag">{inCart} in cart</span>
                     )}
                   </div>
-                  <p className="menu-desc">{item.description}</p>
                 </div>
 
                 <div className="menu-card-footer">

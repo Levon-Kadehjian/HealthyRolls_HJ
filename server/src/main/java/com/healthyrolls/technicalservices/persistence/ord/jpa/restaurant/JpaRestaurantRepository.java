@@ -5,6 +5,8 @@ import com.healthyrolls.domain.ord.exceptions.RestaurantNotFoundException;
 import com.healthyrolls.domain.ord.restaurant.Restaurant;
 
 import java.util.UUID;
+import java.util.List;
+import java.util.ArrayList;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -15,6 +17,16 @@ public class JpaRestaurantRepository implements IRestaurantRepository {
     public JpaRestaurantRepository(
             SpringDataRestaurantRepository database) {
         this.database = database;
+    }
+
+    @Override
+    public List<Restaurant> findAll() {
+        List<Restaurant> result = new ArrayList<>();
+        for (RestaurantEntity entity : database.findAll()) {
+            result.add(new Restaurant(entity.getRestaurantId(), entity.getName(), entity.getStatus(),
+                    entity.getLatitude(), entity.getLongitude()));
+        }
+        return result;
     }
 
     @Override
