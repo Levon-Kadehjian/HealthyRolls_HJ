@@ -1,20 +1,20 @@
 package com.healthyrolls.technicalservices.persistence.ord.jpa.seed;
 
-import com.healthyrolls.domain.ord.menu.MenuItemStatus;
-import com.healthyrolls.domain.ord.restaurant.RestaurantStatus;
 import com.healthyrolls.technicalservices.persistence.ord.jpa.menu.MenuItemEntity;
 import com.healthyrolls.technicalservices.persistence.ord.jpa.menu.SpringDataMenuItemRepository;
 import com.healthyrolls.technicalservices.persistence.ord.jpa.restaurant.RestaurantEntity;
 import com.healthyrolls.technicalservices.persistence.ord.jpa.restaurant.SpringDataRestaurantRepository;
 
 import java.io.InputStream;
-import java.util.UUID;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import tools.jackson.databind.JsonNode;
+import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
 
 @Component
@@ -40,30 +40,49 @@ public class RestaurantSeedLoader implements ApplicationRunner {
             return;
         }
 
-        for (JsonNode node : read().get("restaurants")) {
+        for (SeedRestaurant seed : read(args)) {
             RestaurantEntity restaurant = restaurants.save(new RestaurantEntity(
-                    UUID.fromString(node.get("id").asString()),
-                    node.get("name").asString(),
-                    RestaurantStatus.valueOf(node.get("status").asString()),
-                    node.get("latitude").asDouble(),
-                    node.get("longitude").asDouble()));
+                    seed.id(),
+                    seed.name(),
+                    seed.status(),
+                    seed.latitude(),
+                    seed.longitude()));
 
-            for (JsonNode item : node.get("menu")) {
+            for (SeedMenuItem item : seed.menu()) {
                 menuItems.save(new MenuItemEntity(
-                        UUID.fromString(item.get("itemId").asString()),
+                        item.itemId(),
                         restaurant,
-                        item.get("name").asString(),
-                        item.get("price").decimalValue(),
-                        MenuItemStatus.valueOf(item.get("status").asString())));
+                        item.name(),
+                        item.price(),
+                        item.status()));
             }
         }
     }
 
-    private JsonNode read() {
-        try (InputStream input = new ClassPathResource(SEED_FILE).getInputStream()) {
-            return new ObjectMapper().readTree(input);
-        } catch (Exception exception) {
-            throw new IllegalStateException("Could not load restaurant seed file: " + SEED_FILE, exception);
+    private SeedRestaurant[] read(ApplicationArguments args) {
+        List<String> values = args.getOptionValues("seed");
+
+        if (values == null || values.isEmpty()) {
+            try (InputStream input = new ClassPathResource(SEED_FILE).getInputStream()) {
+                return new ObjectMapper().readValue(input, SeedRestaurant[].class);
+            } catch (JacksonException exception) {
+                throw new IllegalArgumentException("Could not deserialize seed file: " + SEED_FILE, exception);
+            } catch (Exception exception) {
+                throw new IllegalStateException("Could not load restaurant seed file: " + SEED_FILE, exception);
+            }
+        }
+
+        Path seedFile = Path.of(values.getLast());
+
+        if (!Files.isRegularFile(seedFile)) {
+            throw new IllegalArgumentException("Seed file does not exist: " + seedFile);
+        }
+
+        try {
+            SeedRestaurant[] restaurants = new ObjectMapper().readValue(seedFile.toFile(), SeedRestaurant[].class);
+            return restaurants;
+        } catch (JacksonException exception) {
+            throw new IllegalArgumentException("Could not deserialize seed file: " + seedFile, exception);
         }
     }
 }
