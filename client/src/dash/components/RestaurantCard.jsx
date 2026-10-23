@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom'
-import sushiLogo from '../assets/sushi-logo.png'
 import './RestaurantCard.css'
 
 const STATUS_LABELS = {
@@ -15,10 +14,10 @@ export default function RestaurantCard({ restaurant }) {
       to={`/restaurants/${restaurant.id}`}
       className={`restaurant-card ${statusLabel ? 'restaurant-card-unavailable' : ''}`}
     >
-      <div className={`restaurant-card-image ${restaurant.imageUrl ? '' : 'restaurant-card-image-fallback'}`}>
+      <div className="restaurant-card-image">
         <img
-          src={restaurant.imageUrl || sushiLogo}
-          alt={restaurant.imageUrl ? restaurant.name : ''}
+          src={restaurant.imageUrl}
+          alt={restaurant.name}
           loading="lazy"
         />
         {statusLabel && <span className="restaurant-card-badge">{statusLabel}</span>}

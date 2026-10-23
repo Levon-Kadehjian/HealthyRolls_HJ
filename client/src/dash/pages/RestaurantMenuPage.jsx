@@ -116,6 +116,9 @@ export default function RestaurantMenuPage() {
             return (
               <article key={item.itemId} className={`menu-card ${unavailable ? 'menu-card-unavailable' : ''}`}>
                 <div>
+                  <div className="menu-card-image">
+                    <img src={item.imageUrl} alt={item.name} loading="lazy" />
+                  </div>
                   <div className="menu-card-top">
                     <h3>{item.name}</h3>
                     {soldOut ? (

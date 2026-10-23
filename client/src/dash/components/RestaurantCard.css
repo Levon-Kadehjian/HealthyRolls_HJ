@@ -41,19 +41,6 @@
   display: block;
 }
 
-.restaurant-card-image-fallback {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #232d2c;
-}
-
-.restaurant-card-image-fallback img {
-  width: 55%;
-  height: 55%;
-  object-fit: contain;
-}
-
 .restaurant-card-badge {
   position: absolute;
   top: 10px;

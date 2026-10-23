@@ -85,6 +85,21 @@
   flex-wrap: wrap;
 }
 
+.menu-card-image {
+  margin: -20px -20px 14px;
+  height: 120px;
+  border-radius: 12px 12px 0 0;
+  overflow: hidden;
+  background: var(--code-bg);
+}
+
+.menu-card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
 .menu-card-unavailable {
   opacity: 0.6;
 }
