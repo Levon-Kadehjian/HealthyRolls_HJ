@@ -10,7 +10,9 @@ public record UserResponse(
         String email,
         String name,
         UserRole role,
-        RestaurantId restaurantId) {
+        RestaurantId restaurantId,
+        Double latitude,
+        Double longitude) {
 
     public static UserResponse from(User user) {
         return new UserResponse(
@@ -18,6 +20,8 @@ public record UserResponse(
                 user.email(),
                 user.name(),
                 user.role(),
-                user.restaurantId().orElse(null));
+                user.restaurantId().orElse(null),
+                user.latitude(),
+                user.longitude());
     }
 }
