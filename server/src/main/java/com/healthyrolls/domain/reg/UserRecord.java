@@ -12,4 +12,6 @@ public record UserRecord(
         String name,
         UserRole role,
         UUID restaurantId,
+        Double latitude,
+        Double longitude,
         Instant createdAt) {}

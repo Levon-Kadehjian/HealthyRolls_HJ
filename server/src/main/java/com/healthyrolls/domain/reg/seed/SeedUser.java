@@ -8,4 +8,6 @@ public record SeedUser(
         String hashedPassword,
         String name,
         UserRole role,
-        RestaurantId restaurantId) {}
+        RestaurantId restaurantId,
+        Double latitude,
+        Double longitude) {}

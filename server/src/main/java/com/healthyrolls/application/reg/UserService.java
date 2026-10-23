@@ -74,7 +74,7 @@ public class UserService {
     }
 
     public boolean loadSeeded(String email, String hashedPassword, String name, UserRole role,
-            RestaurantId restaurantId) {
+            RestaurantId restaurantId, Double latitude, Double longitude) {
         if (userRepository.existsByEmail(email)) {
             return false;
         }
@@ -84,7 +84,9 @@ public class UserService {
                 passwordHasher.hash(hashedPassword),
                 name,
                 role,
-                restaurantId);
+                restaurantId,
+                latitude,
+                longitude);
 
         userRepository.save(user);
         return true;
@@ -96,6 +98,8 @@ public class UserService {
                 seed.hashedPassword(),
                 seed.name(),
                 seed.role(),
-                seed.restaurantId());
+                seed.restaurantId(),
+                seed.latitude(),
+                seed.longitude());
     }
 }
