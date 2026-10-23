@@ -5,9 +5,9 @@ import java.util.UUID;
 import com.healthyrolls.domain.ord.restaurant.RestaurantStatus;
 
 public record SeedRestaurant(
-                UUID id,
-                String name,
-                RestaurantStatus status,
-                double latitude,
-                double longitude,
-                List<SeedMenuItem> menu) {}
+        UUID id,
+        String name,
+        RestaurantStatus status,
+        double latitude,
+        double longitude,
+        List<SeedMenuItem> menu) {}
