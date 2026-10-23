@@ -14,9 +14,10 @@ import RestaurantOrdersPage from '../pages/RestaurantOrdersPage'
 import ConsolePage from '../pages/ConsolePage'
 import AuthPage from '../pages/AuthPage'
 import { getRestaurant, getRestaurants } from '../api/restaurants'
-import { applyOrderAction, listOrders } from '../api/orders'
+import { applyOrderAction, listOrderEvents, listOrders } from '../api/orders'
 import { getSession } from '../auth/session'
 import { describeError, recordCommand, runCommand } from '../console/consoleStore'
+import { buildOrderHistory, CUSTOMER_CANCELLABLE_STATUSES } from '../orders/orderHistory'
 
 
 const ORDER_COMMANDS = {
@@ -72,6 +73,58 @@ const dashboardIndexLoader = () => {
   return redirect(isStaffSession(session) ? 'kitchen' : 'orders')
 }
 
+const loadRestaurantCatalog = async (restaurantIds) => {
+  const ids = [...new Set(restaurantIds)].filter(Boolean)
+  const restaurants = await Promise.all(ids.map((id) => getRestaurant(id).catch(() => null)))
+  return restaurants.filter(Boolean)
+}
+
+const loadOrderHistory = async (knownRestaurantIds = []) => {
+  const [orders, events] = await Promise.all([listOrders(), listOrderEvents().catch(() => [])])
+  const restaurants = await loadRestaurantCatalog([...knownRestaurantIds, ...orders.map((order) => order.restaurantId)])
+  return { orders: buildOrderHistory(orders, events, restaurants), restaurants }
+}
+
+const customerOrdersLoader = async () => {
+  const session = requireLogin()
+  redirectStaffToKitchen()
+  try {
+    const { orders } = await runCommand(
+      'LIST_ORDERS',
+      `role=${session.role}`,
+      () => loadOrderHistory(),
+      (history) => `${history.orders.length} orders`,
+    )
+    return { orders, failed: false }
+  } catch {
+    return { orders: [], failed: true }
+  }
+}
+
+const customerOrdersAction = async ({ request }) => {
+  const form = await request.formData()
+  const orderId = form.get('orderId')
+  const intent = form.get('intent')
+  const status = form.get('status')
+  const details = `order=${String(orderId).slice(0, 8)}`
+
+  if (intent !== 'CANCEL') {
+    recordCommand('ORDER_ACTION', details, 'error', `unknown action ${intent}`)
+    return { ok: false, error: `Unknown action ${intent}` }
+  }
+  if (status && !CUSTOMER_CANCELLABLE_STATUSES.includes(status)) {
+    recordCommand('CANCEL_ORDER', details, 'error', `order is ${status}`)
+    return { ok: false, error: 'This order can no longer be cancelled.' }
+  }
+
+  try {
+    await runCommand('CANCEL_ORDER', details, () => applyOrderAction(orderId, 'CANCEL'), (order) => `now ${order.status}`)
+    return { ok: true }
+  } catch (error) {
+    return { ok: false, error: await describeError(error) }
+  }
+}
+
 const restaurantOrdersLoader = async () => {
   const session = requireLogin()
   if (!isStaffSession(session)) {
@@ -79,10 +132,20 @@ const restaurantOrdersLoader = async () => {
     throw redirect('/dashboard')
   }
   try {
-    const orders = await runCommand('LIST_ORDERS', `role=${session.role}`, listOrders, (list) => `${list.length} orders`)
-    return { orders, failed: false }
+    const { orders, restaurants } = await runCommand(
+      'LIST_ORDERS',
+      `role=${session.role}`,
+      () => loadOrderHistory([session.restaurantId]),
+      (history) => `${history.orders.length} orders`,
+    )
+    const ownOrders = session.restaurantId
+      ? orders.filter((order) => order.restaurantId === session.restaurantId)
+      : orders
+    const restaurantName =
+      restaurants.find((restaurant) => restaurant.id === session.restaurantId)?.name ?? ownOrders[0]?.restaurantName ?? null
+    return { orders: ownOrders, restaurantName, failed: false }
   } catch {
-    return { orders: [], failed: true }
+    return { orders: [], restaurantName: null, failed: true }
   }
 }
 
@@ -166,7 +229,8 @@ export const router = createBrowserRouter([
       },
       {
         path: 'orders',
-        loader: customerOnlyLoader,
+        loader: customerOrdersLoader,
+        action: customerOrdersAction,
         element: <OrdersPage />,
       },
       {
@@ -209,7 +273,8 @@ export const router = createBrowserRouter([
           },
           {
             path: 'orders',
-            loader: customerOnlyLoader,
+            loader: customerOrdersLoader,
+            action: customerOrdersAction,
             element: <OrdersPage />,
           },
           {
