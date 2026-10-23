@@ -13,10 +13,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.healthyrolls.domain.common.AuthenticatedUser;
 import com.healthyrolls.domain.ord.exceptions.ActionNotPermittedException;
-import com.healthyrolls.domain.ord.restaurant.IRestaurantEventRepository;
 import com.healthyrolls.domain.ord.restaurant.IRestaurantRepository;
 import com.healthyrolls.domain.ord.restaurant.Restaurant;
 import com.healthyrolls.domain.ord.restaurant.RestaurantAccessPolicy;
+import com.healthyrolls.domain.ord.restaurant.RestaurantEventRecorder;
 import com.healthyrolls.domain.ord.restaurant.RestaurantStateChanged;
 import com.healthyrolls.domain.ord.restaurant.RestaurantStatus;
 
@@ -27,14 +27,14 @@ public class RestaurantService {
 
     private final IRestaurantRepository repository;
 
-    private final IRestaurantEventRepository eventRepository;
+    private final RestaurantEventRecorder recorder;
 
     private final RestaurantAccessPolicy accessPolicy;
 
-    public RestaurantService(IRestaurantRepository repository, IRestaurantEventRepository eventRepository,
+    public RestaurantService(IRestaurantRepository repository, RestaurantEventRecorder recorder,
             RestaurantAccessPolicy accessPolicy) {
         this.repository = Objects.requireNonNull(repository, "Restaurant repository is required");
-        this.eventRepository = Objects.requireNonNull(eventRepository, "Restaurant event repository is required");
+        this.recorder = Objects.requireNonNull(recorder, "Restaurant event recorder is required");
         this.accessPolicy = Objects.requireNonNull(accessPolicy, "Restaurant access policy is required");
     }
 
@@ -91,7 +91,7 @@ public class RestaurantService {
 
         repository.save(restaurant);
 
-        eventRepository.save(new RestaurantStateChanged(
+        recorder.record(new RestaurantStateChanged(
                 UUID.randomUUID(), restaurantId, previousStatus, restaurant.getStatus(),
                 actor.userId().value(), Instant.now()));
 
@@ -118,7 +118,7 @@ public class RestaurantService {
 
         repository.save(restaurant);
 
-        eventRepository.save(new RestaurantStateChanged(
+        recorder.record(new RestaurantStateChanged(
                 UUID.randomUUID(), restaurantId, previousStatus, restaurant.getStatus(),
                 actor.userId().value(), Instant.now()));
 
