@@ -1,14 +1,15 @@
 import { Link } from 'react-router-dom'
+import './AboutPage.css'
 
 export default function AboutPage() {
   return (
-    <div className="page-container">
+    <div className="page-container about-page">
       <header className="page-header">
         <h2>About HealthyRolls</h2>
         <p>Crafting delicious sushi rolls using sustainable, eco-friendly ingredients.</p>
       </header>
 
-      <section className="feature-card" style={{ maxWidth: '750px', margin: '0 auto', textAlign: 'left' }}>
+      <section className="feature-card" style={{ maxWidth: '750px', margin: 0, textAlign: 'left' }}>
         <h3>Our Mission</h3>
         <p style={{ marginBottom: '16px' }}>
           HealthyRolls (HJ) was founded with one simple vision: to bring fresh, artisan-quality sushi rolls straight to your doorstep within minutes, using zero-emission delivery and 100% biodegradable packaging.
