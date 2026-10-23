@@ -1,5 +1,4 @@
-{
-  "restaurants": [
+[
     {
       "id": "cabd0420-8902-4826-a50e-0492f049622a",
       "name": "Kyo Bar Japonais",
@@ -111,5 +110,4 @@
         }
       ]
     }
-  ]
-}
+]
