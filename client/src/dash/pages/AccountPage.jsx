@@ -12,19 +12,12 @@ export default function AccountPage() {
   const [name, setName] = useState(() => session?.name || '')
   const [email, setEmail] = useState(() => session?.email || '')
   const [address, setAddress] = useState(() => session?.address || '1234 Boulevard Saint-Laurent, Montreal, QC')
-  const [role, setRole] = useState(() => session?.role || 'CUSTOMER')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
 
   const [statusMessage, setStatusMessage] = useState(null)
   const [statusType, setStatusType] = useState('success')
   const [saving, setSaving] = useState(false)
-
-  const handleRoleSelect = (selectedRole) => {
-    if (selectedRole === 'COURIER') return
-    setRole(selectedRole)
-    setStatusMessage(null)
-  }
 
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -61,12 +54,11 @@ export default function AccountPage() {
       name: name.trim(),
       email: email.trim(),
       address: address.trim(),
-      role,
     })
 
     recordCommand(
       'UPDATE_PROFILE',
-      `role=${role} email=${email.trim()}`,
+      `email=${email.trim()}`,
       'ok',
       'Profile information updated',
     )
@@ -78,13 +70,13 @@ export default function AccountPage() {
     setSaving(false)
   }
 
-  const isStaff = role === 'RESTAURANT_STAFF'
+  const isStaff = session?.role === 'RESTAURANT_STAFF'
 
   return (
     <div className="account-page">
       <header className="page-header">
         <h2>Account Settings</h2>
-        <p>Manage your profile, account role, and preferences.</p>
+        <p>Manage your profile and preferences.</p>
       </header>
 
       <div className="account-card">
@@ -141,50 +133,6 @@ export default function AccountPage() {
                 onChange={(e) => setAddress(e.target.value)}
                 placeholder="Street address, city, province, postal code"
               />
-            </div>
-          </div>
-
-          {/* Role Selection */}
-          <div className="account-section">
-            <h3 className="account-section-title">Account Role</h3>
-            <p className="account-section-desc">Select your current operating role.</p>
-
-            <div className="account-role-grid" role="radiogroup" aria-label="Account role">
-              <div
-                role="radio"
-                tabIndex={0}
-                aria-checked={role === 'CUSTOMER'}
-                className={`account-role-card ${role === 'CUSTOMER' ? 'account-role-selected' : ''}`}
-                onClick={() => handleRoleSelect('CUSTOMER')}
-                onKeyDown={(e) => (e.key === ' ' || e.key === 'Enter') && handleRoleSelect('CUSTOMER')}
-              >
-                <span className="account-role-title">Customer</span>
-                <span className="account-role-desc">Browse menus and place orders</span>
-              </div>
-
-              <div
-                role="radio"
-                tabIndex={0}
-                aria-checked={role === 'RESTAURANT_STAFF'}
-                className={`account-role-card ${role === 'RESTAURANT_STAFF' ? 'account-role-selected' : ''}`}
-                onClick={() => handleRoleSelect('RESTAURANT_STAFF')}
-                onKeyDown={(e) => (e.key === ' ' || e.key === 'Enter') && handleRoleSelect('RESTAURANT_STAFF')}
-              >
-                <span className="account-role-title">Restaurant Staff</span>
-                <span className="account-role-desc">Review and manage kitchen orders</span>
-              </div>
-
-              <div
-                role="radio"
-                aria-checked={false}
-                aria-disabled="true"
-                className="account-role-card account-role-disabled"
-                title="Courier registration is coming in a future update"
-              >
-                <span className="account-role-tag-soon">Soon</span>
-                <span className="account-role-title">Courier</span>
-                <span className="account-role-desc">Delivery partner</span>
-              </div>
             </div>
           </div>
 

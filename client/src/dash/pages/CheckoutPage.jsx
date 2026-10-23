@@ -1,6 +1,8 @@
+import sushiLogo from '../assets/sushi-logo.png'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useCart } from '../cart/useCart'
+import { useSession } from '../auth/useSession'
 import { placeOrder } from '../api/orders'
 import { describeError, recordCommand, runCommand } from '../console/consoleStore'
 import {
@@ -10,7 +12,6 @@ import {
     formatExpiry,
     validateCheckout,
 } from '../checkout/checkoutForm'
-import sushiLogo from '../assets/sushi-logo.png'
 import './CheckoutPage.css'
 
 const currency = new Intl.NumberFormat('en-CA', { style: 'currency', currency: 'CAD' })
@@ -27,7 +28,8 @@ const EMPTY_FORM = {
 
 export default function CheckoutPage() {
     const { restaurant, lines, itemCount, subtotal, hasSoldOutItems, clearCart } = useCart()
-    const [form, setForm] = useState({ ...EMPTY_FORM, ...TEST_CARD })
+    const session = useSession()
+    const [form, setForm] = useState(() => ({ ...EMPTY_FORM, ...TEST_CARD, address: session?.address || '' }))
     const [fieldErrors, setFieldErrors] = useState({})
     const [submitting, setSubmitting] = useState(false)
     const [error, setError] = useState('')
@@ -257,8 +259,8 @@ export default function CheckoutPage() {
                         <ul className="checkout-lines">
                             {lines.map(({ item, quantity }) => (
                                 <li key={item.itemId} className="checkout-line">
-                                    <div className={`checkout-line-image ${item.imageUrl ? '' : 'checkout-line-image-fallback'}`}>
-                                        <img src={item.imageUrl || sushiLogo} alt={item.imageUrl ? item.name : ''} loading="lazy" />
+                                    <div className="checkout-line-image">
+                                        <img src={sushiLogo} alt="" loading="lazy" />
                                     </div>
                                     <div className="checkout-line-info">
                                         <h3>{item.name}</h3>
@@ -279,7 +281,7 @@ export default function CheckoutPage() {
                         <span>Items</span>
                         <span>{itemCount}</span>
                     </div>
-                    <div className="checkout-summary-row">
+                    <div className="checkout-summary-row checkout-summary-row-nowrap">
                         <span>Estimated delivery</span>
                         <span>{estimateDeliveryWindow()}</span>
                     </div>

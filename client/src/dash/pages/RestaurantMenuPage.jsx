@@ -1,3 +1,4 @@
+import sushiLogo from '../assets/sushi-logo.png'
 import { useState } from 'react'
 import { Link, useLoaderData, useNavigate } from 'react-router-dom'
 import { useSession } from '../auth/useSession'
@@ -116,6 +117,9 @@ export default function RestaurantMenuPage() {
             return (
               <article key={item.itemId} className={`menu-card ${unavailable ? 'menu-card-unavailable' : ''}`}>
                 <div>
+                  <div className="menu-card-image">
+                    <img src={sushiLogo} alt="" loading="lazy" />
+                  </div>
                   <div className="menu-card-top">
                     <h3>{item.name}</h3>
                     {soldOut ? (

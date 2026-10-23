@@ -1,6 +1,6 @@
+import sushiLogo from '../assets/sushi-logo.png'
 import { Link } from 'react-router-dom'
 import { useCart } from '../cart/useCart'
-import sushiLogo from '../assets/sushi-logo.png'
 import './CartPage.css'
 
 const currency = new Intl.NumberFormat('en-CA', { style: 'currency', currency: 'CAD' })
@@ -39,8 +39,8 @@ export default function CartPage() {
               const soldOut = item.status === 'SOLD_OUT'
               return (
                 <li key={item.itemId} className={`cart-line ${soldOut ? 'cart-line-sold-out' : ''}`}>
-                  <div className={`cart-line-image ${item.imageUrl ? '' : 'cart-line-image-fallback'}`}>
-                    <img src={item.imageUrl || sushiLogo} alt={item.imageUrl ? item.name : ''} loading="lazy" />
+                  <div className="cart-line-image">
+                    <img src={sushiLogo} alt="" loading="lazy" />
                   </div>
                   <div className="cart-line-info">
                     <h3>{item.name}</h3>
