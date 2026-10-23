@@ -74,7 +74,7 @@ export default function AuthPage({ initialMode = 'login' }) {
     try {
       const res =
         mode === 'signup'
-          ? await registerUser({ name: name.trim(), email: email.trim(), password, role })
+          ? await registerUser({ name: name.trim(), email: email.trim(), password })
           : await loginUser({ email: email.trim(), password, role })
 
       if (!res.ok) {
@@ -84,7 +84,7 @@ export default function AuthPage({ initialMode = 'login' }) {
       }
 
       // Successful login/signup: navigate according to role
-      const effectiveRole = res.session?.role || role
+      const effectiveRole = res.session?.role || (mode === 'signup' ? 'CUSTOMER' : role)
       if (effectiveRole === 'RESTAURANT_STAFF') {
         navigate('/dashboard/kitchen')
       } else {
@@ -108,7 +108,7 @@ export default function AuthPage({ initialMode = 'login' }) {
           <h2>{mode === 'signup' ? 'Create an Account' : 'Welcome to HealthyRolls'}</h2>
           <p className="auth-subtitle">
             {mode === 'signup'
-              ? 'Select your role and start ordering or managing rolls'
+              ? 'Create a customer account to start ordering rolls'
               : 'Sign in to browse restaurants or manage your kitchen'}
           </p>
         </header>
@@ -141,6 +141,7 @@ export default function AuthPage({ initialMode = 'login' }) {
         </div>
 
         <form onSubmit={handleSubmit} className="auth-form">
+          {mode === 'login' && (
           <div className="auth-role-section">
             <span className="auth-role-label">Choose your role</span>
             <div className="auth-role-grid" role="radiogroup" aria-label="Select role">
@@ -206,6 +207,8 @@ export default function AuthPage({ initialMode = 'login' }) {
               </div>
             </div>
           </div>
+
+          )}
 
           {error && (
             <div className="auth-error" role="alert">
@@ -275,11 +278,12 @@ export default function AuthPage({ initialMode = 'login' }) {
             {submitting
               ? 'Please wait…'
               : mode === 'signup'
-                ? `Sign Up as ${role === 'CUSTOMER' ? 'Customer' : 'Staff'}`
+                ? 'Sign Up as Customer'
                 : `Log In as ${role === 'CUSTOMER' ? 'Customer' : 'Staff'}`}
           </button>
         </form>
 
+        {mode === 'login' && (
         <div className="auth-demo-bar">
           <span className="auth-demo-label">Quick autofill:</span>
           <div className="auth-demo-buttons">
@@ -299,6 +303,8 @@ export default function AuthPage({ initialMode = 'login' }) {
             </button>
           </div>
         </div>
+
+        )}
 
         <footer className="auth-footer">
           {mode === 'signup' ? (
