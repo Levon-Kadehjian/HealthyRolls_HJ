@@ -4,6 +4,10 @@ export function listOrders() {
   return apiRequest('/api/orders')
 }
 
+export function listOrderEvents() {
+  return apiRequest('/api/events')
+}
+
 export function applyOrderAction(orderId, action, reason = null) {
   return apiRequest(`/api/orders/${orderId}/actions`, {
     method: 'POST',
