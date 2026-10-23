@@ -9,6 +9,9 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.core.io.ClassPathResource;
@@ -20,6 +23,7 @@ import tools.jackson.databind.ObjectMapper;
 @Component
 public class RestaurantSeedLoader implements ApplicationRunner {
 
+    private static final Logger log = LoggerFactory.getLogger(RestaurantSeedLoader.class);
     private static final String SEED_FILE = "seed/restaurants.json";
 
     private final SpringDataRestaurantRepository restaurants;
@@ -40,7 +44,9 @@ public class RestaurantSeedLoader implements ApplicationRunner {
             return;
         }
 
-        for (SeedRestaurant seed : read(args)) {
+        SeedRestaurant[] seeds = read(args);
+
+        for (SeedRestaurant seed : seeds) {
             RestaurantEntity restaurant = restaurants.save(new RestaurantEntity(
                     seed.id(),
                     seed.name(),
@@ -57,6 +63,8 @@ public class RestaurantSeedLoader implements ApplicationRunner {
                         item.status()));
             }
         }
+
+        log.info("Seeded {} restaurants", seeds.length);
     }
 
     private SeedRestaurant[] read(ApplicationArguments args) {
@@ -66,8 +74,10 @@ public class RestaurantSeedLoader implements ApplicationRunner {
             try (InputStream input = new ClassPathResource(SEED_FILE).getInputStream()) {
                 return new ObjectMapper().readValue(input, SeedRestaurant[].class);
             } catch (JacksonException exception) {
+                log.error("Could not deserialize seed file: {}", SEED_FILE, exception);
                 throw new IllegalArgumentException("Could not deserialize seed file: " + SEED_FILE, exception);
             } catch (Exception exception) {
+                log.error("Could not load restaurant seed file: {}", SEED_FILE, exception);
                 throw new IllegalStateException("Could not load restaurant seed file: " + SEED_FILE, exception);
             }
         }
@@ -75,6 +85,7 @@ public class RestaurantSeedLoader implements ApplicationRunner {
         Path seedFile = Path.of(values.getLast());
 
         if (!Files.isRegularFile(seedFile)) {
+            log.error("Seed file does not exist: {}", seedFile);
             throw new IllegalArgumentException("Seed file does not exist: " + seedFile);
         }
 
@@ -82,6 +93,7 @@ public class RestaurantSeedLoader implements ApplicationRunner {
             SeedRestaurant[] restaurants = new ObjectMapper().readValue(seedFile.toFile(), SeedRestaurant[].class);
             return restaurants;
         } catch (JacksonException exception) {
+            log.error("Could not deserialize seed file: {}", seedFile, exception);
             throw new IllegalArgumentException("Could not deserialize seed file: " + seedFile, exception);
         }
     }
