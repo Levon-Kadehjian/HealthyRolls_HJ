@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useFetcher, useLoaderData, useRevalidator } from 'react-router-dom'
+import { formatDateTime, formatMoney, newestFirst, statusLabel } from '../orders/orderHistory'
 import './RestaurantOrdersPage.css'
 
 const COLUMNS = [
@@ -8,8 +9,6 @@ const COLUMNS = [
   { status: 'PREPARING', title: 'Preparing', empty: 'Nothing on the cutting board.' },
   { status: 'READY', title: 'Ready for pickup', empty: 'No bento waiting for pickup.' },
 ]
-
-const CLOSED_STATUSES = ['REJECTED', 'CANCELLED', 'PICKED_UP', 'DELIVERED']
 
 const shortId = (id) => String(id ?? '').slice(0, 8)
 
@@ -137,16 +136,16 @@ function OrderCard({ order, position }) {
 }
 
 export default function RestaurantOrdersPage() {
-  const { orders, failed } = useLoaderData()
+  const { orders, restaurantName, failed } = useLoaderData()
   const revalidator = useRevalidator()
   const refreshing = revalidator.state === 'loading'
-  const closed = orders.filter((order) => CLOSED_STATUSES.includes(order.status))
+  const history = newestFirst(orders)
 
   return (
     <div className="kitchen-page">
       <header className="page-header kitchen-header">
         <div>
-          <h2>Kitchen Orders</h2>
+          <h2>Kitchen Orders{restaurantName ? ` · ${restaurantName}` : ''}</h2>
           <p>Take orders at the counter, roll them in turn, and plate them for pickup.</p>
         </div>
         <button
@@ -203,20 +202,50 @@ export default function RestaurantOrdersPage() {
         })}
       </div>
 
-      {closed.length > 0 && (
-        <details className="kitchen-closed">
-          <summary>Closed orders ({closed.length})</summary>
-          <ul>
-            {closed.map((order) => (
-              <li key={order.orderId}>
-                <span>Order #{shortId(order.orderId)}</span>
-                <span className="kitchen-closed-status">{order.status.replace('_', ' ').toLowerCase()}</span>
-                {order.rejectionReason && <span className="kitchen-closed-reason">“{order.rejectionReason}”</span>}
-              </li>
-            ))}
-          </ul>
-        </details>
-      )}
+      <section className="kitchen-history" aria-labelledby="kitchen-history-title">
+        <h3 id="kitchen-history-title" className="kitchen-history-title">
+          Order history <span className="kitchen-count">{history.length}</span>
+        </h3>
+        {history.length === 0 ? (
+          <p className="kitchen-history-empty">No orders have been placed at this restaurant yet.</p>
+        ) : (
+          <div className="kitchen-history-scroll">
+            <table className="kitchen-history-table">
+              <thead>
+                <tr>
+                  <th scope="col">Order</th>
+                  <th scope="col">Placed</th>
+                  <th scope="col">Items</th>
+                  <th scope="col">Total</th>
+                  <th scope="col">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {history.map((order) => (
+                  <tr key={order.orderId}>
+                    <td className="kitchen-history-id">#{shortId(order.orderId)}</td>
+                    <td>{formatDateTime(order.placedAt) ?? '—'}</td>
+                    <td>
+                      {order.lines
+                        .map((line) => `${line.quantity}× ${line.name ?? `Item ${shortId(line.menuItemId)}`}`)
+                        .join(', ')}
+                    </td>
+                    <td>{order.total !== null ? formatMoney(order.total) : '—'}</td>
+                    <td>
+                      <span className={`kitchen-history-status kitchen-history-status-${order.status.toLowerCase()}`}>
+                        {statusLabel(order.status)}
+                      </span>
+                      {order.rejectionReason && (
+                        <span className="kitchen-history-reason">“{order.rejectionReason}”</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
     </div>
   )
 }
