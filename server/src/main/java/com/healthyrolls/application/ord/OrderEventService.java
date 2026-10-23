@@ -1,8 +1,15 @@
 package com.healthyrolls.application.ord;
 
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.healthyrolls.domain.common.AuthenticatedUser;
-import com.healthyrolls.domain.ord.event.IEventRepository;
 import com.healthyrolls.domain.ord.exceptions.OrderNotFoundException;
+import com.healthyrolls.domain.ord.order.IOrderEventRepository;
 import com.healthyrolls.domain.ord.order.IOrderRepository;
 import com.healthyrolls.domain.ord.order.Order;
 import com.healthyrolls.domain.ord.order.OrderAccessPolicy;
@@ -10,21 +17,15 @@ import com.healthyrolls.domain.ord.order.OrderEventRecorder;
 import com.healthyrolls.domain.ord.order.OrderId;
 import com.healthyrolls.domain.ord.order.OrderStateChanged;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 @Service
-public class EventService implements OrderEventRecorder {
+public class OrderEventService implements OrderEventRecorder {
 
-    private final IEventRepository eventRepository;
+    private final IOrderEventRepository eventRepository;
     private final IOrderRepository orderRepository;
     private final OrderAccessPolicy accessPolicy;
 
-    public EventService(
-            IEventRepository eventRepository,
+    public OrderEventService(
+            IOrderEventRepository eventRepository,
             IOrderRepository orderRepository,
             OrderAccessPolicy accessPolicy) {
 
