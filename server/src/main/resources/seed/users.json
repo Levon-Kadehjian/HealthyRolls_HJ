@@ -1,0 +1,27 @@
+[
+  {
+    "email": "customer@healthyrolls.test",
+    "hashedPassword": "demo-password",
+    "name": "Demo Customer",
+    "role": "CUSTOMER"
+  },
+  {
+    "email": "staff@healthyrolls.test",
+    "hashedPassword": "demo-password",
+    "name": "Demo Staff",
+    "role": "RESTAURANT_STAFF",
+    "restaurantId": "11111111-1111-1111-1111-111111111111"
+  },
+  {
+    "email": "courier@healthyrolls.test",
+    "hashedPassword": "demo-password",
+    "name": "Demo Courier",
+    "role": "COURIER"
+  },
+  {
+    "email": "operator@healthyrolls.test",
+    "hashedPassword": "demo-password",
+    "name": "Demo Operator",
+    "role": "OPERATOR"
+  }
+]
