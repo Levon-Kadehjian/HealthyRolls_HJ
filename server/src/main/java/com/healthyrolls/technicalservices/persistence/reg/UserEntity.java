@@ -38,17 +38,28 @@ public class UserEntity {
     @Column(nullable = false)
     private Instant createdAt;
 
+    private Double latitude;
+
+    private Double longitude;
+
     protected UserEntity() {
     }
 
     public UserEntity(UUID userId, String email, String storedHash, String name, UserRole role,
             UUID restaurantId, Instant createdAt) {
+        this(userId, email, storedHash, name, role, restaurantId, null, null, createdAt);
+        }
+
+        public UserEntity(UUID userId, String email, String storedHash, String name, UserRole role,
+            UUID restaurantId, Double latitude, Double longitude, Instant createdAt) {
         this.userId = userId;
         this.email = email;
         this.storedHash = storedHash;
         this.name = name;
         this.role = role;
         this.restaurantId = restaurantId;
+        this.latitude = latitude;
+        this.longitude = longitude;
         this.createdAt = createdAt;
     }
 
@@ -60,6 +71,8 @@ public class UserEntity {
                 user.name(),
                 user.role(),
                 user.restaurantId().map(id -> id.value()).orElse(null),
+                user.latitude(),
+                user.longitude(),
                 user.createdAt());
     }
 
@@ -71,6 +84,8 @@ public class UserEntity {
                 record.name(),
                 record.role(),
                 record.restaurantId(),
+                record.latitude(),
+                record.longitude(),
                 record.createdAt());
     }
 
@@ -82,6 +97,8 @@ public class UserEntity {
                 name,
                 role,
                 restaurantId,
+                latitude,
+                longitude,
                 createdAt);
     }
 
@@ -107,6 +124,14 @@ public class UserEntity {
 
     public UUID getRestaurantId() {
         return restaurantId;
+    }
+
+    public Double getLatitude() {
+        return latitude;
+    }
+
+    public Double getLongitude() {
+        return longitude;
     }
 
     public Instant getCreatedAt() {

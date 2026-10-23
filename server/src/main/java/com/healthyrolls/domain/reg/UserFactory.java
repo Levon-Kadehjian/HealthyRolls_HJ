@@ -10,6 +10,11 @@ public class UserFactory {
 
     public User create(String email, String storedHash, String name, UserRole role,
             RestaurantId restaurantId) {
+        return create(email, storedHash, name, role, restaurantId, null, null);
+    }
+
+    public User create(String email, String storedHash, String name, UserRole role,
+            RestaurantId restaurantId, Double latitude, Double longitude) {
         return new User(
                 UserId.random(),
                 email,
@@ -17,6 +22,8 @@ public class UserFactory {
                 name,
                 role,
                 restaurantId,
+                latitude,
+                longitude,
                 Instant.now());
     }
 
@@ -32,6 +39,8 @@ public class UserFactory {
                 record.name(),
                 record.role(),
                 restaurantId,
+                record.latitude(),
+                record.longitude(),
                 record.createdAt());
     }
 }
