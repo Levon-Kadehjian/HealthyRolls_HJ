@@ -1,0 +1,16 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  client-build:
+    uses: ./.github/workflows/_client_build.yml
+
+  server-build:
+    uses: ./.github/workflows/_server_build.yml

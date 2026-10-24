@@ -1,0 +1,36 @@
+spring:
+  application:
+    name: healthyrolls
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:postgres}
+  jpa:
+    open-in-view: false
+
+healthyrolls:
+  security:
+    jwt:
+      secret: ${JWT_SECRET:dev-only-secret-change-me-at-least-32-chars}
+      ttl: 1h
+
+    access:
+      rules:
+        # REG
+        - { path-pattern: /api/users/register, method: POST, is-public: true }
+        - { path-pattern: /api/users/login, method: POST, is-public: true }
+        - { path-pattern: /api/users/me, method: GET, allowed-rules: [CUSTOMER, RESTAURANT_STAFF, COURIER, OPERATOR] }
+
+        # ORD
+        - { path-pattern: /api/restaurants/**, method: GET, allowed-rules: [CUSTOMER, RESTAURANT_STAFF, OPERATOR] }
+        - { path-pattern: /api/restaurants/*/menu/**, method: PUT, allowed-rules: [RESTAURANT_STAFF] }
+        - { path-pattern: /api/restaurants/*/pause, method: POST, allowed-rules: [RESTAURANT_STAFF, OPERATOR] }
+        - { path-pattern: /api/restaurants/*/reopen, method: POST, allowed-rules: [OPERATOR] }
+
+        - { path-pattern: /api/orders/preparation/next, method: POST, allowed-rules: [RESTAURANT_STAFF] }
+        - { path-pattern: /api/orders/*/actions, method: POST, allowed-rules: [CUSTOMER, RESTAURANT_STAFF, COURIER, OPERATOR] }
+        - { path-pattern: /api/orders, method: POST, allowed-rules: [CUSTOMER] }
+        - { path-pattern: /api/orders/**, method: GET, allowed-rules: [CUSTOMER, RESTAURANT_STAFF, OPERATOR] }
+
+        - { path-pattern: /api/events/**, method: GET, allowed-rules: [CUSTOMER, RESTAURANT_STAFF, OPERATOR] }
+
+        # Operator
+        - { path-pattern: /api/admin/reset, method: POST, allowed-rules: [OPERATOR] }

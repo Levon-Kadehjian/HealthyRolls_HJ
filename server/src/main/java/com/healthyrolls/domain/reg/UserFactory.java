@@ -1,0 +1,46 @@
+package com.healthyrolls.domain.reg;
+
+import com.healthyrolls.domain.common.RestaurantId;
+import com.healthyrolls.domain.common.UserId;
+import com.healthyrolls.domain.common.UserRole;
+
+import java.time.Instant;
+
+public class UserFactory {
+
+    public User create(String email, String storedHash, String name, UserRole role,
+            RestaurantId restaurantId) {
+        return create(email, storedHash, name, role, restaurantId, null, null);
+    }
+
+    public User create(String email, String storedHash, String name, UserRole role,
+            RestaurantId restaurantId, Double latitude, Double longitude) {
+        return new User(
+                UserId.random(),
+                email,
+                storedHash,
+                name,
+                role,
+                restaurantId,
+                latitude,
+                longitude,
+                Instant.now());
+    }
+
+    public User reconstitute(UserRecord record) {
+        RestaurantId restaurantId = record.restaurantId() == null
+                ? null
+                : new RestaurantId(record.restaurantId());
+
+        return new User(
+                new UserId(record.userId()),
+                record.email(),
+                record.storedHash(),
+                record.name(),
+                record.role(),
+                restaurantId,
+                record.latitude(),
+                record.longitude(),
+                record.createdAt());
+    }
+}
