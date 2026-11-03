@@ -22,6 +22,7 @@ healthyrolls:
         # ORD
         - { path-pattern: /api/restaurants/**, method: GET, allowed-rules: [CUSTOMER, RESTAURANT_STAFF, OPERATOR] }
         - { path-pattern: /api/restaurants/*/menu/**, method: PUT, allowed-rules: [RESTAURANT_STAFF] }
+        - { path-pattern: /api/restaurants/*/menu, method: POST, allowed-rules: [RESTAURANT_STAFF] }
         - { path-pattern: /api/restaurants/*/pause, method: POST, allowed-rules: [RESTAURANT_STAFF, OPERATOR] }
         - { path-pattern: /api/restaurants/*/reopen, method: POST, allowed-rules: [OPERATOR] }
 

@@ -4,6 +4,7 @@ import { Link, useLoaderData, useNavigate } from 'react-router-dom'
 import { useSession } from '../auth/useSession'
 import { useCart } from '../cart/useCart'
 import './RestaurantMenuPage.css'
+import MenuEditor from '../components/MenuEditor'
 
 const currency = new Intl.NumberFormat('en-CA', { style: 'currency', currency: 'CAD' })
 
@@ -22,6 +23,7 @@ export default function RestaurantMenuPage() {
   const navigate = useNavigate()
 
   const isOpen = restaurant.status === 'OPEN'
+  const canEdit = session?.role === 'RESTAURANT_STAFF' && session.restaurantId === restaurant.id
   const cartIsHere = cartRestaurant?.id === restaurant.id
   const cartSummary = { id: restaurant.id, name: restaurant.name, status: restaurant.status }
 
@@ -56,8 +58,8 @@ export default function RestaurantMenuPage() {
   return (
     <div className="menu-page">
       <div className="menu-back">
-        <Link to="/restaurants" className="restaurant-back-link">
-          ← All restaurants
+        <Link to={canEdit ? '/dashboard/kitchen' : '/restaurants'} className="restaurant-back-link">
+          {canEdit ? '← Kitchen orders' : '← All restaurants'}
         </Link>
       </div>
 
@@ -78,6 +80,8 @@ export default function RestaurantMenuPage() {
           </Link>
         )}
       </header>
+
+      {canEdit && <MenuEditor restaurant={restaurant} />}
 
       {!isOpen && (
         <div className="restaurant-banner restaurant-banner-warning" role="status">
@@ -159,9 +163,9 @@ export default function RestaurantMenuPage() {
 
                 <div className="menu-card-footer">
                   <span className="menu-price">{currency.format(Number(item.price))}</span>
-                  <button type="button" className="btn-add" disabled={unavailable} onClick={() => handleAdd(item)}>
+                  {session?.role === 'CUSTOMER' && <button type="button" className="btn-add" disabled={unavailable} onClick={() => handleAdd(item)}>
                     {!isOpen ? 'Unavailable' : soldOut ? 'Sold Out' : 'Add to Cart'}
-                  </button>
+                  </button>}
                 </div>
               </article>
             )

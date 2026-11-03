@@ -19,6 +19,11 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice(basePackages = "com.healthyrolls.application.ord.controllers")
 public class OrderExceptionHandler {
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ProblemDetail onInvalidInput(IllegalArgumentException e) {
+        return ProblemDetail.forStatusAndDetail(org.springframework.http.HttpStatus.BAD_REQUEST, e.getMessage());
+    }
+
     @ExceptionHandler(OrderNotFoundException.class)
     public ProblemDetail onNotFound(OrderNotFoundException e) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(NOT_FOUND, e.getMessage());

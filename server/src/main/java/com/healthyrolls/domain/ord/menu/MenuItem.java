@@ -31,6 +31,25 @@ public class MenuItem {
         }
     }
 
+    public void edit(String name, BigDecimal price) {
+        if (name == null || name.isBlank() || name.length() > 255) {
+            throw new IllegalArgumentException("Name must contain between 1 and 255 characters");
+        }
+        if (price == null || price.signum() < 0 || price.stripTrailingZeros().scale() > 2
+                || price.compareTo(new BigDecimal("100000000000000000")) >= 0) {
+            throw new IllegalArgumentException("Price must be non-negative and fit a monetary amount with two decimal places");
+        }
+        this.name = name.strip();
+        this.price = price;
+    }
+
+    public void changeAvailability(MenuItemStatus status) {
+        if (status == null) {
+            throw new IllegalArgumentException("Availability is required");
+        }
+        this.status = status;
+    }
+
     public UUID getItemId() {
         return itemId;
     }

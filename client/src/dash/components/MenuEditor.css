@@ -1,0 +1,136 @@
+.menu-editor {
+  margin: 0 0 28px;
+  padding: 24px;
+  background: var(--social-bg);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  text-align: left;
+}
+
+.menu-editor h3 {
+  margin: 0 0 20px;
+  font-size: 20px;
+  color: var(--text-h);
+}
+
+.menu-editor fieldset {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 16px;
+  min-width: 0;
+  margin: 0;
+  padding: 0 0 24px;
+  border: 0;
+}
+
+.menu-editor legend {
+  margin-bottom: 12px;
+  padding: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.menu-editor label {
+  display: grid;
+  flex: 1 1 180px;
+  min-width: 0;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.menu-editor input {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text-h);
+  font: inherit;
+  font-size: 14px;
+}
+
+.menu-editor input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-bg);
+}
+
+.menu-editor-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.menu-editor button {
+  font-family: inherit;
+}
+
+.menu-editor button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.menu-editor button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  transform: none;
+}
+
+.menu-editor ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.menu-editor li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 20px;
+  padding: 16px 0;
+  border-top: 1px solid var(--border);
+}
+
+.menu-editor li:last-child {
+  padding-bottom: 0;
+}
+
+.menu-editor-item {
+  display: flex;
+  flex: 1 1 220px;
+  flex-wrap: wrap;
+  align-items: center;
+  min-width: 0;
+  gap: 8px 12px;
+}
+
+.menu-editor-item-name {
+  color: var(--text-h);
+  font-size: 15px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 520px) {
+  .menu-editor {
+    padding: 18px;
+  }
+
+  .menu-editor label,
+  .menu-editor-actions {
+    flex-basis: 100%;
+  }
+
+  .menu-editor-actions button {
+    flex: 1;
+  }
+}

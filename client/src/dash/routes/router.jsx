@@ -13,7 +13,7 @@ import RestaurantsPage from '../pages/RestaurantsPage'
 import RestaurantOrdersPage from '../pages/RestaurantOrdersPage'
 import ConsolePage from '../pages/ConsolePage'
 import AuthPage from '../pages/AuthPage'
-import { getRestaurant, getRestaurants } from '../api/restaurants'
+import { addMenuItem, editMenuItem, changeMenuAvailability, getRestaurant, getRestaurants } from '../api/restaurants'
 import { applyOrderAction, listOrderEvents, listOrders } from '../api/orders'
 import { getSession } from '../auth/session'
 import { describeError, recordCommand, runCommand } from '../console/consoleStore'
@@ -174,6 +174,46 @@ const restaurantOrdersAction = async ({ request }) => {
   }
 }
 
+const restaurantMenuAction = async ({ request, params }) => {
+  const form = await request.formData()
+  const intent = form.get('intent')
+  const itemId = form.get('itemId')
+  const details = `restaurant=${params.restaurantId}${itemId ? ` item=${itemId}` : ''}`
+  const session = getSession()
+  if (!isStaffSession(session) || session.restaurantId !== params.restaurantId) {
+    recordCommand('MENU_ACTION', details, 'error', 'Only staff of this restaurant can edit its menu')
+    return { ok: false, error: 'Only staff of this restaurant can edit its menu.' }
+  }
+
+  const item = { name: form.get('name'), price: form.get('price') }
+  let action
+  let message
+  switch (intent) {
+    case 'ADD_MENU_ITEM':
+      action = () => addMenuItem(params.restaurantId, item)
+      message = 'Menu item added.'
+      break
+    case 'EDIT_MENU_ITEM':
+      action = () => editMenuItem(params.restaurantId, itemId, item)
+      message = 'Menu item updated.'
+      break
+    case 'CHANGE_MENU_AVAILABILITY':
+      action = () => changeMenuAvailability(params.restaurantId, itemId, form.get('status'))
+      message = 'Item availability updated.'
+      break
+    default:
+      recordCommand('MENU_ACTION', details, 'error', `unknown action ${intent}`)
+      return { ok: false, error: `Unknown menu action ${intent}` }
+  }
+
+  try {
+    await runCommand(intent, details, action, () => message)
+    return { ok: true, intent, message }
+  } catch (error) {
+    return { ok: false, error: await describeError(error) }
+  }
+}
+
 const restaurantsLoader = () => {
   redirectStaffToKitchen()
   return runCommand(
@@ -188,7 +228,6 @@ const restaurantsLoader = () => {
 }
 
 const restaurantLoader = ({ params }) => {
-  redirectStaffToKitchen()
   return runCommand(
     'BROWSE_MENU',
     `restaurant=${params.restaurantId}`,
@@ -261,6 +300,7 @@ export const router = createBrowserRouter([
         path: 'restaurants/:restaurantId',
         element: <RestaurantMenuPage />,
         loader: restaurantLoader,
+        action: restaurantMenuAction,
       },
       {
         path: 'dashboard',

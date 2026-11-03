@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { useFetcher, useLoaderData, useRevalidator } from 'react-router-dom'
+import { Link, useFetcher, useLoaderData, useRevalidator } from 'react-router-dom'
+import { useSession } from '../auth/useSession'
 import { formatDateTime, formatMoney, newestFirst, statusLabel } from '../orders/orderHistory'
 import './RestaurantOrdersPage.css'
 
@@ -137,6 +138,7 @@ function OrderCard({ order, position }) {
 
 export default function RestaurantOrdersPage() {
   const { orders, restaurantName, failed } = useLoaderData()
+  const session = useSession()
   const revalidator = useRevalidator()
   const refreshing = revalidator.state === 'loading'
   const history = newestFirst(orders)
@@ -148,6 +150,7 @@ export default function RestaurantOrdersPage() {
           <h2>Kitchen Orders{restaurantName ? ` · ${restaurantName}` : ''}</h2>
           <p>Take orders at the counter, roll them in turn, and plate them for pickup.</p>
         </div>
+        <div className="kitchen-header-actions">
         <button
           type="button"
           className="btn-secondary"
@@ -156,6 +159,8 @@ export default function RestaurantOrdersPage() {
         >
           {refreshing ? 'Refreshing…' : 'Refresh'}
         </button>
+        {session?.restaurantId && <Link className="btn-secondary" to={`/restaurants/${session.restaurantId}`}>Manage menu</Link>}
+        </div>
       </header>
 
       {failed && (
