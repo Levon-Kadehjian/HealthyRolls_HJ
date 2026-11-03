@@ -13,7 +13,7 @@ import RestaurantsPage from '../pages/RestaurantsPage'
 import RestaurantOrdersPage from '../pages/RestaurantOrdersPage'
 import ConsolePage from '../pages/ConsolePage'
 import AuthPage from '../pages/AuthPage'
-import { addMenuItem, editMenuItem, changeMenuAvailability, getRestaurant, getRestaurants } from '../api/restaurants'
+import { addMenuItem, editMenuItem, changeMenuAvailability, pauseRestaurant, reopenRestaurant, getRestaurant, getRestaurants } from '../api/restaurants'
 import { applyOrderAction, listOrderEvents, listOrders } from '../api/orders'
 import { getSession } from '../auth/session'
 import { describeError, recordCommand, runCommand } from '../console/consoleStore'
@@ -174,12 +174,29 @@ const restaurantOrdersAction = async ({ request }) => {
   }
 }
 
-const restaurantMenuAction = async ({ request, params }) => {
+const restaurantAction = async ({ request, params }) => {
   const form = await request.formData()
   const intent = form.get('intent')
   const itemId = form.get('itemId')
   const details = `restaurant=${params.restaurantId}${itemId ? ` item=${itemId}` : ''}`
   const session = getSession()
+  if (intent === 'PAUSE_RESTAURANT' || intent === 'REOPEN_RESTAURANT') {
+    const isOperator = session?.role === 'OPERATOR'
+    const isOwnStaff = isStaffSession(session) && session.restaurantId === params.restaurantId
+    if (!isOperator && !(intent === 'PAUSE_RESTAURANT' && isOwnStaff)) {
+      recordCommand(intent, details, 'error', 'You are not allowed to perform this restaurant action')
+      return { ok: false, error: 'You are not allowed to perform this restaurant action.' }
+    }
+    const message = intent === 'PAUSE_RESTAURANT' ? 'Restaurant paused. Existing orders can still be prepared.' : 'Restaurant reopened.'
+    try {
+      await runCommand(intent, details,
+        () => intent === 'PAUSE_RESTAURANT' ? pauseRestaurant(params.restaurantId) : reopenRestaurant(params.restaurantId),
+        () => message)
+      return { ok: true, message }
+    } catch (error) {
+      return { ok: false, error: await describeError(error) }
+    }
+  }
   if (!isStaffSession(session) || session.restaurantId !== params.restaurantId) {
     recordCommand('MENU_ACTION', details, 'error', 'Only staff of this restaurant can edit its menu')
     return { ok: false, error: 'Only staff of this restaurant can edit its menu.' }
@@ -300,7 +317,7 @@ export const router = createBrowserRouter([
         path: 'restaurants/:restaurantId',
         element: <RestaurantMenuPage />,
         loader: restaurantLoader,
-        action: restaurantMenuAction,
+        action: restaurantAction,
       },
       {
         path: 'dashboard',

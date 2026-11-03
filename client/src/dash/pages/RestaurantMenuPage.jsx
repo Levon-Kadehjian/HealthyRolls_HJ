@@ -5,6 +5,7 @@ import { useSession } from '../auth/useSession'
 import { useCart } from '../cart/useCart'
 import './RestaurantMenuPage.css'
 import MenuEditor from '../components/MenuEditor'
+import RestaurantStatusControls from '../components/RestaurantStatusControls'
 
 const currency = new Intl.NumberFormat('en-CA', { style: 'currency', currency: 'CAD' })
 
@@ -80,6 +81,8 @@ export default function RestaurantMenuPage() {
           </Link>
         )}
       </header>
+
+      <RestaurantStatusControls restaurant={restaurant} session={session} />
 
       {canEdit && <MenuEditor restaurant={restaurant} />}
 

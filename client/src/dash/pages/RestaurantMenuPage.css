@@ -19,6 +19,24 @@
   flex-wrap: wrap;
 }
 
+.restaurant-status-controls {
+  text-align: left;
+}
+
+.restaurant-status-controls:empty {
+  display: none;
+}
+
+.restaurant-status-controls form {
+  margin-bottom: 20px;
+}
+
+.restaurant-status-controls button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
 .restaurant-title-row {
   display: flex;
   align-items: center;

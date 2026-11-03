@@ -30,6 +30,22 @@ public class RestaurantController {
         this.menuService = menuService;
     }
 
+    @PostMapping("/{restaurantId}/pause")
+    public ResponseEntity<Void> pauseRestaurant(
+            @RequestAttribute(AuthenticatedUser.REQUEST_ATTRIBUTE) AuthenticatedUser user,
+            @PathVariable UUID restaurantId) {
+        restaurantService.pauseRestaurant(restaurantId, user);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{restaurantId}/reopen")
+    public ResponseEntity<Void> reopenRestaurant(
+            @RequestAttribute(AuthenticatedUser.REQUEST_ATTRIBUTE) AuthenticatedUser user,
+            @PathVariable UUID restaurantId) {
+        restaurantService.reopenRestaurant(restaurantId, user);
+        return ResponseEntity.noContent().build();
+    }
+
     @PostMapping("/{restaurantId}/menu")
     public ResponseEntity<MenuItemResponse> addMenuItem(
             @RequestAttribute(AuthenticatedUser.REQUEST_ATTRIBUTE) AuthenticatedUser user,

@@ -2,6 +2,7 @@ package com.healthyrolls.domain.ord.restaurant;
 
 import java.util.Objects;
 import java.util.UUID;
+import com.healthyrolls.domain.ord.exceptions.InvalidRestaurantTransitionException;
 
 public class Restaurant {
 
@@ -57,7 +58,7 @@ public class Restaurant {
 
     public void pause() {
         if (status != RestaurantStatus.OPEN) {
-            throw new IllegalStateException("Only open restaurants can be paused");
+            throw new InvalidRestaurantTransitionException("Only open restaurants can be paused");
         }
 
         status = RestaurantStatus.PAUSED;
@@ -65,7 +66,7 @@ public class Restaurant {
 
     public void reopen() {
         if (status != RestaurantStatus.PAUSED) {
-            throw new IllegalStateException("Only paused restaurants can be reopened");
+            throw new InvalidRestaurantTransitionException("Only paused restaurants can be reopened");
         }
 
         status = RestaurantStatus.OPEN;

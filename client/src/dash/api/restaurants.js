@@ -1,5 +1,13 @@
 import { apiRequest } from './http'
 
+export function pauseRestaurant(restaurantId) {
+  return apiRequest(`/api/restaurants/${encodeURIComponent(restaurantId)}/pause`, { method: 'POST' })
+}
+
+export function reopenRestaurant(restaurantId) {
+  return apiRequest(`/api/restaurants/${encodeURIComponent(restaurantId)}/reopen`, { method: 'POST' })
+}
+
 export function addMenuItem(restaurantId, details) {
   return apiRequest(`/api/restaurants/${encodeURIComponent(restaurantId)}/menu`, { method: 'POST', body: details })
 }
