@@ -1,4 +1,4 @@
-import { saveSession } from '../auth/session'
+import { saveSession, updateSession } from '../auth/session'
 import { recordCommand } from '../console/consoleStore'
 
 async function fetchProfile(accessToken) {
@@ -9,6 +9,15 @@ async function fetchProfile(accessToken) {
     return response.ok ? await response.json() : null
   } catch {
     return null
+  }
+}
+
+// function for existing users to work (coords)
+export async function ensureSessionLocation(session) {
+  if (!session?.accessToken || session.latitude != null) return
+  const profile = await fetchProfile(session.accessToken)
+  if (profile?.latitude != null) {
+    updateSession({ latitude: profile.latitude, longitude: profile.longitude })
   }
 }
 

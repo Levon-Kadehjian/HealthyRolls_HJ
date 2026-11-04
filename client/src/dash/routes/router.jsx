@@ -16,6 +16,7 @@ import AuthPage from '../pages/AuthPage'
 import { addMenuItem, editMenuItem, changeMenuAvailability, pauseRestaurant, reopenRestaurant, getRestaurant, getRestaurants } from '../api/restaurants'
 import { applyOrderAction, listOrderEvents, listOrders } from '../api/orders'
 import { getSession } from '../auth/session'
+import { ensureSessionLocation } from '../api/auth'
 import { describeError, recordCommand, runCommand } from '../console/consoleStore'
 import { buildOrderHistory, CUSTOMER_CANCELLABLE_STATUSES } from '../orders/orderHistory'
 
@@ -233,6 +234,7 @@ const restaurantAction = async ({ request, params }) => {
 
 const restaurantsLoader = () => {
   redirectStaffToKitchen()
+  ensureSessionLocation(getSession())
   return runCommand(
     'BROWSE_RESTAURANTS',
     '',
