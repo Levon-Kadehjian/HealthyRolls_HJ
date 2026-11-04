@@ -10,15 +10,27 @@ const ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">Op
 const icons = new Map()
 function pinIcon(kind, status) {
   const key = `${kind}:${status ?? ''}`
+  if (kind === 'home' && !icons.has(key)) {
+    icons.set(
+      key,
+      L.divIcon({
+        className: '',
+        html: '<span class="map-you"><span class="map-you-pulse"></span><span class="map-you-dot"></span></span>',
+        iconSize: [20, 20],
+        iconAnchor: [10, 10],
+        popupAnchor: [0, -12],
+      }),
+    )
+  }
   if (!icons.has(key)) {
     icons.set(
       key,
       L.divIcon({
         className: '',
         html: `<span class="map-pin map-pin-${kind}${status ? ` map-pin-${status.toLowerCase()}` : ''}"></span>`,
-        iconSize: [22, 22],
-        iconAnchor: [11, 11],
-        popupAnchor: [0, -12],
+        iconSize: [18, 18],
+        iconAnchor: [9, 9],
+        popupAnchor: [0, -10],
       }),
     )
   }
@@ -59,6 +71,7 @@ export default function CityMap({ points = [], lines = [], bounds, onSelect, emp
           key={point.id}
           position={point.position}
           icon={pinIcon(point.kind, point.status)}
+          zIndexOffset={point.kind === 'home' ? 1000 : 0}
           eventHandlers={onSelect ? { click: () => onSelect(point.id) } : undefined}
         >
           {point.popup && <Popup>{point.popup}</Popup>}

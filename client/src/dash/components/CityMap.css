@@ -1,3 +1,13 @@
+:root {
+  --map-open: #2e9e5b;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --map-open: #5fd38a;
+  }
+}
+
 .city-map {
   width: min(100%, 640px);
   aspect-ratio: 1 / 1;
@@ -18,29 +28,68 @@
 
 .map-pin {
   display: block;
-  width: 22px;
-  height: 22px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
-  border: 3px solid var(--bg);
-  box-shadow: var(--shadow);
-  background: var(--brand-surface);
+  --pin: var(--map-open);
+  background: var(--pin);
+  border: 2px solid color-mix(in srgb, var(--pin) 60%, #000);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
 }
 
 .map-pin-restaurant.map-pin-paused {
-  background: #d9a441;
+  --pin: #d9a441;
 }
 
 .map-pin-restaurant.map-pin-closed {
-  background: #9ca3af;
+  --pin: #9ca3af;
 }
 
-.map-pin-home {
-  background: var(--accent-mint);
-  border-color: var(--brand-surface);
+.map-you {
+  position: relative;
+  display: block;
+  width: 20px;
+  height: 20px;
+  --you: #2f7df6;
+}
+
+.map-you-dot {
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  background: var(--you);
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15), 0 2px 6px rgba(0, 0, 0, 0.35);
+}
+
+.map-you-pulse {
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--you) 35%, transparent);
+  animation: map-you-pulse 2s ease-out infinite;
+}
+
+@keyframes map-you-pulse {
+  from {
+    transform: scale(0.5);
+    opacity: 1;
+  }
+  to {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .map-you-pulse {
+    animation: none;
+    opacity: 0.5;
+  }
 }
 
 .map-pin-courier {
-  background: #3b82f6;
+  --pin: #8b5cf6;
 }
 
 .map-line {
@@ -79,7 +128,7 @@
 }
 
 .map-filter-open {
-  --status: var(--brand-surface);
+  --status: var(--map-open);
 }
 
 .map-filter-paused {
@@ -96,7 +145,7 @@
   gap: 0.5rem;
   padding: 0.4rem 0.6rem 0.4rem 0.8rem;
   border-radius: 999px;
-  border: 1px solid color-mix(in srgb, var(--status) 55%, transparent);
+  border: 2px solid color-mix(in srgb, var(--status) 55%, transparent);
   background: color-mix(in srgb, var(--status) 16%, transparent);
   color: var(--text-h);
   font: inherit;
@@ -173,17 +222,8 @@
     filter: grayscale(1) invert(1) sepia(0.5) hue-rotate(180deg) saturate(2.2) contrast(0.85) brightness(0.8);
   }
 
-  .map-pin-restaurant {
-    background: var(--accent-mint);
-  }
-
-  .map-filter-open {
-    --status: var(--accent-mint);
-  }
-
-  .map-pin-home {
-    background: var(--text-h);
-    border-color: var(--accent-mint);
+  .map-you {
+    --you: #5b9dff;
   }
 
   .map-line {
