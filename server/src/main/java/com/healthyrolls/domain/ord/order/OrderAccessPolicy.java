@@ -10,7 +10,8 @@ public class OrderAccessPolicy {
             case CUSTOMER -> user.userId().value().equals(order.getCustomerId());
             case RESTAURANT_STAFF -> user.restaurantId() != null
                     && user.restaurantId().value().equals(order.getRestaurantId());
-            case COURIER -> false;
+            case COURIER -> order.getCourierId() != null
+                    && user.userId().value().equals(order.getCourierId());
         };
     }
 
@@ -26,7 +27,7 @@ public class OrderAccessPolicy {
                 default -> false;
             };
             case OPERATOR -> action == OrderAction.CANCEL;
-            case COURIER -> false;
+            case COURIER -> action == OrderAction.PICK_UP || action == OrderAction.DELIVER;
         };
     }
 }

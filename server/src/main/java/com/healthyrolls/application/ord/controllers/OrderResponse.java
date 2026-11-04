@@ -14,7 +14,9 @@ public record OrderResponse(
         OrderStatus status,
         List<OrderLineResponse> lines,
         String rejectionReason,
-        Instant acceptedAt) {
+        Instant acceptedAt,
+        UUID courierId,
+        Instant deliveredAt) {
 
     public static OrderResponse from(Order o) {
         List<OrderLineResponse> lines = o.getItems().stream()
@@ -28,6 +30,8 @@ public record OrderResponse(
                 o.status(),
                 lines,
                 o.getRejectionReason(),
-                o.getAcceptedAt());
+                o.getAcceptedAt(),
+                o.getCourierId(),
+                o.getDeliveredAt());
     }
 }

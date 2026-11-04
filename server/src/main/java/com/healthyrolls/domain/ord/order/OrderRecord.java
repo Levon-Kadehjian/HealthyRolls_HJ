@@ -11,6 +11,7 @@ public record OrderRecord(
         UUID restaurantId,
         UUID courierId,
         Instant acceptedAt,
+        Instant deliveredAt,
         String rejectionReason,
         long version,
         List<OrderLine> items) {

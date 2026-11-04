@@ -37,7 +37,8 @@ public class MenuItem {
         }
         if (price == null || price.signum() < 0 || price.stripTrailingZeros().scale() > 2
                 || price.compareTo(new BigDecimal("100000000000000000")) >= 0) {
-            throw new IllegalArgumentException("Price must be non-negative and fit a monetary amount with two decimal places");
+            throw new IllegalArgumentException(
+                    "Price must be non-negative and fit a monetary amount with two decimal places");
         }
         this.name = name.strip();
         this.price = price;

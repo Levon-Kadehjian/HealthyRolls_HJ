@@ -8,6 +8,7 @@ import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,6 +40,7 @@ public class OrderService {
     private final RestaurantService restaurantService;
     private final MenuService menuService;
     private final OrderAccessPolicy policy;
+    private final ApplicationEventPublisher events;
 
     public OrderService(
             IOrderRepository repository,
@@ -46,7 +48,8 @@ public class OrderService {
             OrderEventRecorder recorder,
             RestaurantService restaurantService,
             MenuService menuService,
-            OrderAccessPolicy policy) {
+            OrderAccessPolicy policy,
+            ApplicationEventPublisher events) {
 
         this.repository = Objects.requireNonNull(repository, "Order repository is required");
 
@@ -59,6 +62,8 @@ public class OrderService {
         this.menuService = Objects.requireNonNull(menuService, "Menu service is required");
 
         this.policy = Objects.requireNonNull(policy, "Order access policy is required");
+
+        this.events = Objects.requireNonNull(events, "Event publisher is required");
     }
 
     @Transactional
@@ -90,7 +95,7 @@ public class OrderService {
 
         repository.save(order);
 
-        recorder.record(new OrderStateChanged(
+        record(new OrderStateChanged(
                 EventId.random(),
                 orderId,
                 OrderStatus.NONE,
@@ -197,6 +202,8 @@ public class OrderService {
 
         if (action == OrderAction.ACCEPT) {
             occurredAt = order.getAcceptedAt();
+        } else if (action == OrderAction.DELIVER) {
+            occurredAt = order.getDeliveredAt();
         } else {
             occurredAt = Instant.now();
         }
@@ -209,9 +216,15 @@ public class OrderService {
                 actor.userId().value(),
                 occurredAt);
 
-        recorder.record(event);
+        record(event);
 
         log.info("Order {} moved {} -> {} by user {}",
                 order.getOrderId().value(), previousStatus, order.status(), actor.userId().value());
+    }
+
+    // Observer Pattern. Listeners for DispatchService on READY, and BillingService on DELIVERED
+    private void record(OrderStateChanged event) {
+        recorder.record(event);
+        events.publishEvent(event);
     }
 }

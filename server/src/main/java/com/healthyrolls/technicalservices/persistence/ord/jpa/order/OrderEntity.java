@@ -34,6 +34,7 @@ public class OrderEntity {
 
     private UUID courierId;
     private Instant acceptedAt;
+    private Instant deliveredAt;
 
     @Column(columnDefinition = "text")
     private String rejectionReason;
@@ -59,6 +60,7 @@ public class OrderEntity {
         this.restaurantId = order.getRestaurantId();
         this.courierId = order.getCourierId();
         this.acceptedAt = order.getAcceptedAt();
+        this.deliveredAt = order.getDeliveredAt();
         this.status = order.status();
         this.rejectionReason = order.getRejectionReason();
         this.version = order.version();
@@ -69,7 +71,7 @@ public class OrderEntity {
 
     public OrderRecord toRecord() {
         return new OrderRecord(orderId, status.name(), customerId, restaurantId,
-                courierId, acceptedAt, rejectionReason, version,
+                courierId, acceptedAt, deliveredAt, rejectionReason, version,
                 items.stream().map(OrderLineEntity::toDomain).toList());
     }
 }
