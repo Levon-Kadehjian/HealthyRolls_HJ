@@ -50,6 +50,7 @@ export async function loginUser({ email, password, role = 'CUSTOMER', name }) {
     email,
     ...(resolvedName && { name: resolvedName }),
     ...(restaurantId && { restaurantId }),
+    ...(profile?.latitude != null && { latitude: profile.latitude, longitude: profile.longitude }),
   }
 
   saveSession(session)
