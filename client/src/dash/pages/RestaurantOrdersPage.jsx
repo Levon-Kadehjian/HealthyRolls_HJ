@@ -159,7 +159,7 @@ export default function RestaurantOrdersPage() {
         >
           {refreshing ? 'Refreshing…' : 'Refresh'}
         </button>
-        {session?.restaurantId && <Link className="btn-secondary" to={`/restaurants/${session.restaurantId}`}>Manage menu</Link>}
+        {session?.restaurantId && <Link className="btn-secondary" to={`/restaurants/${session.restaurantId}`}>Manage restaurant</Link>}
         </div>
       </header>
 

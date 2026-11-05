@@ -17,7 +17,7 @@ import { addMenuItem, editMenuItem, changeMenuAvailability, pauseRestaurant, reo
 import { applyOrderAction, listOrderEvents, listOrders } from '../api/orders'
 import { getSession } from '../auth/session'
 import { describeError, recordCommand, runCommand } from '../console/consoleStore'
-import { buildOrderHistory, CUSTOMER_CANCELLABLE_STATUSES } from '../orders/orderHistory'
+import { buildOrderHistory, canCancelOrder } from '../orders/orderHistory'
 
 
 const ORDER_COMMANDS = {
@@ -102,6 +102,7 @@ const customerOrdersLoader = async () => {
 }
 
 const customerOrdersAction = async ({ request }) => {
+  const session = requireLogin()
   const form = await request.formData()
   const orderId = form.get('orderId')
   const intent = form.get('intent')
@@ -112,7 +113,7 @@ const customerOrdersAction = async ({ request }) => {
     recordCommand('ORDER_ACTION', details, 'error', `unknown action ${intent}`)
     return { ok: false, error: `Unknown action ${intent}` }
   }
-  if (status && !CUSTOMER_CANCELLABLE_STATUSES.includes(status)) {
+  if (!canCancelOrder(session.role, status)) {
     recordCommand('CANCEL_ORDER', details, 'error', `order is ${status}`)
     return { ok: false, error: 'This order can no longer be cancelled.' }
   }
