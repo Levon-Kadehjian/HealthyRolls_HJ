@@ -56,8 +56,11 @@ const loginRequiredLoader = () => {
 }
 
 const customerOnlyLoader = () => {
-  requireLogin()
+  const session = requireLogin()
   redirectStaffToKitchen()
+  if (session.role !== 'CUSTOMER') {
+    throw redirect('/dashboard')
+  }
   return null
 }
 
