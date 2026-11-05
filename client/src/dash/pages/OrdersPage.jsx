@@ -135,6 +135,8 @@ function OrderSection({ title, orders, empty }) {
 
 export default function OrdersPage() {
   const { orders, failed } = useLoaderData()
+  const session = useSession()
+  const isOperator = session?.role === 'OPERATOR'
   const revalidator = useRevalidator()
   const refreshing = revalidator.state === 'loading'
   const sorted = newestFirst(orders)
@@ -145,8 +147,8 @@ export default function OrdersPage() {
     <div className="orders-page">
       <header className="page-header orders-header">
         <div>
-          <h2>Order Tracking</h2>
-          <p>Keep track of your current and past sushi orders.</p>
+          <h2>{isOperator ? 'All Orders' : 'Order Tracking'}</h2>
+          <p>{isOperator ? 'View current and past orders across all restaurants.' : 'Keep track of your current and past sushi orders.'}</p>
         </div>
         <button type="button" className="btn-secondary" onClick={() => revalidator.revalidate()} disabled={refreshing}>
           {refreshing ? 'Refreshing…' : 'Refresh'}
@@ -155,7 +157,7 @@ export default function OrdersPage() {
 
       {failed && (
         <p className="order-error orders-load-error" role="alert">
-          Your orders could not be loaded. Check the output console for details.
+          {isOperator ? 'Orders could not be loaded.' : 'Your orders could not be loaded.'} Check the output console for details.
         </p>
       )}
 
@@ -163,14 +165,18 @@ export default function OrdersPage() {
         <div className="orders-empty-card">
           <span className="orders-icon">📦</span>
           <h3>No Orders Yet</h3>
-          <p>You have not placed any orders yet.</p>
+          <p>{isOperator ? 'No orders have been placed yet.' : 'You have not placed any orders yet.'}</p>
           <Link to="/restaurants" className="btn-primary">
             Browse Restaurants
           </Link>
         </div>
       ) : (
         <>
-          <OrderSection title="Active orders" orders={active} empty="You do not have any active orders right now." />
+          <OrderSection
+            title="Active orders"
+            orders={active}
+            empty={isOperator ? 'There are no active orders right now.' : 'You do not have any active orders right now.'}
+          />
           <OrderSection title="Past orders" orders={past} empty="Completed and cancelled orders will show up here." />
         </>
       )}
