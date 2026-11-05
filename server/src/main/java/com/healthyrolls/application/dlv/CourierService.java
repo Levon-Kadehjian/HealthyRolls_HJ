@@ -47,4 +47,22 @@ public class CourierService {
                 courier.goOnDuty();
                 repository.save(courier);
         }
+
+        @Transactional
+        public void goOffDuty(UserId courierId, AuthenticatedUser actor) {
+                Objects.requireNonNull(courierId, "Courier ID is required");
+                Objects.requireNonNull(actor, "User context is required");
+                Objects.requireNonNull(actor.userId(), "User ID is required");
+
+                Courier courier = repository.findById(courierId)
+                                .orElseThrow(() -> new CourierNotFoundException(courierId));
+
+                if (!policy.canChangeDuty(actor, courier)) {
+                        throw new ActionNotPermittedException(
+                                        "You are not allowed to change this courier's duty status");
+                }
+
+                courier.goOffDuty();
+                repository.save(courier);
+        }
 }
