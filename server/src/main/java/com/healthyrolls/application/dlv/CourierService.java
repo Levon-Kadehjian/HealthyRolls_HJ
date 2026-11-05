@@ -31,7 +31,7 @@ public class CourierService {
         }
 
         @Transactional
-        public void goOnDuty(UserId courierId, AuthenticatedUser actor) {
+        public Courier goOnDuty(UserId courierId, AuthenticatedUser actor) {
                 Objects.requireNonNull(courierId, "Courier ID is required");
                 Objects.requireNonNull(actor, "User context is required");
                 Objects.requireNonNull(actor.userId(), "User ID is required");
@@ -46,10 +46,11 @@ public class CourierService {
 
                 courier.goOnDuty();
                 repository.save(courier);
+                return courier;
         }
 
         @Transactional
-        public void goOffDuty(UserId courierId, AuthenticatedUser actor) {
+        public Courier goOffDuty(UserId courierId, AuthenticatedUser actor) {
                 Objects.requireNonNull(courierId, "Courier ID is required");
                 Objects.requireNonNull(actor, "User context is required");
                 Objects.requireNonNull(actor.userId(), "User ID is required");
@@ -64,5 +65,22 @@ public class CourierService {
 
                 courier.goOffDuty();
                 repository.save(courier);
+                return courier;
+        }
+
+        @Transactional(readOnly = true)
+        public Courier getCourier(UserId courierId, AuthenticatedUser actor) {
+                Objects.requireNonNull(courierId, "Courier ID is required");
+                Objects.requireNonNull(actor, "User context is required");
+                Objects.requireNonNull(actor.userId(), "User ID is required");
+
+                Courier courier = repository.findById(courierId)
+                                .orElseThrow(() -> new CourierNotFoundException(courierId));
+
+                if (!policy.canView(actor, courier)) {
+                        throw new CourierNotFoundException(courierId);
+                }
+
+                return courier;
         }
 }
