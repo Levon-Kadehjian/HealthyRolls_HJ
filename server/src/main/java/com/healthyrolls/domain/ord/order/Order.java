@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
+import com.healthyrolls.domain.common.UserId;
+import com.healthyrolls.domain.ord.exceptions.InvalidTransitionException;
 import com.healthyrolls.domain.ord.order.state.PlacedState;
 
 public class Order {
@@ -15,6 +17,7 @@ public class Order {
     private UUID courierId;
     private AbstractOrderState state;
     private Instant acceptedAt;
+    private Instant deliveredAt;
     private long version;
     private List<OrderLine> items;
     private String rejectionReason;
@@ -41,6 +44,7 @@ public class Order {
         this.id = new OrderId(Objects.requireNonNull(record.orderId()));
         this.courierId = record.courierId();
         this.acceptedAt = record.acceptedAt();
+        this.deliveredAt = record.deliveredAt();
         this.state = stateFactory.fromStatus(OrderStatus.valueOf(record.status()));
         this.rejectionReason = record.rejectionReason();
         this.version = record.version();
@@ -66,6 +70,10 @@ public class Order {
         return acceptedAt;
     }
 
+    public Instant getDeliveredAt() {
+        return deliveredAt;
+    }
+
     public List<OrderLine> getItems() {
         return items;
     }
@@ -78,8 +86,12 @@ public class Order {
         return rejectionReason;
     }
 
-    public void assignCourier(UUID id) {
-        throw new UnsupportedOperationException();
+    public void assignCourier(UserId courier) {
+        Objects.requireNonNull(courier, "Courier ID is required");
+        if (status() != OrderStatus.READY) {
+            throw new InvalidTransitionException("Cannot assign a courier to an order in state " + status());
+        }
+        courierId = courier.value();
     }
 
     public void apply(OrderAction action) {
@@ -120,6 +132,9 @@ public class Order {
 
         if (next.status() == OrderStatus.ACCEPTED) {
             acceptedAt = Instant.now();
+        }
+        if (next.status() == OrderStatus.DELIVERED) {
+            deliveredAt = Instant.now();
         }
 
         state = next;

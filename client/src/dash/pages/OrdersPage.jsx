@@ -3,7 +3,7 @@ import { Link, useFetcher, useLoaderData, useRevalidator } from 'react-router-do
 import { useSession } from '../auth/useSession'
 import {
   ACTIVE_STATUSES,
-  CUSTOMER_CANCELLABLE_STATUSES,
+  canCancelOrder,
   formatDateTime,
   formatMoney,
   newestFirst,
@@ -14,10 +14,11 @@ import './OrdersPage.css'
 const shortId = (id) => String(id ?? '').slice(0, 8)
 
 function CancelOrder({ order, fetcher }) {
+  const session = useSession()
   const [confirming, setConfirming] = useState(false)
   const busy = fetcher.state !== 'idle'
 
-  if (!CUSTOMER_CANCELLABLE_STATUSES.includes(order.status)) {
+  if (!canCancelOrder(session?.role, order.status)) {
     return null
   }
 

@@ -90,7 +90,7 @@ export default function Navbar() {
                   Orders
                 </NavLink>
               )}
-              {!isStaff && (
+              {session.role === 'CUSTOMER' && (
                 <NavLink to="/cart" className={({ isActive }) => `nav-icon-link ${isActive ? 'nav-link-active' : ''}`} aria-label={`Cart, ${itemCount} items`}>
                   <svg
                     className="nav-icon"
