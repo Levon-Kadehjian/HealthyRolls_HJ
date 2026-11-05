@@ -1,5 +1,6 @@
 package com.healthyrolls.technicalservices.configuration;
 
+import com.healthyrolls.domain.dlv.DeliveryAccessPolicy;
 import com.healthyrolls.domain.ord.order.OrderAccessPolicy;
 import com.healthyrolls.domain.ord.order.OrderFactory;
 import com.healthyrolls.domain.ord.restaurant.RestaurantAccessPolicy;
@@ -29,5 +30,10 @@ public class DomainConfig {
     @Bean
     public RestaurantAccessPolicy restaurantAccessPolicy() {
         return new RestaurantAccessPolicy();
+    }
+
+    @Bean
+    public DeliveryAccessPolicy deliveryAccessPolicy() {
+        return new DeliveryAccessPolicy();
     }
 }
