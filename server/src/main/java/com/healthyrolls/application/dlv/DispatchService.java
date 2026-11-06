@@ -16,6 +16,7 @@ import com.healthyrolls.domain.dlv.delivery.Assignment;
 import com.healthyrolls.domain.dlv.delivery.DispatchQueue;
 import com.healthyrolls.domain.dlv.delivery.IAssignmentRepository;
 import com.healthyrolls.domain.dlv.delivery.NearestCourierSelector;
+import com.healthyrolls.domain.dlv.exceptions.CourierNotFoundException;
 import com.healthyrolls.domain.ord.order.IOrderRepository;
 import com.healthyrolls.domain.ord.order.Order;
 import com.healthyrolls.domain.ord.order.OrderId;
@@ -62,7 +63,7 @@ public class DispatchService {
         if (event.toStatus() == OrderStatus.READY) {
             dispatch(event.orderId());
         } else if (event.toStatus() == OrderStatus.CANCELLED) {
-            queue.remove(event.orderId());
+            handleCancelledOrder(event.orderId());
         }
     }
 
@@ -134,6 +135,38 @@ public class DispatchService {
 
     public List<OrderId> queueSnapshot() {
         return queue.snapshot();
+    }
+
+    private void handleCancelledOrder(OrderId orderId) {
+        List<Courier> lockedCouriers = courierRepository.findAllForDispatch();
+
+        Optional<Assignment> existing = assignmentRepository.findActiveByOrderId(orderId);
+
+        if (existing.isEmpty()) {
+            queue.remove(orderId);
+            return;
+        }
+
+        Assignment assignment = existing.get();
+
+        Courier courier = lockedCouriers.stream()
+                .filter(candidate -> candidate.getId().equals(assignment.getCourierId()))
+                .findFirst()
+                .orElseThrow(() -> new CourierNotFoundException(assignment.getCourierId()));
+
+        assignment.cancel();
+
+        if (orderId.equals(courier.getCurrentOrderId())) {
+            courier.releaseCancelledOrder(orderId);
+            courierRepository.save(courier);
+        }
+
+        assignmentRepository.save(assignment);
+        queue.remove(orderId);
+
+        if (courier.isAvailable()) {
+            onCourierIdle();
+        }
     }
 
     @EventListener(ApplicationReadyEvent.class)

@@ -99,6 +99,19 @@ public class Assignment {
         active = false;
     }
 
+    public void cancel() {
+        if (!active) {
+            return;
+        }
+
+        if (pickedUpAt != null) {
+            throw new InvalidAssignmentTransitionException(
+                    "An assignment cannot be cancelled after pickup");
+        }
+
+        active = false;
+    }
+
     public OrderId getOrderId() {
         return orderId;
     }

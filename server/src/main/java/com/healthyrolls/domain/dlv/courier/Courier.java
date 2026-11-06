@@ -105,6 +105,20 @@ public class Courier {
         currentOrderId = null;
     }
 
+    public void releaseCancelledOrder(OrderId orderId) {
+        Objects.requireNonNull(orderId, "Order ID is required");
+
+        if (!orderId.equals(currentOrderId)) {
+            throw new InvalidCourierTransitionException(
+                    "This is not the courier's current order");
+        }
+
+        require(CourierStatus.ASSIGNED, "release a cancelled order");
+
+        currentOrderId = null;
+        status = CourierStatus.IDLE;
+    }
+
     // source: https://stackoverflow.com/a/16794680
     public double distanceTo(double lat, double lon) {
         double deltaLat = Math.toRadians(lat - latitude);
