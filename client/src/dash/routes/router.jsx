@@ -21,6 +21,7 @@ import { describeError, recordCommand, runCommand } from '../console/consoleStor
 import { buildOrderHistory, canCancelOrder } from '../orders/orderHistory'
 import CourierPage from '../pages/CourierPage'
 import { acceptOffer, confirmDelivery, confirmPickup, getMyCourier, goOffDuty, goOnDuty } from '../api/couriers'
+import { getPendingOffer } from '../api/couriers'
 
 
 const ORDER_COMMANDS = {
@@ -217,6 +218,19 @@ const courierLoader = async () => {
   }
 }
 
+const courierPageLoader = async () => {
+  const data = await courierLoader()
+  if (data.failed) {
+    return { ...data, offer: null }
+  }
+  try {
+    return { ...data, offer: await getPendingOffer() }
+  } catch (error) {
+    recordCommand('LOAD_OFFER', '', 'error', await describeError(error))
+    return { ...data, offer: null }
+  }
+}
+
 const courierAction = async ({ request }) => {
   const form = await request.formData()
   const intent = form.get('intent')
@@ -409,7 +423,7 @@ export const router = createBrowserRouter([
           {
             path: 'courier',
             element: <CourierPage />,
-            loader: courierLoader,
+            loader: courierPageLoader,
             action: courierAction,
           },
           {
