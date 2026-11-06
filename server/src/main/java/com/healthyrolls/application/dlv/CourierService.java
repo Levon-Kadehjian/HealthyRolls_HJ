@@ -1,10 +1,13 @@
 package com.healthyrolls.application.dlv;
 
 import java.util.Objects;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.healthyrolls.domain.dlv.delivery.Assignment;
+import com.healthyrolls.domain.dlv.delivery.IAssignmentRepository;
 import com.healthyrolls.domain.common.AuthenticatedUser;
 import com.healthyrolls.domain.common.UserId;
 import com.healthyrolls.domain.dlv.DeliveryAccessPolicy;
@@ -19,11 +22,13 @@ public class CourierService {
         private final DispatchService dispatchService;
         private final ICourierRepository repository;
         private final DeliveryAccessPolicy policy;
+        private final IAssignmentRepository assignmentRepository;
 
         public CourierService(
                         ICourierRepository repository,
                         DeliveryAccessPolicy policy,
-                        DispatchService dispatchService) {
+                        DispatchService dispatchService,
+                        IAssignmentRepository assignmentRepository) {
 
                 this.repository = Objects.requireNonNull(
                                 repository, "Courier repository is required");
@@ -33,6 +38,8 @@ public class CourierService {
 
                 this.dispatchService = Objects.requireNonNull(
                                 dispatchService, "Dispatch service is required");
+                this.assignmentRepository = Objects.requireNonNull(
+                                assignmentRepository, "Assignment repository is required");
         }
 
         @Transactional
@@ -88,5 +95,16 @@ public class CourierService {
                 }
 
                 return courier;
+        }
+
+        @Transactional(readOnly = true)
+        public Optional<Assignment> getPendingOffer(
+                        UserId courierId,
+                        AuthenticatedUser actor) {
+
+                getCourier(courierId, actor);
+
+                return assignmentRepository.findActiveByCourierId(courierId)
+                                .filter(assignment -> assignment.getAcceptedAt() == null);
         }
 }

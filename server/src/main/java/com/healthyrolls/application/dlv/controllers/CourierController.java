@@ -48,4 +48,14 @@ public class CourierController {
         Courier courier = courierService.goOffDuty(user.userId(), user);
         return ResponseEntity.ok(CourierResponse.from(courier, false));
     }
+
+    @GetMapping("/me/offer")
+    public ResponseEntity<DeliveryOfferResponse> getPendingOffer(
+            @RequestAttribute(AuthenticatedUser.REQUEST_ATTRIBUTE) AuthenticatedUser user) {
+
+        return courierService.getPendingOffer(user.userId(), user)
+                .map(DeliveryOfferResponse::from)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.noContent().build());
+    }
 }
