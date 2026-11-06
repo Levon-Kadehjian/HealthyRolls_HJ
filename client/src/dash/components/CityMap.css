@@ -20,10 +20,17 @@
 }
 
 .city-map-empty {
-  display: grid;
-  place-items: center;
-  background: var(--code-bg);
+  position: absolute;
+  top: 0.75rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  padding: 0.4rem 0.9rem;
+  border-radius: 8px;
+  background: var(--bg);
   color: var(--text);
+  box-shadow: var(--shadow);
+  pointer-events: none;
 }
 
 .map-pin {

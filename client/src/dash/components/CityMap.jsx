@@ -7,6 +7,8 @@ import './CityMap.css'
 const TILE_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
 const ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
 
+const DEFAULT_CENTER = [45.5017, -73.5673] // Montreal coords
+
 const icons = new Map()
 function pinIcon(kind, status) {
   const key = `${kind}:${status ?? ''}`
@@ -55,14 +57,11 @@ function FitBounds({ bounds }) {
 export default function CityMap({ points = [], lines = [], bounds, onSelect, emptyMessage = 'Nothing to show on the map yet.' }) {
   const fitTo = bounds ?? points.map((point) => point.position)
 
-  if (fitTo.length === 0) {
-    return <div className="city-map city-map-empty">{emptyMessage}</div>
-  }
-
   return (
-    <MapContainer className="city-map" center={fitTo[0]} zoom={13} scrollWheelZoom>
+    <MapContainer className="city-map" center={fitTo[0] ?? DEFAULT_CENTER} zoom={13} scrollWheelZoom>
       <TileLayer url={TILE_URL} attribution={ATTRIBUTION} />
       <FitBounds bounds={fitTo} />
+      {fitTo.length === 0 && <div className="city-map-empty">{emptyMessage}</div>}
       {lines.map((line) => (
         <Polyline key={line.id} positions={line.positions} pathOptions={{ className: 'map-line' }} />
       ))}
