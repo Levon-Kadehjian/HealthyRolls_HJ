@@ -5,6 +5,8 @@ import java.util.Objects;
 
 import com.healthyrolls.domain.common.UserId;
 import com.healthyrolls.domain.ord.order.OrderId;
+import com.healthyrolls.domain.dlv.exceptions.InvalidAssignmentTransitionException;
+import com.healthyrolls.domain.dlv.exceptions.OfferNotAcceptedException;
 
 public class Assignment {
 
@@ -53,6 +55,24 @@ public class Assignment {
         }
 
         acceptedAt = Instant.now();
+    }
+
+    public void markPickedUp() {
+        if (!active) {
+            throw new InvalidAssignmentTransitionException(
+                    "An inactive assignment cannot be picked up");
+        }
+
+        if (acceptedAt == null) {
+            throw new OfferNotAcceptedException(orderId);
+        }
+
+        if (pickedUpAt != null || deliveredAt != null) {
+            throw new InvalidAssignmentTransitionException(
+                    "This assignment has already been picked up or delivered");
+        }
+
+        pickedUpAt = Instant.now();
     }
 
     public OrderId getOrderId() {

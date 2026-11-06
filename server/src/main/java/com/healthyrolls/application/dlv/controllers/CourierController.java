@@ -1,12 +1,18 @@
 package com.healthyrolls.application.dlv.controllers;
 
+import java.util.UUID;
+
+import com.healthyrolls.domain.ord.order.Order;
+import com.healthyrolls.domain.ord.order.OrderId;
 import com.healthyrolls.domain.dlv.courier.Courier;
 import com.healthyrolls.application.dlv.CourierService;
 import com.healthyrolls.domain.dlv.courier.CourierStatus;
 import com.healthyrolls.domain.common.AuthenticatedUser;
+import com.healthyrolls.application.ord.controllers.OrderResponse;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -57,5 +63,18 @@ public class CourierController {
                 .map(DeliveryOfferResponse::from)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.noContent().build());
+    }
+
+    @PostMapping("/me/orders/{orderId}/pickup")
+    public ResponseEntity<OrderResponse> confirmPickup(
+            @RequestAttribute(AuthenticatedUser.REQUEST_ATTRIBUTE) AuthenticatedUser user,
+            @PathVariable UUID orderId) {
+
+        Order order = courierService.confirmPickup(
+                user.userId(),
+                new OrderId(orderId),
+                user);
+
+        return ResponseEntity.ok(OrderResponse.from(order));
     }
 }
