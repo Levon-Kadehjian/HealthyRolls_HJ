@@ -26,6 +26,24 @@
     "latitude": 45.5185,
     "longitude": -73.5765
   },
+    {
+    "email": "courier2@healthyrolls.com",
+    "hashedPassword": "courier1234",
+    "name": "Test Courier 2",
+    "role": "COURIER",
+    "restaurantId": null,
+    "latitude": 45.5135,
+    "longitude": -73.5574
+  },
+  {
+    "email": "courier3@healthyrolls.com",
+    "hashedPassword": "courier12345",
+    "name": "Test Courier 3",
+    "role": "COURIER",
+    "restaurantId": null,
+    "latitude": 45.4955,
+    "longitude": -73.5574
+  },
   {
     "email": "operator@healthyrolls.com",
     "hashedPassword": "operator123",

@@ -71,6 +71,7 @@ export default function AccountPage() {
   }
 
   const isStaff = session?.role === 'RESTAURANT_STAFF'
+  const isCourier = session?.role === 'COURIER'
 
   return (
     <div className="account-page">
@@ -123,17 +124,19 @@ export default function AccountPage() {
               </div>
             </div>
 
-            <div className="account-field">
-              <label htmlFor="account-address">Delivery Address</label>
-              <input
-                id="account-address"
-                type="text"
-                className="account-input"
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                placeholder="Street address, city, province, postal code"
-              />
-            </div>
+            {!isCourier && (
+              <div className="account-field">
+                <label htmlFor="account-address">Delivery Address</label>
+                <input
+                  id="account-address"
+                  type="text"
+                  className="account-input"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  placeholder="Street address, city, province, postal code"
+                />
+              </div>
+            )}
           </div>
 
           {/* Password Section */}
@@ -173,20 +176,22 @@ export default function AccountPage() {
               {saving ? 'Saving...' : 'Save Changes'}
             </button>
 
-            <div className="account-actions-nav">
-              {isStaff ? (
-                <Link to="/dashboard/kitchen" className="btn-secondary">
-                  Kitchen Dashboard
+            {!isCourier && (
+              <div className="account-actions-nav">
+                {isStaff ? (
+                  <Link to="/dashboard/kitchen" className="btn-secondary">
+                    Kitchen Dashboard
+                  </Link>
+                ) : (
+                  <Link to="/orders" className="btn-secondary">
+                    View Orders
+                  </Link>
+                )}
+                <Link to="/" className="btn-secondary">
+                  Home
                 </Link>
-              ) : (
-                <Link to="/orders" className="btn-secondary">
-                  View Orders
-                </Link>
-              )}
-              <Link to="/" className="btn-secondary">
-                Home
-              </Link>
-            </div>
+              </div>
+            )}
           </div>
         </form>
       </div>
