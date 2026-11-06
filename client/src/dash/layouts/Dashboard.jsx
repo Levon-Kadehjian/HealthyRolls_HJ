@@ -4,6 +4,7 @@ import './Dashboard.css'
 const menuItems = [
   { to: 'orders', label: 'Orders', hiddenFor: ['RESTAURANT_STAFF', 'COURIER'] },
   { to: 'kitchen', label: 'Kitchen', roles: ['RESTAURANT_STAFF'] },
+  { to: 'courier', label: 'Deliveries', roles: ['COURIER'] },
   { to: 'account', label: 'Account' },
 ]
 
