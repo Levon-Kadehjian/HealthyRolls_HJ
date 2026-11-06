@@ -36,6 +36,16 @@ const redirectStaffToKitchen = () => {
   }
 }
 
+const COURIER_HOME_PATH = '/dashboard/account'
+
+const isCourierSession = (session) => session?.role === 'COURIER'
+
+const redirectCourierToAccount = () => {
+  if (isCourierSession(getSession())) {
+    throw redirect(COURIER_HOME_PATH)
+  }
+}
+
 const requireLogin = () => {
   const session = getSession()
   if (!session) {
@@ -66,6 +76,7 @@ const customerOnlyLoader = () => {
 
 const homeLoader = () => {
   redirectStaffToKitchen()
+  redirectCourierToAccount()
   return null
 }
 
@@ -73,7 +84,9 @@ const dashboardLoader = () => ({ session: requireLogin() })
 
 const dashboardIndexLoader = () => {
   const session = getSession()
-  return redirect(isStaffSession(session) ? 'kitchen' : 'orders')
+  if (isStaffSession(session)) return redirect('kitchen')
+  if (isCourierSession(session)) return redirect('account')
+  return redirect('orders')
 }
 
 const loadRestaurantCatalog = async (restaurantIds) => {
@@ -91,6 +104,7 @@ const loadOrderHistory = async (knownRestaurantIds = []) => {
 const customerOrdersLoader = async () => {
   const session = requireLogin()
   redirectStaffToKitchen()
+  redirectCourierToAccount()
   try {
     const { orders } = await runCommand(
       'LIST_ORDERS',
@@ -237,6 +251,7 @@ const restaurantAction = async ({ request, params }) => {
 
 const restaurantsLoader = () => {
   redirectStaffToKitchen()
+  redirectCourierToAccount()
   return runCommand(
     'BROWSE_RESTAURANTS',
     '',
@@ -249,6 +264,7 @@ const restaurantsLoader = () => {
 }
 
 const restaurantLoader = ({ params }) => {
+  redirectCourierToAccount()
   return runCommand(
     'BROWSE_MENU',
     `restaurant=${params.restaurantId}`,
