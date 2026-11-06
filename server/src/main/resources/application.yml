@@ -34,7 +34,7 @@ healthyrolls:
         - { path-pattern: /api/restaurants/*/reopen, method: POST, allowed-rules: [OPERATOR] }
 
         - { path-pattern: /api/orders/preparation/next, method: POST, allowed-rules: [RESTAURANT_STAFF] }
-        - { path-pattern: /api/orders/*/actions, method: POST, allowed-rules: [CUSTOMER, RESTAURANT_STAFF, COURIER, OPERATOR] }
+        - { path-pattern: /api/orders/*/actions, method: POST, allowed-rules: [CUSTOMER, RESTAURANT_STAFF, OPERATOR] }
         - { path-pattern: /api/orders, method: POST, allowed-rules: [CUSTOMER] }
         - { path-pattern: /api/orders/**, method: GET, allowed-rules: [CUSTOMER, RESTAURANT_STAFF, OPERATOR] }
 
@@ -45,6 +45,8 @@ healthyrolls:
         - { path-pattern: /api/couriers/me/off-duty, method: POST, allowed-rules: [COURIER] }
         - { path-pattern: /api/couriers/me, method: GET, allowed-rules: [COURIER] }
         - { path-pattern: /api/couriers/me/offer, method: GET, allowed-rules: [COURIER] }
+        - { path-pattern: /api/couriers/me/orders/*/pickup, method: POST, allowed-rules: [COURIER] }
+        - { path-pattern: /api/couriers/me/orders/*/deliver, method: POST, allowed-rules: [COURIER] }
 
         # Operator
         - { path-pattern: /api/admin/reset, method: POST, allowed-rules: [OPERATOR] }
