@@ -18,6 +18,8 @@ import { applyOrderAction, listOrderEvents, listOrders } from '../api/orders'
 import { getSession } from '../auth/session'
 import { describeError, recordCommand, runCommand } from '../console/consoleStore'
 import { buildOrderHistory, canCancelOrder } from '../orders/orderHistory'
+import CourierPage from '../pages/CourierPage'
+import { acceptOffer, confirmDelivery, confirmPickup, getMyCourier, goOffDuty, goOnDuty } from '../api/couriers'
 
 
 const ORDER_COMMANDS = {
@@ -36,11 +38,11 @@ const redirectStaffToKitchen = () => {
   }
 }
 
-const COURIER_HOME_PATH = '/dashboard/account'
+const COURIER_HOME_PATH = '/dashboard/courier'
 
 const isCourierSession = (session) => session?.role === 'COURIER'
 
-const redirectCourierToAccount = () => {
+const redirectCourierHome = () => {
   if (isCourierSession(getSession())) {
     throw redirect(COURIER_HOME_PATH)
   }
@@ -76,7 +78,7 @@ const customerOnlyLoader = () => {
 
 const homeLoader = () => {
   redirectStaffToKitchen()
-  redirectCourierToAccount()
+  redirectCourierHome()
   return null
 }
 
@@ -85,7 +87,7 @@ const dashboardLoader = () => ({ session: requireLogin() })
 const dashboardIndexLoader = () => {
   const session = getSession()
   if (isStaffSession(session)) return redirect('kitchen')
-  if (isCourierSession(session)) return redirect('account')
+  if (isCourierSession(session)) return redirect('courier')
   return redirect('orders')
 }
 
@@ -104,7 +106,7 @@ const loadOrderHistory = async (knownRestaurantIds = []) => {
 const customerOrdersLoader = async () => {
   const session = requireLogin()
   redirectStaffToKitchen()
-  redirectCourierToAccount()
+  redirectCourierHome()
   try {
     const { orders } = await runCommand(
       'LIST_ORDERS',
@@ -192,6 +194,48 @@ const restaurantOrdersAction = async ({ request }) => {
   }
 }
 
+const COURIER_COMMANDS = {
+  GO_ON_DUTY: () => goOnDuty(),
+  GO_OFF_DUTY: () => goOffDuty(),
+  ACCEPT_OFFER: (orderId) => acceptOffer(orderId),
+  CONFIRM_PICKUP: (orderId) => confirmPickup(orderId),
+  CONFIRM_DELIVERY: (orderId) => confirmDelivery(orderId),
+}
+
+const courierLoader = async () => {
+  const session = requireLogin()
+  if (!isCourierSession(session)) {
+    recordCommand('OPEN_DELIVERIES', `role=${session.role}`, 'error', 'couriers only')
+    throw redirect('/dashboard')
+  }
+  try {
+    return { courier: await getMyCourier(), failed: false }
+  } catch (error) {
+    recordCommand('LOAD_COURIER', '', 'error', await describeError(error))
+    return { courier: null, failed: true }
+  }
+}
+
+const courierAction = async ({ request }) => {
+  const form = await request.formData()
+  const intent = form.get('intent')
+  const orderId = form.get('orderId')
+  const command = COURIER_COMMANDS[intent]
+  const details = orderId ? `order=${String(orderId).slice(0, 8)}` : ''
+
+  if (!command) {
+    recordCommand('COURIER_ACTION', details, 'error', `unknown action ${intent}`)
+    return { ok: false, error: `Unknown action ${intent}` }
+  }
+
+  try {
+    await runCommand(intent, details, () => command(orderId), (result) => `now ${result.status}`)
+    return { ok: true }
+  } catch (error) {
+    return { ok: false, error: await describeError(error) }
+  }
+}
+
 const restaurantAction = async ({ request, params }) => {
   const form = await request.formData()
   const intent = form.get('intent')
@@ -251,7 +295,7 @@ const restaurantAction = async ({ request, params }) => {
 
 const restaurantsLoader = () => {
   redirectStaffToKitchen()
-  redirectCourierToAccount()
+  redirectCourierHome()
   return runCommand(
     'BROWSE_RESTAURANTS',
     '',
@@ -264,7 +308,7 @@ const restaurantsLoader = () => {
 }
 
 const restaurantLoader = ({ params }) => {
-  redirectCourierToAccount()
+  redirectCourierHome()
   return runCommand(
     'BROWSE_MENU',
     `restaurant=${params.restaurantId}`,
@@ -359,6 +403,12 @@ export const router = createBrowserRouter([
             element: <RestaurantOrdersPage />,
             loader: restaurantOrdersLoader,
             action: restaurantOrdersAction,
+          },
+          {
+            path: 'courier',
+            element: <CourierPage />,
+            loader: courierLoader,
+            action: courierAction,
           },
           {
             path: 'account',
