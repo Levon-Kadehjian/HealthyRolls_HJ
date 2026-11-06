@@ -55,6 +55,14 @@ public class CourierController {
         return ResponseEntity.ok(CourierResponse.from(courier, false));
     }
 
+    @PostMapping("/me/orders/{orderId}/accept")
+    public ResponseEntity<OrderResponse> acceptOffer(
+            @PathVariable UUID orderId,
+            @RequestAttribute(AuthenticatedUser.REQUEST_ATTRIBUTE) AuthenticatedUser user) {
+        Order order = courierService.acceptOffer(user.userId(), new OrderId(orderId), user);
+        return ResponseEntity.ok(OrderResponse.from(order));
+    }
+
     @GetMapping("/me/offer")
     public ResponseEntity<DeliveryOfferResponse> getPendingOffer(
             @RequestAttribute(AuthenticatedUser.REQUEST_ATTRIBUTE) AuthenticatedUser user) {
