@@ -1,5 +1,7 @@
 package com.healthyrolls.technicalservices.configuration;
 
+import com.healthyrolls.domain.dlv.delivery.DispatchQueue;
+import com.healthyrolls.domain.dlv.delivery.NearestCourierSelector;
 import com.healthyrolls.domain.dlv.DeliveryAccessPolicy;
 import com.healthyrolls.domain.ord.order.OrderAccessPolicy;
 import com.healthyrolls.domain.ord.order.OrderFactory;
@@ -35,5 +37,15 @@ public class DomainConfig {
     @Bean
     public DeliveryAccessPolicy deliveryAccessPolicy() {
         return new DeliveryAccessPolicy();
+    }
+
+    @Bean
+    public NearestCourierSelector nearestCourierSelector() {
+        return new NearestCourierSelector();
+    }
+
+    @Bean
+    public DispatchQueue dispatchQueue() {
+        return new DispatchQueue();
     }
 }

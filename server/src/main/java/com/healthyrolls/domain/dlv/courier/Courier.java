@@ -105,14 +105,10 @@ public class Courier {
         currentOrderId = null;
     }
 
-    // source: https://stackoverflow.com/a/16794680
-    public double distanceTo(double lat, double lon) {
-        double deltaLat = Math.toRadians(lat - latitude);
-        double deltaLon = Math.toRadians(lon - longitude);
-        double a = Math.pow(Math.sin(deltaLat / 2), 2)
-                + Math.cos(Math.toRadians(latitude)) * Math.cos(Math.toRadians(lat))
-                        * Math.pow(Math.sin(deltaLon / 2), 2);
-        return 2 * EARTH_RADIUS_KM * Math.asin(Math.sqrt(a));
+    public double distanceTo(double latitude, double longitude) {
+        return Math.hypot(
+                this.latitude - latitude,
+                this.longitude - longitude);
     }
 
     private void require(CourierStatus expected, String action) {

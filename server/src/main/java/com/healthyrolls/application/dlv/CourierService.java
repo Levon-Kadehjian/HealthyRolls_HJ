@@ -16,18 +16,23 @@ import com.healthyrolls.domain.ord.exceptions.ActionNotPermittedException;
 @Service
 public class CourierService {
 
+        private final DispatchService dispatchService;
         private final ICourierRepository repository;
         private final DeliveryAccessPolicy policy;
 
         public CourierService(
                         ICourierRepository repository,
-                        DeliveryAccessPolicy policy) {
+                        DeliveryAccessPolicy policy,
+                        DispatchService dispatchService) {
 
                 this.repository = Objects.requireNonNull(
                                 repository, "Courier repository is required");
 
                 this.policy = Objects.requireNonNull(
                                 policy, "Delivery access policy is required");
+
+                this.dispatchService = Objects.requireNonNull(
+                                dispatchService, "Dispatch service is required");
         }
 
         @Transactional
@@ -46,6 +51,7 @@ public class CourierService {
 
                 courier.goOnDuty();
                 repository.save(courier);
+                dispatchService.onCourierIdle();
                 return courier;
         }
 
