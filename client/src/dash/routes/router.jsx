@@ -14,7 +14,7 @@ import RestaurantOrdersPage from '../pages/RestaurantOrdersPage'
 import ConsolePage from '../pages/ConsolePage'
 import AuthPage from '../pages/AuthPage'
 import { addMenuItem, editMenuItem, changeMenuAvailability, pauseRestaurant, reopenRestaurant, getRestaurant, getRestaurants } from '../api/restaurants'
-import { applyOrderAction, listOrderEvents, listOrders } from '../api/orders'
+import { applyOrderAction, getQueueCounts, listOrderEvents, listOrders } from '../api/orders'
 import { getSession } from '../auth/session'
 import { ensureSessionLocation } from '../api/auth'
 import { describeError, recordCommand, runCommand } from '../console/consoleStore'
@@ -303,7 +303,14 @@ const restaurantsLoader = () => {
     '',
     async () => {
       requireSession()
-      return getRestaurants()
+      const [restaurants, queues] = await Promise.all([getRestaurants(), getQueueCounts().catch(() => [])])
+      const counts = new Map(queues.map((queue) => [queue.restaurantId, queue]))
+      return restaurants.map((restaurant) => ({
+        ...restaurant,
+        queuedCount: counts.get(restaurant.id)?.queuedCount ?? 0,
+        preparingCount: counts.get(restaurant.id)?.preparingCount ?? 0,
+        readyCount: counts.get(restaurant.id)?.readyCount ?? 0,
+      }))
     },
     (restaurants) => `${restaurants.length} restaurants`,
   )

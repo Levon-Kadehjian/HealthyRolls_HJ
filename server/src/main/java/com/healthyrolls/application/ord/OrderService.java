@@ -28,6 +28,7 @@ import com.healthyrolls.domain.ord.order.OrderId;
 import com.healthyrolls.domain.ord.order.OrderLine;
 import com.healthyrolls.domain.ord.order.OrderStateChanged;
 import com.healthyrolls.domain.ord.order.OrderStatus;
+import com.healthyrolls.domain.ord.order.QueueCounts;
 
 @Service
 public class OrderService {
@@ -156,6 +157,17 @@ public class OrderService {
         }
 
         return o;
+    }
+
+    @Transactional(readOnly = true)
+    public List<QueueCounts> queueCounts(AuthenticatedUser actor) {
+        Objects.requireNonNull(actor, "User context is required");
+        List<QueueCounts> all = repository.countQueues();
+        if (actor.role() == UserRole.RESTAURANT_STAFF) {
+            UUID own = actor.restaurantId() == null ? null : actor.restaurantId().value();
+            return all.stream().filter(c -> c.restaurantId().equals(own)).toList();
+        }
+        return all;
     }
 
     @Transactional(readOnly = true)

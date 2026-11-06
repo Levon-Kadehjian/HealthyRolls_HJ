@@ -18,5 +18,7 @@ public interface IOrderRepository {
 
     boolean hasPreparingOrder(UUID restaurantId);
 
+    List<QueueCounts> countQueues();
+
     Optional<Order> findNextAccepted(UUID restaurantId);
 }
