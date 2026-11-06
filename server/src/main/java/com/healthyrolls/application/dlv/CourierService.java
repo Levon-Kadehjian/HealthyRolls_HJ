@@ -19,92 +19,92 @@ import com.healthyrolls.domain.ord.exceptions.ActionNotPermittedException;
 @Service
 public class CourierService {
 
-        private final DispatchService dispatchService;
-        private final ICourierRepository repository;
-        private final DeliveryAccessPolicy policy;
-        private final IAssignmentRepository assignmentRepository;
+    private final DispatchService dispatchService;
+    private final ICourierRepository repository;
+    private final DeliveryAccessPolicy policy;
+    private final IAssignmentRepository assignmentRepository;
 
-        public CourierService(
-                        ICourierRepository repository,
-                        DeliveryAccessPolicy policy,
-                        DispatchService dispatchService,
-                        IAssignmentRepository assignmentRepository) {
+    public CourierService(
+            ICourierRepository repository,
+            DeliveryAccessPolicy policy,
+            DispatchService dispatchService,
+            IAssignmentRepository assignmentRepository) {
 
-                this.repository = Objects.requireNonNull(
-                                repository, "Courier repository is required");
+        this.repository = Objects.requireNonNull(
+                repository, "Courier repository is required");
 
-                this.policy = Objects.requireNonNull(
-                                policy, "Delivery access policy is required");
+        this.policy = Objects.requireNonNull(
+                policy, "Delivery access policy is required");
 
-                this.dispatchService = Objects.requireNonNull(
-                                dispatchService, "Dispatch service is required");
-                this.assignmentRepository = Objects.requireNonNull(
-                                assignmentRepository, "Assignment repository is required");
+        this.dispatchService = Objects.requireNonNull(
+                dispatchService, "Dispatch service is required");
+        this.assignmentRepository = Objects.requireNonNull(
+                assignmentRepository, "Assignment repository is required");
+    }
+
+    @Transactional
+    public Courier goOnDuty(UserId courierId, AuthenticatedUser actor) {
+        Objects.requireNonNull(courierId, "Courier ID is required");
+        Objects.requireNonNull(actor, "User context is required");
+        Objects.requireNonNull(actor.userId(), "User ID is required");
+
+        Courier courier = repository.findById(courierId)
+                .orElseThrow(() -> new CourierNotFoundException(courierId));
+
+        if (!policy.canChangeDuty(actor, courier)) {
+            throw new ActionNotPermittedException(
+                    "You are not allowed to change this courier's duty status");
         }
 
-        @Transactional
-        public Courier goOnDuty(UserId courierId, AuthenticatedUser actor) {
-                Objects.requireNonNull(courierId, "Courier ID is required");
-                Objects.requireNonNull(actor, "User context is required");
-                Objects.requireNonNull(actor.userId(), "User ID is required");
+        courier.goOnDuty();
+        repository.save(courier);
+        dispatchService.onCourierIdle();
+        return courier;
+    }
 
-                Courier courier = repository.findById(courierId)
-                                .orElseThrow(() -> new CourierNotFoundException(courierId));
+    @Transactional
+    public Courier goOffDuty(UserId courierId, AuthenticatedUser actor) {
+        Objects.requireNonNull(courierId, "Courier ID is required");
+        Objects.requireNonNull(actor, "User context is required");
+        Objects.requireNonNull(actor.userId(), "User ID is required");
 
-                if (!policy.canChangeDuty(actor, courier)) {
-                        throw new ActionNotPermittedException(
-                                        "You are not allowed to change this courier's duty status");
-                }
+        Courier courier = repository.findById(courierId)
+                .orElseThrow(() -> new CourierNotFoundException(courierId));
 
-                courier.goOnDuty();
-                repository.save(courier);
-                dispatchService.onCourierIdle();
-                return courier;
+        if (!policy.canChangeDuty(actor, courier)) {
+            throw new ActionNotPermittedException(
+                    "You are not allowed to change this courier's duty status");
         }
 
-        @Transactional
-        public Courier goOffDuty(UserId courierId, AuthenticatedUser actor) {
-                Objects.requireNonNull(courierId, "Courier ID is required");
-                Objects.requireNonNull(actor, "User context is required");
-                Objects.requireNonNull(actor.userId(), "User ID is required");
+        courier.goOffDuty();
+        repository.save(courier);
+        return courier;
+    }
 
-                Courier courier = repository.findById(courierId)
-                                .orElseThrow(() -> new CourierNotFoundException(courierId));
+    @Transactional(readOnly = true)
+    public Courier getCourier(UserId courierId, AuthenticatedUser actor) {
+        Objects.requireNonNull(courierId, "Courier ID is required");
+        Objects.requireNonNull(actor, "User context is required");
+        Objects.requireNonNull(actor.userId(), "User ID is required");
 
-                if (!policy.canChangeDuty(actor, courier)) {
-                        throw new ActionNotPermittedException(
-                                        "You are not allowed to change this courier's duty status");
-                }
+        Courier courier = repository.findById(courierId)
+                .orElseThrow(() -> new CourierNotFoundException(courierId));
 
-                courier.goOffDuty();
-                repository.save(courier);
-                return courier;
+        if (!policy.canView(actor, courier)) {
+            throw new CourierNotFoundException(courierId);
         }
 
-        @Transactional(readOnly = true)
-        public Courier getCourier(UserId courierId, AuthenticatedUser actor) {
-                Objects.requireNonNull(courierId, "Courier ID is required");
-                Objects.requireNonNull(actor, "User context is required");
-                Objects.requireNonNull(actor.userId(), "User ID is required");
+        return courier;
+    }
 
-                Courier courier = repository.findById(courierId)
-                                .orElseThrow(() -> new CourierNotFoundException(courierId));
+    @Transactional(readOnly = true)
+    public Optional<Assignment> getPendingOffer(
+            UserId courierId,
+            AuthenticatedUser actor) {
 
-                if (!policy.canView(actor, courier)) {
-                        throw new CourierNotFoundException(courierId);
-                }
+        getCourier(courierId, actor);
 
-                return courier;
-        }
-
-        @Transactional(readOnly = true)
-        public Optional<Assignment> getPendingOffer(
-                        UserId courierId,
-                        AuthenticatedUser actor) {
-
-                getCourier(courierId, actor);
-
-                return assignmentRepository.findActiveByCourierId(courierId)
-                                .filter(assignment -> assignment.getAcceptedAt() == null);
-        }
+        return assignmentRepository.findActiveByCourierId(courierId)
+                .filter(assignment -> assignment.getAcceptedAt() == null);
+    }
 }
