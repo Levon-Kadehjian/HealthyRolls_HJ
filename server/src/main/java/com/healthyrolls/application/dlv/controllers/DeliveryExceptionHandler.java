@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import com.healthyrolls.domain.dlv.exceptions.CourierCarryingOrderException;
 import com.healthyrolls.domain.dlv.exceptions.CourierNotFoundException;
 import com.healthyrolls.domain.dlv.exceptions.InvalidCourierTransitionException;
+import com.healthyrolls.domain.dlv.exceptions.InvalidAssignmentTransitionException;
 import com.healthyrolls.domain.dlv.exceptions.OfferNotAcceptedException;
 import com.healthyrolls.domain.dlv.exceptions.OrderNotStalledException;
 import com.healthyrolls.domain.ord.exceptions.ActionNotPermittedException;
@@ -33,6 +34,13 @@ public class DeliveryExceptionHandler {
     @ExceptionHandler(InvalidCourierTransitionException.class)
     public ProblemDetail onInvalidCourierTransition(InvalidCourierTransitionException e) {
         return problem(CONFLICT, "Invalid courier transition", e);
+    }
+
+    @ExceptionHandler(InvalidAssignmentTransitionException.class)
+    public ProblemDetail onInvalidAssignment(
+            InvalidAssignmentTransitionException e) {
+
+        return problem(CONFLICT, "Invalid assignment transition", e);
     }
 
     @ExceptionHandler(OfferNotAcceptedException.class)
