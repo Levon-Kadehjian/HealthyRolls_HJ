@@ -2,7 +2,7 @@ import { NavLink, Outlet, useLoaderData } from 'react-router-dom'
 import './Dashboard.css'
 
 const menuItems = [
-  { to: 'orders', label: 'Orders', hiddenFor: ['RESTAURANT_STAFF'] },
+  { to: 'orders', label: 'Orders', hiddenFor: ['RESTAURANT_STAFF', 'COURIER'] },
   { to: 'kitchen', label: 'Kitchen', roles: ['RESTAURANT_STAFF'] },
   { to: 'account', label: 'Account' },
 ]
