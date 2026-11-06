@@ -2,6 +2,8 @@ package com.healthyrolls.application.billing;
 
 import java.util.UUID;
 
+import org.springframework.stereotype.Service;
+
 import com.healthyrolls.domain.ord.ledger.ILedgerRepository;
 import com.healthyrolls.domain.ord.ledger.LedgerEntry;
 import com.healthyrolls.domain.ord.ledger.OrderSummary;
@@ -10,6 +12,7 @@ import com.healthyrolls.domain.ord.order.Order;
 import com.healthyrolls.domain.ord.order.OrderStatus;
 import com.healthyrolls.domain.ord.pricing.FareCalculator;
 
+@Service
 public class BillingService {
 
     private final FareCalculator fareCalculator;
