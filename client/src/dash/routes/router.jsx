@@ -10,6 +10,7 @@ import CartPage from '../pages/CartPage'
 import CheckoutPage from '../pages/CheckoutPage'
 import RestaurantMenuPage from '../pages/RestaurantMenuPage'
 import RestaurantsPage from '../pages/RestaurantsPage'
+import MapPage from '../pages/MapPage'
 import RestaurantOrdersPage from '../pages/RestaurantOrdersPage'
 import ConsolePage from '../pages/ConsolePage'
 import AuthPage from '../pages/AuthPage'
@@ -384,6 +385,11 @@ export const router = createBrowserRouter([
       {
         path: 'restaurants',
         element: <RestaurantsPage />,
+        loader: restaurantsLoader,
+      },
+      {
+        path: 'map',
+        element: <MapPage />,
         loader: restaurantsLoader,
       },
       {
