@@ -56,7 +56,7 @@ export default function Navbar() {
   return (
     <header className="site-header">
       <div className="site-nav">
-        <Link to={isStaff ? '/dashboard/kitchen' : isCourier ? '/dashboard/account' : '/'} className="site-brand" aria-label="HealthyRolls home">
+        <Link to={isStaff ? '/dashboard/kitchen' : isCourier ? '/dashboard/courier' : '/'} className="site-brand" aria-label="HealthyRolls home">
           <img src={sushiLogo} alt="" className="site-brand-logo" />
           <span className="site-brand-name">HealthyRolls</span>
         </Link>
@@ -70,6 +70,11 @@ export default function Navbar() {
           {session && !isStaff && !isCourier && (
             <NavLink to="/restaurants" className={linkClass}>
               Restaurants
+            </NavLink>
+          )}
+          {isCourier && (
+            <NavLink to="/dashboard/courier" className={linkClass}>
+              Deliveries
             </NavLink>
           )}
           {isStaff && (
