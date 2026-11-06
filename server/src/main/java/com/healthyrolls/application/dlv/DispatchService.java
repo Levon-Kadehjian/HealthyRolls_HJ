@@ -1,5 +1,6 @@
 package com.healthyrolls.application.dlv;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -7,6 +8,7 @@ import java.util.Optional;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 
 import com.healthyrolls.domain.dlv.courier.Courier;
 import com.healthyrolls.domain.dlv.courier.ICourierRepository;
@@ -132,5 +134,20 @@ public class DispatchService {
 
     public List<OrderId> queueSnapshot() {
         return queue.snapshot();
+    }
+
+    @EventListener(ApplicationReadyEvent.class)
+    @org.springframework.core.annotation.Order(1)
+    @Transactional
+    public void recoverWaitingOrders() {
+        List<Order> readyOrders = orderRepository.findAll().stream()
+                .filter(order -> order.status() == OrderStatus.READY)
+                .sorted(Comparator.comparing(
+                        order -> order.getOrderId().value().toString()))
+                .toList();
+
+        for (Order order : readyOrders) {
+            dispatch(order.getOrderId());
+        }
     }
 }
