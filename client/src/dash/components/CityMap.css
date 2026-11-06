@@ -1,0 +1,239 @@
+:root {
+  --map-open: #2e9e5b;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --map-open: #5fd38a;
+  }
+}
+
+.city-map {
+  width: min(100%, 640px);
+  aspect-ratio: 1 / 1;
+  margin-inline: auto;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  margin-bottom: 1.5rem;
+  z-index: 0;
+}
+
+.city-map-empty {
+  position: absolute;
+  top: 0.75rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  padding: 0.4rem 0.9rem;
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text);
+  box-shadow: var(--shadow);
+  pointer-events: none;
+}
+
+.map-pin {
+  display: block;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  --pin: var(--map-open);
+  background: var(--pin);
+  border: 2px solid color-mix(in srgb, var(--pin) 60%, #000);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+.map-pin-restaurant.map-pin-paused {
+  --pin: #d9a441;
+}
+
+.map-pin-restaurant.map-pin-closed {
+  --pin: #9ca3af;
+}
+
+.map-you {
+  position: relative;
+  display: block;
+  width: 20px;
+  height: 20px;
+  --you: #2f7df6;
+}
+
+.map-you-dot {
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  background: var(--you);
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15), 0 2px 6px rgba(0, 0, 0, 0.35);
+}
+
+.map-you-pulse {
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--you) 35%, transparent);
+  animation: map-you-pulse 2s ease-out infinite;
+}
+
+@keyframes map-you-pulse {
+  from {
+    transform: scale(0.5);
+    opacity: 1;
+  }
+  to {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .map-you-pulse {
+    animation: none;
+    opacity: 0.5;
+  }
+}
+
+.map-pin-courier {
+  --pin: #8b5cf6;
+}
+
+.map-line {
+  stroke: var(--brand-surface);
+  stroke-width: 3;
+  stroke-dasharray: 6 6;
+}
+
+.city-map .leaflet-popup-content-wrapper,
+.city-map .leaflet-popup-tip {
+  background: var(--bg);
+  color: var(--text);
+  box-shadow: var(--shadow);
+}
+
+.city-map .leaflet-popup-content {
+  margin: 0.75rem 1rem;
+  font: inherit;
+}
+
+.map-popup h4 {
+  margin: 0 0 0.25rem;
+  color: var(--text-h);
+}
+
+.map-popup p {
+  margin: 0 0 0.5rem;
+}
+
+.map-filters {
+  display: flex;
+  justify-content: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.map-filter-open {
+  --status: var(--map-open);
+}
+
+.map-filter-paused {
+  --status: #d9a441;
+}
+
+.map-filter-closed {
+  --status: #9ca3af;
+}
+
+.map-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.6rem 0.4rem 0.8rem;
+  border-radius: 999px;
+  border: 2px solid color-mix(in srgb, var(--status) 55%, transparent);
+  background: color-mix(in srgb, var(--status) 16%, transparent);
+  color: var(--text-h);
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, opacity 0.15s, transform 0.1s;
+}
+
+.map-filter:hover {
+  background: color-mix(in srgb, var(--status) 28%, transparent);
+}
+
+.map-filter:active {
+  transform: scale(0.97);
+}
+
+.map-filter:focus-visible {
+  outline: 2px solid var(--status);
+  outline-offset: 2px;
+}
+
+.map-filter[aria-pressed='false'] {
+  background: transparent;
+  border-color: var(--border);
+  border-style: dashed;
+  opacity: 0.55;
+}
+
+.map-filter-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--status);
+}
+
+.map-filter[aria-pressed='false'] .map-filter-dot {
+  background: transparent;
+  box-shadow: inset 0 0 0 2px var(--status);
+}
+
+.map-filter-count {
+  min-width: 1.4rem;
+  padding: 0 0.4rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--status) 30%, transparent);
+  font-size: 0.75rem;
+  line-height: 1.4rem;
+  text-align: center;
+}
+
+.city-map .leaflet-tile-pane {
+  /* grey → sepia gives a tint to rotate; hue-rotate turns it blue. Tune the sepia/saturate amounts for strength. */
+  filter: grayscale(1) sepia(0.35) hue-rotate(175deg) saturate(1.6) contrast(0.9) brightness(1.05);
+}
+
+.city-map .leaflet-bar a {
+  background: var(--bg);
+  color: var(--text-h);
+  border-color: var(--border);
+}
+
+.city-map .leaflet-control-attribution {
+  background: var(--bg);
+  color: var(--text);
+}
+
+@media (prefers-color-scheme: dark) {
+  .city-map {
+    background: var(--code-bg);
+  }
+
+  .city-map .leaflet-tile-pane {
+    filter: grayscale(1) invert(1) sepia(0.5) hue-rotate(180deg) saturate(2.2) contrast(0.85) brightness(0.8);
+  }
+
+  .map-you {
+    --you: #5b9dff;
+  }
+
+  .map-line {
+    stroke: var(--accent-mint);
+  }
+}
