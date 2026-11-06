@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.healthyrolls.domain.dlv.courier.Courier;
-import com.healthyrolls.domain.dlv.courier.CourierStatus;
 import com.healthyrolls.domain.dlv.courier.ICourierRepository;
 import com.healthyrolls.domain.dlv.delivery.Assignment;
 import com.healthyrolls.domain.dlv.delivery.DispatchQueue;
@@ -69,6 +68,9 @@ public class DispatchService {
     public Optional<Assignment> dispatch(OrderId orderId) {
         Objects.requireNonNull(orderId, "Order ID is required");
 
+        // Lock before checking assignments so competing dispatches see committed offers.
+        List<Courier> lockedCouriers = courierRepository.findAllForDispatch();
+
         Order order = orderRepository.findByOrderId(orderId);
 
         if (order.status() != OrderStatus.READY) {
@@ -85,9 +87,8 @@ public class DispatchService {
 
         Restaurant restaurant = restaurantRepository.findById(order.getRestaurantId());
 
-        List<Courier> candidates = courierRepository
-                .findByStatus(CourierStatus.IDLE)
-                .stream()
+        List<Courier> candidates = lockedCouriers.stream()
+                .filter(Courier::isAvailable)
                 .filter(courier -> assignmentRepository
                         .findActiveByCourierId(courier.getId())
                         .isEmpty())
