@@ -8,6 +8,8 @@ import com.healthyrolls.domain.dlv.courier.ICourierRepository;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 public class JpaCourierRepository implements ICourierRepository {
@@ -31,6 +33,12 @@ public class JpaCourierRepository implements ICourierRepository {
     @Override
     public List<Courier> findAll() {
         return springData.findAll().stream().map(CourierEntity::toDomain).toList();
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.MANDATORY)
+    public List<Courier> findAllForDispatch() {
+        return springData.findAllForDispatch().stream().map(CourierEntity::toDomain).toList();
     }
 
     @Override
