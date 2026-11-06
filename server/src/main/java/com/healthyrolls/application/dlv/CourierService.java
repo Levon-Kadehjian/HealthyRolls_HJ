@@ -1,8 +1,11 @@
 package com.healthyrolls.application.dlv;
 
+import java.time.Instant;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,22 +25,34 @@ import com.healthyrolls.domain.dlv.courier.Courier;
 import com.healthyrolls.domain.dlv.courier.ICourierRepository;
 import com.healthyrolls.domain.dlv.exceptions.CourierNotFoundException;
 import com.healthyrolls.domain.ord.exceptions.ActionNotPermittedException;
+import com.healthyrolls.domain.dlv.courier.CourierStateChanged;
+import com.healthyrolls.domain.dlv.courier.CourierStatus;
+import com.healthyrolls.domain.dlv.courier.ICourierEventRepository;
+import com.healthyrolls.domain.dlv.exceptions.OfferNotFoundException;
+import com.healthyrolls.domain.ord.order.EventId;
+import com.healthyrolls.domain.ord.order.IOrderRepository;
 
 @Service
 public class CourierService {
+
+    private static final Logger log = LoggerFactory.getLogger(CourierService.class);
 
     private final DispatchService dispatchService;
     private final ICourierRepository repository;
     private final DeliveryAccessPolicy policy;
     private final IAssignmentRepository assignmentRepository;
+    private final IOrderRepository orderRepository;
     private final OrderService orderService;
+    private final ICourierEventRepository courierEventRepository;
 
     public CourierService(
             ICourierRepository repository,
             DeliveryAccessPolicy policy,
             DispatchService dispatchService,
             OrderService orderService,
-            IAssignmentRepository assignmentRepository) {
+            IAssignmentRepository assignmentRepository,
+            IOrderRepository orderRepository,
+            ICourierEventRepository courierEventRepository) {
 
         this.repository = Objects.requireNonNull(
                 repository, "Courier repository is required");
@@ -49,8 +64,12 @@ public class CourierService {
                 dispatchService, "Dispatch service is required");
         this.assignmentRepository = Objects.requireNonNull(
                 assignmentRepository, "Assignment repository is required");
+        this.orderRepository = Objects.requireNonNull(
+                orderRepository, "Order repository is required");
         this.orderService = Objects.requireNonNull(
                 orderService, "Order service is required");
+        this.courierEventRepository = Objects.requireNonNull(
+                courierEventRepository, "Courier event repository is required");
     }
 
     @Transactional
@@ -84,12 +103,84 @@ public class CourierService {
                     "You are not allowed to change this courier's duty status");
         }
 
-        Courier courier = repository.findById(courierId)
+        Courier courier = repository.findAllForDispatch().stream()
+                .filter(candidate -> candidate.getId().equals(courierId))
+                .findFirst()
                 .orElseThrow(() -> new CourierNotFoundException(courierId));
 
         courier.goOffDuty();
         repository.save(courier);
+
+        assignmentRepository.findActiveByCourierId(courierId)
+                .filter(assignment -> assignment.getAcceptedAt() == null)
+                .ifPresent(dispatchService::returnOfferToQueue);
+
         return courier;
+    }
+
+    @Transactional
+    public Order acceptOffer(UserId courierId, OrderId orderId, AuthenticatedUser actor) {
+        Objects.requireNonNull(courierId, "Courier ID is required");
+        Objects.requireNonNull(orderId, "Order ID is required");
+        Objects.requireNonNull(actor, "User context is required");
+        Objects.requireNonNull(actor.userId(), "User ID is required");
+
+        Courier courier = repository.findById(courierId)
+                .orElseThrow(() -> new CourierNotFoundException(courierId));
+
+        if (!policy.canAcceptOffer(actor, courier)) {
+            throw new ActionNotPermittedException(
+                    "You are not allowed to accept this offer");
+        }
+
+        Assignment assignment = assignmentRepository.findActiveByOrderId(orderId)
+                .orElseThrow(() -> new OfferNotFoundException(orderId));
+
+        if (!assignment.getCourierId().equals(courierId)) {
+            throw new OfferNotFoundException(orderId);
+        }
+
+        if (assignment.getAcceptedAt() != null) {
+            throw new OfferNotFoundException(orderId);
+        }
+
+        Order order = orderRepository.findByOrderId(orderId);
+
+        if (order.status() != OrderStatus.READY) {
+            throw new InvalidTransitionException(
+                    "Cannot accept an offer for an order in state " + order.status());
+        }
+
+        if (order.getCourierId() != null && !order.getCourierId().equals(courierId.value())) {
+            throw new InvalidTransitionException(
+                    "Order " + orderId.value() + " is already assigned to another courier");
+        }
+
+        final CourierStatus previousStatus = courier.getStatus();
+
+        order.assignCourier(courierId);
+        assignment.accept();
+        courier.assign(orderId);
+
+        orderRepository.save(order);
+        assignmentRepository.save(assignment);
+        repository.save(courier);
+
+        CourierStateChanged event = new CourierStateChanged(
+                EventId.random(),
+                courierId,
+                orderId,
+                previousStatus,
+                courier.getStatus(),
+                Instant.now());
+
+        courierEventRepository.save(event);
+
+        log.info("Courier {} accepted order {}, moved {} -> {}, event {}",
+                courierId.value(), orderId.value(), previousStatus, courier.getStatus(),
+                event.eventId().value());
+
+        return order;
     }
 
     @Transactional
