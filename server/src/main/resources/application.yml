@@ -5,6 +5,13 @@ spring:
     active: ${SPRING_PROFILES_ACTIVE:postgres}
   jpa:
     open-in-view: false
+  main:
+    banner-mode: off
+
+logging:
+  level:
+    root: WARN
+    com.healthyrolls: INFO
 
 healthyrolls:
   security:
@@ -32,6 +39,12 @@ healthyrolls:
         - { path-pattern: /api/orders/**, method: GET, allowed-rules: [CUSTOMER, RESTAURANT_STAFF, OPERATOR] }
 
         - { path-pattern: /api/events/**, method: GET, allowed-rules: [CUSTOMER, RESTAURANT_STAFF, OPERATOR] }
+
+        # DLV
+        - { path-pattern: /api/couriers/me/on-duty, method: POST, allowed-rules: [COURIER] }
+        - { path-pattern: /api/couriers/me/off-duty, method: POST, allowed-rules: [COURIER] }
+        - { path-pattern: /api/couriers/me, method: GET, allowed-rules: [COURIER] }
+        - { path-pattern: /api/couriers/me/offer, method: GET, allowed-rules: [COURIER] }
 
         # Operator
         - { path-pattern: /api/admin/reset, method: POST, allowed-rules: [OPERATOR] }

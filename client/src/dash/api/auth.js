@@ -1,5 +1,12 @@
-import { saveSession } from '../auth/session'
+import { saveSession, updateSession } from '../auth/session'
 import { recordCommand } from '../console/consoleStore'
+
+const ROLE_LABELS = {
+  CUSTOMER: 'customer',
+  RESTAURANT_STAFF: 'restaurant staff',
+  COURIER: 'courier',
+  OPERATOR: 'operator',
+}
 
 async function fetchProfile(accessToken) {
   try {
@@ -9,6 +16,15 @@ async function fetchProfile(accessToken) {
     return response.ok ? await response.json() : null
   } catch {
     return null
+  }
+}
+
+// function for existing users to work (coords)
+export async function ensureSessionLocation(session) {
+  if (!session?.accessToken || session.latitude != null) return
+  const profile = await fetchProfile(session.accessToken)
+  if (profile?.latitude != null) {
+    updateSession({ latitude: profile.latitude, longitude: profile.longitude })
   }
 }
 
@@ -26,6 +42,11 @@ export async function loginUser({ email, password, role = 'CUSTOMER', name }) {
 
     if (response.ok) {
       authData = await response.json()
+      if (authData.role !== role) {
+        const msg = `This is not a ${ROLE_LABELS[role] ?? role} account. Choose the role that matches your account.`
+        recordCommand('LOGIN', `email=${email} role=${role}`, 'error', msg)
+        return { ok: false, error: msg }
+      }
       profile = await fetchProfile(authData.accessToken)
     } else if (response.status === 401 || response.status === 400) {
       const errJson = await response.json().catch(() => ({}))
@@ -50,6 +71,7 @@ export async function loginUser({ email, password, role = 'CUSTOMER', name }) {
     email,
     ...(resolvedName && { name: resolvedName }),
     ...(restaurantId && { restaurantId }),
+    ...(profile?.latitude != null && { latitude: profile.latitude, longitude: profile.longitude }),
   }
 
   saveSession(session)
