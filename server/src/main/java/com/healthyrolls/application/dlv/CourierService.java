@@ -142,6 +142,58 @@ public class CourierService {
                 return orderService.getOrder(orderId, actor);
         }
 
+        @Transactional
+        public Order confirmDelivery(
+                        UserId courierId,
+                        OrderId orderId,
+                        AuthenticatedUser actor) {
+
+                Objects.requireNonNull(courierId, "Courier ID is required");
+                Objects.requireNonNull(orderId, "Order ID is required");
+                Objects.requireNonNull(actor, "User context is required");
+                Objects.requireNonNull(actor.userId(), "User ID is required");
+
+                if (!policy.isOwnCourier(actor, courierId)) {
+                        throw new ActionNotPermittedException(
+                                        "You cannot confirm delivery for another courier");
+                }
+
+                Courier courier = repository.findAllForDispatch().stream()
+                                .filter(candidate -> candidate.getId().equals(courierId))
+                                .findFirst()
+                                .orElseThrow(() -> new CourierNotFoundException(courierId));
+
+                if (!policy.canConfirmDelivery(actor, courier, orderId)) {
+                        throw new ActionNotPermittedException(
+                                        "You cannot confirm delivery for this order");
+                }
+
+                Assignment assignment = assignmentRepository
+                                .findActiveByCourierId(courierId)
+                                .filter(current -> current.getOrderId().equals(orderId))
+                                .orElseThrow(() -> new InvalidAssignmentTransitionException(
+                                                "No active assignment exists for this courier and order"));
+
+                Order order = orderService.getOrder(orderId, actor);
+
+                if (order.status() != OrderStatus.PICKED_UP) {
+                        throw new InvalidTransitionException(
+                                        "Only picked-up orders can be delivered");
+                }
+
+                assignment.markDelivered();
+                courier.confirmDelivery();
+
+                assignmentRepository.save(assignment);
+                repository.save(courier);
+
+                orderService.changeOrder(orderId, OrderAction.DELIVER, actor);
+
+                dispatchService.onCourierIdle();
+
+                return orderService.getOrder(orderId, actor);
+        }
+
         @Transactional(readOnly = true)
         public Courier getCourier(UserId courierId, AuthenticatedUser actor) {
                 Objects.requireNonNull(courierId, "Courier ID is required");

@@ -77,4 +77,17 @@ public class CourierController {
 
         return ResponseEntity.ok(OrderResponse.from(order));
     }
+
+    @PostMapping("/me/orders/{orderId}/deliver")
+    public ResponseEntity<OrderResponse> confirmDelivery(
+            @RequestAttribute(AuthenticatedUser.REQUEST_ATTRIBUTE) AuthenticatedUser user,
+            @PathVariable UUID orderId) {
+
+        Order order = courierService.confirmDelivery(
+                user.userId(),
+                new OrderId(orderId),
+                user);
+
+        return ResponseEntity.ok(OrderResponse.from(order));
+    }
 }

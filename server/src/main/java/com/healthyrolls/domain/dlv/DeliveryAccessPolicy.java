@@ -31,4 +31,13 @@ public class DeliveryAccessPolicy {
                 && actor.userId().equals(courier.getId())
                 && orderId.equals(courier.getCurrentOrderId());
     }
+
+    public boolean canConfirmDelivery(
+            AuthenticatedUser actor,
+            Courier courier,
+            OrderId orderId) {
+
+        return isOwnCourier(actor, courier.getId())
+                && orderId.equals(courier.getCurrentOrderId());
+    }
 }

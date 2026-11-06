@@ -75,6 +75,30 @@ public class Assignment {
         pickedUpAt = Instant.now();
     }
 
+    public void markDelivered() {
+        if (!active) {
+            throw new InvalidAssignmentTransitionException(
+                    "An inactive assignment cannot be delivered");
+        }
+
+        if (acceptedAt == null) {
+            throw new OfferNotAcceptedException(orderId);
+        }
+
+        if (pickedUpAt == null) {
+            throw new InvalidAssignmentTransitionException(
+                    "The order must be picked up before delivery");
+        }
+
+        if (deliveredAt != null) {
+            throw new InvalidAssignmentTransitionException(
+                    "This assignment has already been delivered");
+        }
+
+        deliveredAt = Instant.now();
+        active = false;
+    }
+
     public OrderId getOrderId() {
         return orderId;
     }
