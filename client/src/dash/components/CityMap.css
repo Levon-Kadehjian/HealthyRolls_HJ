@@ -1,10 +1,14 @@
 :root {
   --map-open: #2e9e5b;
+  --map-building: #e0a020;
+  --map-long: #d64545;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --map-open: #5fd38a;
+    --map-building: #f0b94a;
+    --map-long: #f06b6b;
   }
 }
 
@@ -44,8 +48,12 @@
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
 }
 
-.map-pin-restaurant.map-pin-paused {
-  --pin: #d9a441;
+.map-pin-restaurant.map-pin-building {
+  --pin: var(--map-building);
+}
+
+.map-pin-restaurant.map-pin-long {
+  --pin: var(--map-long);
 }
 
 .map-pin-restaurant.map-pin-closed {
@@ -134,12 +142,16 @@
   margin-bottom: 1rem;
 }
 
-.map-filter-open {
+.map-filter-short {
   --status: var(--map-open);
 }
 
-.map-filter-paused {
-  --status: #d9a441;
+.map-filter-building {
+  --status: var(--map-building);
+}
+
+.map-filter-long {
+  --status: var(--map-long);
 }
 
 .map-filter-closed {

@@ -3,10 +3,10 @@ import { Link, useLoaderData } from 'react-router-dom'
 import L from 'leaflet'
 import RestaurantCard from '../components/RestaurantCard'
 import CityMap from '../components/CityMap'
+import { BAND_LABELS, BANDS, queueBand } from '../components/queueBand'
 import { useSession } from '../auth/useSession'
 import './RestaurantsPage.css'
 
-const STATUSES = ['OPEN', 'PAUSED', 'CLOSED']
 const STATUS_LABELS = { OPEN: 'Open', PAUSED: 'Paused', CLOSED: 'Closed' }
 
 const formatDistance = (meters) => (meters < 1000 ? `${Math.round(meters)} m` : `${(meters / 1000).toFixed(1)} km`)
@@ -14,11 +14,11 @@ const formatDistance = (meters) => (meters < 1000 ? `${Math.round(meters)} m` : 
 export default function RestaurantsPage() {
   const restaurants = useLoaderData()
   const session = useSession()
-  const [shown, setShown] = useState(new Set(STATUSES))
+  const [shown, setShown] = useState(new Set(BANDS))
   const [selectedId, setSelectedId] = useState(null)
 
   const home = session?.latitude != null ? [session.latitude, session.longitude] : null
-  const visible = restaurants.filter((restaurant) => shown.has(restaurant.status))
+  const visible = restaurants.filter((restaurant) => shown.has(queueBand(restaurant)))
   const selected = visible.find((restaurant) => restaurant.id === selectedId)
   const distance = home && selected ? L.latLng(home).distanceTo([selected.latitude, selected.longitude]) : null
 
@@ -29,11 +29,14 @@ export default function RestaurantsPage() {
       id: restaurant.id,
       position: [restaurant.latitude, restaurant.longitude],
       kind: 'restaurant',
-      status: restaurant.status,
+      status: queueBand(restaurant),
       popup: (
         <div className="map-popup">
           <h4>{restaurant.name}</h4>
-          <p>{STATUS_LABELS[restaurant.status] ?? restaurant.status}</p>
+          <p>
+            {restaurant.queuedCount} queued
+            {restaurant.status !== 'OPEN' && ` · ${STATUS_LABELS[restaurant.status] ?? restaurant.status}`}
+          </p>
           <Link to={`/restaurants/${restaurant.id}`}>View menu →</Link>
         </div>
       ),
@@ -42,10 +45,10 @@ export default function RestaurantsPage() {
   ]
   const lines = home && selected ? [{ id: 'route', positions: [home, [selected.latitude, selected.longitude]] }] : []
 
-  const toggle = (status) =>
+  const toggle = (band) =>
     setShown((current) => {
       const next = new Set(current)
-      if (!next.delete(status)) next.add(status)
+      if (!next.delete(band)) next.add(band)
       return next
     })
 
@@ -62,18 +65,18 @@ export default function RestaurantsPage() {
             <h3>Around you</h3>
             <p>Tap a pin to see how far it is.</p>
           </div>
-          <div className="map-filters" role="group" aria-label="Filter restaurants by status">
-            {STATUSES.map((status) => (
+          <div className="map-filters" role="group" aria-label="Filter restaurants by queue length">
+            {BANDS.map((band) => (
               <button
-                key={status}
+                key={band}
                 type="button"
-                className={`map-filter map-filter-${status.toLowerCase()}`}
-                aria-pressed={shown.has(status)}
-                onClick={() => toggle(status)}
+                className={`map-filter map-filter-${band}`}
+                aria-pressed={shown.has(band)}
+                onClick={() => toggle(band)}
               >
                 <span className="map-filter-dot" aria-hidden="true" />
-                {STATUS_LABELS[status]}
-                <span className="map-filter-count">{restaurants.filter((r) => r.status === status).length}</span>
+                {BAND_LABELS[band]}
+                <span className="map-filter-count">{restaurants.filter((r) => queueBand(r) === band).length}</span>
               </button>
             ))}
           </div>
@@ -90,8 +93,9 @@ export default function RestaurantsPage() {
         <div className="map-selection" aria-live="polite">
           {selected ? (
             <>
-              <span className={`map-selection-dot map-filter-${selected.status.toLowerCase()}`} aria-hidden="true" />
+              <span className={`map-selection-dot map-filter-${queueBand(selected)}`} aria-hidden="true" />
               <strong>{selected.name}</strong>
+              <span className="map-selection-distance">{selected.queuedCount} queued</span>
               {distance != null && <span className="map-selection-distance">{formatDistance(distance)} away</span>}
               <Link className="map-selection-link" to={`/restaurants/${selected.id}`}>View menu →</Link>
             </>
@@ -116,7 +120,7 @@ export default function RestaurantsPage() {
       ) : visible.length === 0 ? (
         <div className="orders-empty-card">
           <h3>Nothing matches</h3>
-          <p>Turn a status filter back on to see restaurants.</p>
+          <p>Turn a queue filter back on to see restaurants.</p>
         </div>
       ) : (
         <div className="restaurant-card-grid">
