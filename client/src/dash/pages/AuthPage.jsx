@@ -6,6 +6,13 @@ import { loginUser, registerUser } from '../api/auth'
 import PasswordInput from '../components/PasswordInput'
 import './AuthPage.css'
 
+const ROLE_BUTTON_LABELS = {
+  CUSTOMER: 'Customer',
+  RESTAURANT_STAFF: 'Staff',
+  COURIER: 'Courier',
+  OPERATOR: 'Operator',
+}
+
 export default function AuthPage({ initialMode = 'login' }) {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
@@ -54,6 +61,10 @@ export default function AuthPage({ initialMode = 'login' }) {
       setEmail('courier@healthyrolls.com')
       setPassword('courier123')
       setName('Test Courier')
+    } else if (targetRole === 'OPERATOR') {
+      setEmail('operator@healthyrolls.com')
+      setPassword('operator123')
+      setName('Test Operator')
     }
   }
 
@@ -214,6 +225,25 @@ export default function AuthPage({ initialMode = 'login' }) {
                 <span className="auth-role-desc">Delivery partner</span>
                 {role === 'COURIER' && <span className="auth-role-check">✓</span>}
               </div>
+
+              {/* Operator */}
+              <div
+                role="radio"
+                tabIndex={0}
+                aria-checked={role === 'OPERATOR'}
+                className={`auth-role-card ${role === 'OPERATOR' ? 'auth-role-selected' : ''}`}
+                onClick={() => handleRoleSelect('OPERATOR')}
+                onKeyDown={(e) => (e.key === ' ' || e.key === 'Enter') && handleRoleSelect('OPERATOR')}
+              >
+                <div className="auth-role-icon">
+                  <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                  </svg>
+                </div>
+                <span className="auth-role-title">Operator</span>
+                <span className="auth-role-desc">Platform admin</span>
+                {role === 'OPERATOR' && <span className="auth-role-check">✓</span>}
+              </div>
             </div>
           </div>
 
@@ -288,7 +318,7 @@ export default function AuthPage({ initialMode = 'login' }) {
               ? 'Please wait…'
               : mode === 'signup'
                 ? 'Sign Up as Customer'
-                : `Log In as ${role === 'CUSTOMER' ? 'Customer' : role === 'COURIER' ? 'Courier' : 'Staff'}`}
+                : `Log In as ${ROLE_BUTTON_LABELS[role]}`}
           </button>
         </form>
 
@@ -316,6 +346,13 @@ export default function AuthPage({ initialMode = 'login' }) {
               onClick={() => handleQuickFill('COURIER')}
             >
               Fill Courier
+            </button>
+            <button
+              type="button"
+              className="auth-demo-btn"
+              onClick={() => handleQuickFill('OPERATOR')}
+            >
+              Fill Operator
             </button>            
           </div>
         </div>
