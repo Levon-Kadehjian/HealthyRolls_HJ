@@ -5,7 +5,13 @@ import java.util.List;
 
 public record Fare(List<FareComponent> components) {
 
+    public Fare {
+        components = List.copyOf(components);
+    }
+
     public BigDecimal total() {
-        throw new UnsupportedOperationException("Not implemented");
+        return components.stream()
+                .map(FareComponent::amount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 }

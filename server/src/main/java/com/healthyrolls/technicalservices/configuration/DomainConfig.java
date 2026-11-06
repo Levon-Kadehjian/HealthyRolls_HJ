@@ -2,9 +2,17 @@ package com.healthyrolls.technicalservices.configuration;
 
 import com.healthyrolls.domain.ord.order.OrderAccessPolicy;
 import com.healthyrolls.domain.ord.order.OrderFactory;
+import com.healthyrolls.domain.ord.pricing.DeliveryFeeRule;
+import com.healthyrolls.domain.ord.pricing.FareCalculator;
+import com.healthyrolls.domain.ord.pricing.PricingRule;
+import com.healthyrolls.domain.ord.pricing.ServiceFeeRule;
+import com.healthyrolls.domain.ord.pricing.SmallOrderSurchargeRule;
+import com.healthyrolls.domain.ord.pricing.SubtotalRule;
 import com.healthyrolls.domain.ord.restaurant.RestaurantAccessPolicy;
 import com.healthyrolls.domain.reg.UserFactory;
+import com.healthyrolls.technicalservices.billing.PricingProperties;
 
+import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -29,5 +37,17 @@ public class DomainConfig {
     @Bean
     public RestaurantAccessPolicy restaurantAccessPolicy() {
         return new RestaurantAccessPolicy();
+    }
+
+    @Bean
+    public FareCalculator fareCalculator(PricingProperties pricing) {
+        List<PricingRule> rules = List.of(
+                new SubtotalRule(),
+                new DeliveryFeeRule(pricing.getDeliveryFee()),
+                new ServiceFeeRule(pricing.getServiceFee()),
+                new SmallOrderSurchargeRule(
+                        pricing.getSmallOrderThreshold(),
+                        pricing.getSmallOrderSurcharge()));
+        return new FareCalculator(rules);
     }
 }

@@ -17,6 +17,7 @@ public class SmallOrderSurchargeRule implements PricingRule {
 
     @Override
     public FareComponent apply(List<OrderLine> lines, BigDecimal subtotal) {
-        throw new UnsupportedOperationException("Not implemented");
+        BigDecimal surcharge = subtotal.compareTo(threshold) < 0 ? amount : BigDecimal.ZERO;
+        return new FareComponent("Small-order surcharge", surcharge);
     }
 }

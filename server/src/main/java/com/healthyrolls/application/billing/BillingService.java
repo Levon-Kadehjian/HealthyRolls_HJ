@@ -7,6 +7,7 @@ import com.healthyrolls.domain.ord.ledger.LedgerEntry;
 import com.healthyrolls.domain.ord.ledger.OrderSummary;
 import com.healthyrolls.domain.ord.order.IOrderRepository;
 import com.healthyrolls.domain.ord.order.Order;
+import com.healthyrolls.domain.ord.order.OrderStatus;
 import com.healthyrolls.domain.ord.pricing.FareCalculator;
 
 public class BillingService {
@@ -25,7 +26,23 @@ public class BillingService {
     }
 
     public OrderSummary onDelivered(Order order) {
-        throw new UnsupportedOperationException("Not implemented");
+        if (order.status() != OrderStatus.DELIVERED) {
+            throw new IllegalStateException("Only delivered orders can be billed");
+        }
+
+        Order persistedOrder = orderRepository.findByOrderId(order.getOrderId());
+        if (persistedOrder.status() != OrderStatus.DELIVERED) {
+            throw new IllegalStateException("Only delivered orders can be billed");
+        }
+
+        var fare = fareCalculator.compute(persistedOrder);
+        ledgerRepository.append(LedgerEntry.charge(persistedOrder, fare));
+
+        return new OrderSummary(
+                persistedOrder,
+                persistedOrder.getItems(),
+                fare,
+                persistedOrder.getDeliveredAt());
     }
 
     public LedgerEntry refundOrder(UUID orderId, UUID customerId) {

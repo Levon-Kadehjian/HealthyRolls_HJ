@@ -15,6 +15,6 @@ public class ServiceFeeRule implements PricingRule {
 
     @Override
     public FareComponent apply(List<OrderLine> lines, BigDecimal subtotal) {
-        throw new UnsupportedOperationException("Not implemented");
+        return new FareComponent("Service fee", fee);
     }
 }

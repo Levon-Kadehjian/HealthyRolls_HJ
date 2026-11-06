@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.healthyrolls.domain.ord.ledger.ILedgerRepository;
 import com.healthyrolls.domain.ord.ledger.LedgerEntry;
@@ -18,17 +19,20 @@ public class JpaLedgerRepository implements ILedgerRepository {
     }
 
     @Override
+    @Transactional
     public void append(LedgerEntry entry) {
-        throw new UnsupportedOperationException("Not implemented");
+        springData.save(new LedgerEntryEntity(entry));
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<LedgerEntry> findByOrderId(UUID orderId) {
-        throw new UnsupportedOperationException("Not implemented");
+        return springData.findByOrderId(orderId).stream().map(LedgerEntryEntity::toDomain).toList();
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<LedgerEntry> findAll() {
-        throw new UnsupportedOperationException("Not implemented");
+        return springData.findAll().stream().map(LedgerEntryEntity::toDomain).toList();
     }
 }

@@ -18,7 +18,14 @@ public record LedgerEntry(
         Instant occurredAt) {
 
     public static LedgerEntry charge(Order order, Fare fare) {
-        throw new UnsupportedOperationException("Not implemented");
+        return new LedgerEntry(
+                UUID.randomUUID(),
+                order.getOrderId().value(),
+                LedgerEntryType.CHARGE,
+                order.getCustomerId(),
+                fare.total(),
+                order.status(),
+                order.getDeliveredAt());
     }
 
     public static LedgerEntry refund(UUID orderId, BigDecimal amount) {
