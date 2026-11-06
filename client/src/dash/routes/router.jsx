@@ -18,7 +18,7 @@ import { applyOrderAction, listOrderEvents, listOrders } from '../api/orders'
 import { getSession } from '../auth/session'
 import { ensureSessionLocation } from '../api/auth'
 import { describeError, recordCommand, runCommand } from '../console/consoleStore'
-import { buildOrderHistory, CUSTOMER_CANCELLABLE_STATUSES } from '../orders/orderHistory'
+import { buildOrderHistory, canCancelOrder } from '../orders/orderHistory'
 
 
 const ORDER_COMMANDS = {
@@ -34,6 +34,16 @@ const isStaffSession = (session) => session?.role === 'RESTAURANT_STAFF'
 const redirectStaffToKitchen = () => {
   if (isStaffSession(getSession())) {
     throw redirect(KITCHEN_PATH)
+  }
+}
+
+const COURIER_HOME_PATH = '/dashboard/account'
+
+const isCourierSession = (session) => session?.role === 'COURIER'
+
+const redirectCourierToAccount = () => {
+  if (isCourierSession(getSession())) {
+    throw redirect(COURIER_HOME_PATH)
   }
 }
 
@@ -57,13 +67,17 @@ const loginRequiredLoader = () => {
 }
 
 const customerOnlyLoader = () => {
-  requireLogin()
+  const session = requireLogin()
   redirectStaffToKitchen()
+  if (session.role !== 'CUSTOMER') {
+    throw redirect('/dashboard')
+  }
   return null
 }
 
 const homeLoader = () => {
   redirectStaffToKitchen()
+  redirectCourierToAccount()
   return null
 }
 
@@ -71,7 +85,9 @@ const dashboardLoader = () => ({ session: requireLogin() })
 
 const dashboardIndexLoader = () => {
   const session = getSession()
-  return redirect(isStaffSession(session) ? 'kitchen' : 'orders')
+  if (isStaffSession(session)) return redirect('kitchen')
+  if (isCourierSession(session)) return redirect('account')
+  return redirect('orders')
 }
 
 const loadRestaurantCatalog = async (restaurantIds) => {
@@ -89,6 +105,7 @@ const loadOrderHistory = async (knownRestaurantIds = []) => {
 const customerOrdersLoader = async () => {
   const session = requireLogin()
   redirectStaffToKitchen()
+  redirectCourierToAccount()
   try {
     const { orders } = await runCommand(
       'LIST_ORDERS',
@@ -103,6 +120,7 @@ const customerOrdersLoader = async () => {
 }
 
 const customerOrdersAction = async ({ request }) => {
+  const session = requireLogin()
   const form = await request.formData()
   const orderId = form.get('orderId')
   const intent = form.get('intent')
@@ -113,7 +131,7 @@ const customerOrdersAction = async ({ request }) => {
     recordCommand('ORDER_ACTION', details, 'error', `unknown action ${intent}`)
     return { ok: false, error: `Unknown action ${intent}` }
   }
-  if (status && !CUSTOMER_CANCELLABLE_STATUSES.includes(status)) {
+  if (!canCancelOrder(session.role, status)) {
     recordCommand('CANCEL_ORDER', details, 'error', `order is ${status}`)
     return { ok: false, error: 'This order can no longer be cancelled.' }
   }
@@ -235,6 +253,7 @@ const restaurantAction = async ({ request, params }) => {
 const restaurantsLoader = () => {
   redirectStaffToKitchen()
   ensureSessionLocation(getSession())
+  redirectCourierToAccount()
   return runCommand(
     'BROWSE_RESTAURANTS',
     '',
@@ -247,6 +266,7 @@ const restaurantsLoader = () => {
 }
 
 const restaurantLoader = ({ params }) => {
+  redirectCourierToAccount()
   return runCommand(
     'BROWSE_MENU',
     `restaurant=${params.restaurantId}`,

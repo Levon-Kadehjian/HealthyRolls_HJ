@@ -6,6 +6,13 @@ import { loginUser, registerUser } from '../api/auth'
 import PasswordInput from '../components/PasswordInput'
 import './AuthPage.css'
 
+const ROLE_BUTTON_LABELS = {
+  CUSTOMER: 'Customer',
+  RESTAURANT_STAFF: 'Staff',
+  COURIER: 'Courier',
+  OPERATOR: 'Operator',
+}
+
 export default function AuthPage({ initialMode = 'login' }) {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
@@ -25,6 +32,8 @@ export default function AuthPage({ initialMode = 'login' }) {
     if (session) {
       if (session.role === 'RESTAURANT_STAFF') {
         navigate('/dashboard/kitchen', { replace: true })
+      } else if (session.role === 'COURIER') {
+        navigate('/dashboard/account', { replace: true })
       } else {
         navigate('/restaurants', { replace: true })
       }
@@ -32,7 +41,7 @@ export default function AuthPage({ initialMode = 'login' }) {
   }, [session, navigate])
 
   const handleRoleSelect = (selectedRole) => {
-    if (selectedRole === 'COURIER') return
+    //if (selectedRole === 'COURIER') return (unblock the courrier)
     setRole(selectedRole)
     setError('')
   }
@@ -48,6 +57,14 @@ export default function AuthPage({ initialMode = 'login' }) {
       setEmail('staff@kyo.bar')
       setPassword('staff123')
       setName('Kyo Bar Staff')
+    } else if (targetRole === 'COURIER') {
+      setEmail('courier@healthyrolls.com')
+      setPassword('courier123')
+      setName('Test Courier')
+    } else if (targetRole === 'OPERATOR') {
+      setEmail('operator@healthyrolls.com')
+      setPassword('operator123')
+      setName('Test Operator')
     }
   }
 
@@ -87,6 +104,8 @@ export default function AuthPage({ initialMode = 'login' }) {
       const effectiveRole = res.session?.role || (mode === 'signup' ? 'CUSTOMER' : role)
       if (effectiveRole === 'RESTAURANT_STAFF') {
         navigate('/dashboard/kitchen')
+      } else if (effectiveRole === 'COURIER') {
+        navigate('/dashboard/account')
       } else {
         navigate('/restaurants')
       }
@@ -185,15 +204,15 @@ export default function AuthPage({ initialMode = 'login' }) {
                 {role === 'RESTAURANT_STAFF' && <span className="auth-role-check">✓</span>}
               </div>
 
-              {/* Courier - Non clickable / disabled */}
+              {/* Courier */}
               <div
                 role="radio"
-                aria-checked={false}
-                aria-disabled="true"
-                className="auth-role-card auth-role-disabled"
-                title="Courier registration is coming in a future update"
+                tabIndex={0}
+                aria-checked={role === 'COURIER'}
+                className={`auth-role-card ${role === 'COURIER' ? 'auth-role-selected' : ''}`}
+                onClick={() => handleRoleSelect('COURIER')}
+                onKeyDown={(e) => (e.key === ' ' || e.key === 'Enter') && handleRoleSelect('COURIER')}
               >
-                <span className="auth-role-badge-soon">Soon</span>
                 <div className="auth-role-icon">
                   <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <circle cx="18.5" cy="17.5" r="3.5" />
@@ -204,6 +223,26 @@ export default function AuthPage({ initialMode = 'login' }) {
                 </div>
                 <span className="auth-role-title">Courier</span>
                 <span className="auth-role-desc">Delivery partner</span>
+                {role === 'COURIER' && <span className="auth-role-check">✓</span>}
+              </div>
+
+              {/* Operator */}
+              <div
+                role="radio"
+                tabIndex={0}
+                aria-checked={role === 'OPERATOR'}
+                className={`auth-role-card ${role === 'OPERATOR' ? 'auth-role-selected' : ''}`}
+                onClick={() => handleRoleSelect('OPERATOR')}
+                onKeyDown={(e) => (e.key === ' ' || e.key === 'Enter') && handleRoleSelect('OPERATOR')}
+              >
+                <div className="auth-role-icon">
+                  <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                  </svg>
+                </div>
+                <span className="auth-role-title">Operator</span>
+                <span className="auth-role-desc">Platform admin</span>
+                {role === 'OPERATOR' && <span className="auth-role-check">✓</span>}
               </div>
             </div>
           </div>
@@ -279,7 +318,7 @@ export default function AuthPage({ initialMode = 'login' }) {
               ? 'Please wait…'
               : mode === 'signup'
                 ? 'Sign Up as Customer'
-                : `Log In as ${role === 'CUSTOMER' ? 'Customer' : 'Staff'}`}
+                : `Log In as ${ROLE_BUTTON_LABELS[role]}`}
           </button>
         </form>
 
@@ -300,9 +339,24 @@ export default function AuthPage({ initialMode = 'login' }) {
               onClick={() => handleQuickFill('RESTAURANT_STAFF')}
             >
               Fill Staff
+            </button>           
+            <button
+              type="button"
+              className="auth-demo-btn"
+              onClick={() => handleQuickFill('COURIER')}
+            >
+              Fill Courier
             </button>
+            <button
+              type="button"
+              className="auth-demo-btn"
+              onClick={() => handleQuickFill('OPERATOR')}
+            >
+              Fill Operator
+            </button>            
           </div>
         </div>
+        
 
         )}
 

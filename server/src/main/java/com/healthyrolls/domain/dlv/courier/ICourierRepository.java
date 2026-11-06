@@ -13,5 +13,8 @@ public interface ICourierRepository {
 
     List<Courier> findAll();
 
+    // Reserves courier rows until the caller's dispatch transaction finishes.
+    List<Courier> findAllForDispatch();
+
     void save(Courier courier);
 }

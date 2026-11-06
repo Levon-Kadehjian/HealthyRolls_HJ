@@ -15,6 +15,14 @@ export const ACTIVE_STATUSES = ['PLACED', 'ACCEPTED', 'PREPARING', 'READY', 'PIC
 
 export const CUSTOMER_CANCELLABLE_STATUSES = ['PLACED']
 
+export const OPERATOR_CANCELLABLE_STATUSES = ['PLACED', 'ACCEPTED', 'PREPARING', 'READY']
+
+export function canCancelOrder(role, status) {
+  if (role === 'OPERATOR') return OPERATOR_CANCELLABLE_STATUSES.includes(status)
+  if (role === 'CUSTOMER') return CUSTOMER_CANCELLABLE_STATUSES.includes(status)
+  return false
+}
+
 export const statusLabel = (status) => STATUS_LABELS[status] ?? String(status ?? '').replace('_', ' ').toLowerCase()
 
 export const formatMoney = (amount) => currency.format(amount)

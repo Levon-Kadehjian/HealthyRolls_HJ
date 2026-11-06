@@ -25,7 +25,7 @@ export default function RestaurantMenuPage() {
 
   const isOpen = restaurant.status === 'OPEN'
   const canEdit = session?.role === 'RESTAURANT_STAFF' && session.restaurantId === restaurant.id
-  const cartIsHere = cartRestaurant?.id === restaurant.id
+  const cartIsHere = session?.role === 'CUSTOMER' && cartRestaurant?.id === restaurant.id
   const cartSummary = { id: restaurant.id, name: restaurant.name, status: restaurant.status }
 
   useEffect(() => {
