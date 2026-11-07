@@ -1,5 +1,6 @@
 import sushiLogo from '../assets/sushi-logo.png'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { getRestaurant } from '../api/restaurants'
 import { Link } from 'react-router-dom'
 import { useCart } from '../cart/useCart'
 import { useSession } from '../auth/useSession'
@@ -27,7 +28,7 @@ const EMPTY_FORM = {
 }
 
 export default function CheckoutPage() {
-    const { restaurant, lines, itemCount, subtotal, hasSoldOutItems, clearCart } = useCart()
+    const { restaurant, lines, itemCount, subtotal, clearCart } = useCart()
     const session = useSession()
     const [form, setForm] = useState(() => ({ ...EMPTY_FORM, ...TEST_CARD, address: session?.address || '' }))
     const [fieldErrors, setFieldErrors] = useState({})
@@ -35,12 +36,87 @@ export default function CheckoutPage() {
     const [error, setError] = useState('')
     const [placedOrder, setPlacedOrder] = useState(null)
 
+    const [availability, setAvailability] = useState(null)
+    const [availabilityError, setAvailabilityError] = useState('')
+    const restaurantId = restaurant?.id
+
+    useEffect(() => {
+        if (!restaurantId || placedOrder) return
+
+        let cancelled = false
+        let timer
+
+        setAvailability(null)
+        setAvailabilityError('')
+
+        async function refreshAvailability() {
+            try {
+                const latest = await getRestaurant(restaurantId)
+
+                if (!cancelled) {
+                    setAvailability(latest)
+                    setAvailabilityError('')
+                }
+            } catch (err) {
+                const message = await describeError(err)
+
+                if (!cancelled) {
+                    setAvailability(null)
+                    setAvailabilityError('Unable to check availability. Retrying…')
+                    recordCommand(
+                        'CHECK_AVAILABILITY',
+                        `restaurant=${restaurantId}`,
+                        'error',
+                        message,
+                    )
+                }
+            } finally {
+                if (!cancelled) {
+                    timer = setTimeout(refreshAvailability, 5000)
+                }
+            }
+        }
+
+        refreshAvailability()
+
+        return () => {
+            cancelled = true
+            clearTimeout(timer)
+        }
+    }, [restaurantId, placedOrder])
+
+    const latestRestaurant =
+        availability?.id === restaurantId ? availability : null
+
+    const hasSoldOutItems = latestRestaurant
+        ? lines.some((line) => {
+            const latestItem = latestRestaurant.menu.find(
+                (item) => item.itemId === line.item.itemId,
+            )
+            return !latestItem || latestItem.status !== 'AVAILABLE'
+        })
+        : false
+
+    const unavailableReason = availabilityError
+        || (!latestRestaurant ? 'Checking availability…' : '')
+        || (latestRestaurant.status === 'PAUSED'
+            ? 'This restaurant is paused and is not taking new orders.'
+            : '')
+        || (latestRestaurant.status === 'CLOSED'
+            ? 'This restaurant is closed.'
+            : '')
+        || (hasSoldOutItems
+            ? 'One or more selected items are unavailable. Return to your cart to remove them.'
+            : '')
+
     function updateField(name, value) {
         setForm((current) => ({ ...current, [name]: value }))
         setFieldErrors((current) => ({ ...current, [name]: undefined }))
     }
 
     async function handlePlaceOrder() {
+
+        if (submitting || unavailableReason) return
         setError('')
 
         const errors = validateCheckout(form)
@@ -290,9 +366,9 @@ export default function CheckoutPage() {
                         <span>{currency.format(subtotal)}</span>
                     </div>
 
-                    {hasSoldOutItems && (
-                        <p className="checkout-error" role="alert">
-                            Your cart has sold-out items. Go back to your cart to remove them.
+                    {unavailableReason && (
+                        <p className="checkout-error" role="status">
+                            {unavailableReason}
                         </p>
                     )}
                     {error && (
@@ -305,7 +381,7 @@ export default function CheckoutPage() {
                         type="button"
                         className="btn-primary checkout-place-btn"
                         onClick={handlePlaceOrder}
-                        disabled={submitting || hasSoldOutItems}
+                        disabled={submitting || Boolean(unavailableReason)}
                     >
                         {submitting ? 'Placing Order…' : 'Place Order'}
                     </button>
