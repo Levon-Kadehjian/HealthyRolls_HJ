@@ -125,7 +125,9 @@ public class CourierService {
         Objects.requireNonNull(actor, "User context is required");
         Objects.requireNonNull(actor.userId(), "User ID is required");
 
-        Courier courier = repository.findById(courierId)
+        Courier courier = repository.findAllForDispatch().stream()
+                .filter(candidate -> candidate.getId().equals(courierId))
+                .findFirst()
                 .orElseThrow(() -> new CourierNotFoundException(courierId));
 
         if (!policy.canAcceptOffer(actor, courier)) {
