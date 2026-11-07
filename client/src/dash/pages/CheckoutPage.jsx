@@ -18,9 +18,6 @@ import './CheckoutPage.css'
 const currency = new Intl.NumberFormat('en-CA', { style: 'currency', currency: 'CAD' })
 
 const EMPTY_FORM = {
-    address: '',
-    unit: '',
-    instructions: '',
     cardName: '',
     cardNumber: '',
     expiry: '',
@@ -30,7 +27,9 @@ const EMPTY_FORM = {
 export default function CheckoutPage() {
     const { restaurant, lines, itemCount, subtotal, clearCart } = useCart()
     const session = useSession()
-    const [form, setForm] = useState(() => ({ ...EMPTY_FORM, ...TEST_CARD, address: session?.address || '' }))
+    const deliveryLocation =
+    session?.latitude != null && session?.longitude != null ? `${session.latitude}, ${session.longitude}` : 'Delivery location not set'
+    const [form, setForm] = useState(() => ({ ...EMPTY_FORM, ...TEST_CARD}))
     const [fieldErrors, setFieldErrors] = useState({})
     const [submitting, setSubmitting] = useState(false)
     const [error, setError] = useState('')
@@ -139,8 +138,7 @@ export default function CheckoutPage() {
                 ...order,
                 restaurantName: restaurant.name,
                 total: subtotal,
-                address: form.unit.trim() ? `${form.address.trim()}, ${form.unit.trim()}` : form.address.trim(),
-                instructions: form.instructions.trim(),
+                deliveryLocation,
                 cardLast4: form.cardNumber.replace(/\D/g, '').slice(-4),
                 estimatedDelivery: estimateDeliveryWindow(),
             })
@@ -175,14 +173,8 @@ export default function CheckoutPage() {
                         </div>
                         <div className="checkout-summary-row">
                             <span>Deliver to</span>
-                            <span className="checkout-confirmation-value">{placedOrder.address}</span>
+                            <span className="checkout-confirmation-value">{placedOrder.deliveryLocation}</span>
                         </div>
-                        {placedOrder.instructions && (
-                            <div className="checkout-summary-row">
-                                <span>Instructions</span>
-                                <span className="checkout-confirmation-value">{placedOrder.instructions}</span>
-                            </div>
-                        )}
                         <div className="checkout-summary-row">
                             <span>Paid</span>
                             <span>
@@ -232,103 +224,10 @@ export default function CheckoutPage() {
 
             <div className="checkout-layout">
                 <div className="checkout-main">
-                    <section className="checkout-section">
-                        <h3>Delivery Details</h3>
-
-                        <label className="checkout-field">
-                            <span>Delivery address</span>
-                            <input
-                                className={`checkout-input ${fieldErrors.address ? 'checkout-input-invalid' : ''}`}
-                                type="text"
-                                placeholder="1455 De Maisonneuve Blvd W, Montreal"
-                                value={form.address}
-                                onChange={(e) => updateField('address', e.target.value)}
-                                autoComplete="street-address"
-                            />
-                            {fieldErrors.address && <span className="checkout-field-error">{fieldErrors.address}</span>}
-                        </label>
-
-                        <label className="checkout-field">
-                            <span>Apartment / unit (optional)</span>
-                            <input
-                                className="checkout-input"
-                                type="text"
-                                placeholder="Apt 1901"
-                                value={form.unit}
-                                onChange={(e) => updateField('unit', e.target.value)}
-                            />
-                        </label>
-
-                        <label className="checkout-field">
-                            <span>Delivery instructions (optional)</span>
-                            <textarea
-                                className="checkout-input checkout-textarea"
-                                placeholder="Ring the buzzer, leave at the door…"
-                                maxLength={200}
-                                value={form.instructions}
-                                onChange={(e) => updateField('instructions', e.target.value)}
-                            />
-                        </label>
-                    </section>
-
-                    <section className="checkout-section">
-                        <h3>Payment</h3>
-                        <label className="checkout-field">
-                            <span>Name on card</span>
-                            <input
-                                className={`checkout-input ${fieldErrors.cardName ? 'checkout-input-invalid' : ''}`}
-                                type="text"
-                                value={form.cardName}
-                                onChange={(e) => updateField('cardName', e.target.value)}
-                                autoComplete="off"
-                            />
-                            {fieldErrors.cardName && <span className="checkout-field-error">{fieldErrors.cardName}</span>}
-                        </label>
-
-                        <label className="checkout-field">
-                            <span>Card number</span>
-                            <input
-                                className={`checkout-input ${fieldErrors.cardNumber ? 'checkout-input-invalid' : ''}`}
-                                type="text"
-                                inputMode="numeric"
-                                placeholder="4242 4242 4242 4242"
-                                value={form.cardNumber}
-                                onChange={(e) => updateField('cardNumber', formatCardNumber(e.target.value))}
-                                autoComplete="off"
-                            />
-                            {fieldErrors.cardNumber && <span className="checkout-field-error">{fieldErrors.cardNumber}</span>}
-                        </label>
-
-                        <div className="checkout-field-row">
-                            <label className="checkout-field">
-                                <span>Expiry</span>
-                                <input
-                                    className={`checkout-input ${fieldErrors.expiry ? 'checkout-input-invalid' : ''}`}
-                                    type="text"
-                                    inputMode="numeric"
-                                    placeholder="MM/YY"
-                                    value={form.expiry}
-                                    onChange={(e) => updateField('expiry', formatExpiry(e.target.value))}
-                                    autoComplete="off"
-                                />
-                                {fieldErrors.expiry && <span className="checkout-field-error">{fieldErrors.expiry}</span>}
-                            </label>
-
-                            <label className="checkout-field">
-                                <span>CVC</span>
-                                <input
-                                    className={`checkout-input ${fieldErrors.cvc ? 'checkout-input-invalid' : ''}`}
-                                    type="text"
-                                    inputMode="numeric"
-                                    placeholder="123"
-                                    value={form.cvc}
-                                    onChange={(e) => updateField('cvc', e.target.value.replace(/\D/g, '').slice(0, 4))}
-                                    autoComplete="off"
-                                />
-                                {fieldErrors.cvc && <span className="checkout-field-error">{fieldErrors.cvc}</span>}
-                            </label>
-                        </div>
-                    </section>
+                <section className="checkout-section">
+                    <h3>Delivery Details</h3>
+                    <p>Saved delivery location: {deliveryLocation}</p>
+                </section>
 
                     <section className="checkout-section">
                         <h3>Your Items</h3>

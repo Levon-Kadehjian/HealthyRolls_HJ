@@ -17,12 +17,9 @@ export function formatExpiry(value) {
     return digits.length > 2 ? `${digits.slice(0, 2)}/${digits.slice(2)}` : digits
 }
 
-export function validateCheckout({ address, cardName, cardNumber, expiry, cvc }) {
+export function validateCheckout({ cardName, cardNumber, expiry, cvc }) {
     const errors = {}
-
-    if (address.trim().length < 5) {
-        errors.address = 'Enter your delivery address.'
-    }
+    
     if (!cardName.trim()) {
         errors.cardName = 'Enter the name on the card.'
     }

@@ -36,7 +36,13 @@ public class UserService {
         this.tokenIssuer = tokenIssuer;
     }
 
-    public UserId register(String email, String hashedPassword, String name) {
+    public UserId register(
+            String email,
+            String hashedPassword,
+            String name,
+            Double latitude,
+            Double longitude) {
+
         if (userRepository.existsByEmail(email)) {
             throw new EmailAlreadyUsedException(email);
         }
@@ -46,7 +52,9 @@ public class UserService {
                 passwordHasher.hash(hashedPassword),
                 name,
                 UserRole.CUSTOMER,
-                null);
+                null,
+                latitude,
+                longitude);
 
         UserId id = userRepository.save(user).id();
         log.info("Registered user {} with role {}", id.value(), UserRole.CUSTOMER);

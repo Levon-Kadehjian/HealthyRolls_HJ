@@ -23,7 +23,7 @@ public class CourierEventEntity {
     @Column(nullable = false)
     private UUID courierId;
 
-    @Column(nullable = false)
+    @Column
     private UUID orderId;
 
     @Enumerated(EnumType.STRING)
@@ -43,7 +43,7 @@ public class CourierEventEntity {
     public CourierEventEntity(CourierStateChanged event) {
         this.eventId = event.eventId().value();
         this.courierId = event.courierId().value();
-        this.orderId = event.orderId().value();
+        this.orderId = event.orderId() == null ? null : event.orderId().value();
         this.fromStatus = event.fromStatus();
         this.toStatus = event.toStatus();
         this.occurredAt = event.occurredAt();

@@ -86,8 +86,12 @@ public class CourierService {
         Courier courier = repository.findById(courierId)
                 .orElseThrow(() -> new CourierNotFoundException(courierId));
 
+        final CourierStatus previousStatus = courier.getStatus();
+
         courier.goOnDuty();
         repository.save(courier);
+        recordCourierTransition(courier, previousStatus, null);
+
         dispatchService.onCourierIdle();
         return courier;
     }
@@ -108,8 +112,11 @@ public class CourierService {
                 .findFirst()
                 .orElseThrow(() -> new CourierNotFoundException(courierId));
 
+        final CourierStatus previousStatus = courier.getStatus();
+
         courier.goOffDuty();
         repository.save(courier);
+        recordCourierTransition(courier, previousStatus, null);
 
         assignmentRepository.findActiveByCourierId(courierId)
                 .filter(assignment -> assignment.getAcceptedAt() == null)
@@ -270,11 +277,14 @@ public class CourierService {
                     "Only ready orders can be picked up");
         }
 
+        final CourierStatus previousStatus = courier.getStatus();
+
         assignment.markPickedUp();
         courier.confirmPickup();
 
         assignmentRepository.save(assignment);
         repository.save(courier);
+        recordCourierTransition(courier, previousStatus, orderId);
 
         orderService.changeOrder(orderId, OrderAction.PICK_UP, actor);
 
@@ -320,11 +330,14 @@ public class CourierService {
                     "Only picked-up orders can be delivered");
         }
 
+        final CourierStatus previousStatus = courier.getStatus();
+
         assignment.markDelivered();
         courier.confirmDelivery();
 
         assignmentRepository.save(assignment);
         repository.save(courier);
+        recordCourierTransition(courier, previousStatus, orderId);
 
         orderService.changeOrder(orderId, OrderAction.DELIVER, actor);
 
@@ -358,5 +371,19 @@ public class CourierService {
 
         return assignmentRepository.findActiveByCourierId(courierId)
                 .filter(assignment -> assignment.getAcceptedAt() == null);
+    }
+
+    private void recordCourierTransition(
+            Courier courier,
+            CourierStatus previousStatus,
+            OrderId orderId) {
+
+        courierEventRepository.save(new CourierStateChanged(
+                EventId.random(),
+                courier.getId(),
+                orderId,
+                previousStatus,
+                courier.getStatus(),
+                Instant.now()));
     }
 }
