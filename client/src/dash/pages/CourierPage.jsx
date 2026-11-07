@@ -16,7 +16,9 @@ const shortId = (id) => String(id ?? '').slice(0, 8)
 function describeStep(courier) {
   switch (courier.status) {
     case 'OFFLINE':
-      return 'Go on duty to start receiving orders.'
+      return courier.currentOrderId != null
+        ? 'You are off duty with an accepted order awaiting pickup. Go on duty to resume it, unless an operator reassigns it.'
+        : 'Go on duty to start receiving orders.'
     case 'IDLE':
       return 'You will be offered the next ready order near you.'
     case 'ASSIGNED':
@@ -92,6 +94,13 @@ switch (courier.status) {
         pending: 'Confirming…',
         enabled: holdsOrder && courier.offerAccepted === true,
       },
+      {
+        intent: 'GO_OFF_DUTY',
+        label: 'Go off duty',
+        pending: 'Going off duty…',
+        enabled: true,
+        secondary: true,
+      },
     ]
     break
 
@@ -162,7 +171,7 @@ export default function CourierPage() {
     return () => clearInterval(timer)
   }, [revalidator, failed])
 
-  const hasPendingOffer = courier?.status === 'IDLE' && offer?.orderId != null && courier.offerAccepted !== true
+  const hasPendingOffer = courier?.status === 'IDLE' && offer?.orderId != null &&courier.offerAccepted !== true
 
 const displayedOrderId = hasPendingOffer ? offer.orderId : courier?.currentOrderId
 

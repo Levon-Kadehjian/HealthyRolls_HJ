@@ -37,15 +37,15 @@ public class CourierController {
         boolean offerAccepted = courier.getStatus() == CourierStatus.ASSIGNED
                 || courier.getStatus() == CourierStatus.CARRYING;
 
-        return ResponseEntity.ok(
-                CourierResponse.from(courier, offerAccepted));
+        return ResponseEntity.ok(CourierResponse.from(courier, offerAccepted));
     }
 
     @PostMapping("/me/on-duty")
     public ResponseEntity<CourierResponse> goOnDuty(
             @RequestAttribute(AuthenticatedUser.REQUEST_ATTRIBUTE) AuthenticatedUser user) {
         Courier courier = courierService.goOnDuty(user.userId(), user);
-        return ResponseEntity.ok(CourierResponse.from(courier, false));
+        boolean offerAccepted = courier.getStatus() == CourierStatus.ASSIGNED;
+        return ResponseEntity.ok(CourierResponse.from(courier, offerAccepted));
     }
 
     @PostMapping("/me/off-duty")

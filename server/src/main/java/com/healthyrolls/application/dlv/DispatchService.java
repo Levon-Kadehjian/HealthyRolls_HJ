@@ -188,13 +188,15 @@ public class DispatchService {
             courier.releaseCancelledOrder(orderId);
             courierRepository.save(courier);
 
-            courierEventRepository.save(new CourierStateChanged(
-                    EventId.random(),
-                    courier.getId(),
-                    orderId,
-                    previousStatus,
-                    courier.getStatus(),
-                    Instant.now()));
+            if (previousStatus != courier.getStatus()) {
+                courierEventRepository.save(new CourierStateChanged(
+                        EventId.random(),
+                        courier.getId(),
+                        orderId,
+                        previousStatus,
+                        courier.getStatus(),
+                        Instant.now()));
+            }
         }
 
         assignmentRepository.save(assignment);

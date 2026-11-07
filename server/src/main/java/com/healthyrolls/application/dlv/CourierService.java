@@ -83,16 +83,20 @@ public class CourierService {
                     "You are not allowed to change this courier's duty status");
         }
 
-        Courier courier = repository.findById(courierId)
+        Courier courier = repository.findAllForDispatch().stream()
+                .filter(candidate -> candidate.getId().equals(courierId))
+                .findFirst()
                 .orElseThrow(() -> new CourierNotFoundException(courierId));
 
         final CourierStatus previousStatus = courier.getStatus();
 
         courier.goOnDuty();
         repository.save(courier);
-        recordCourierTransition(courier, previousStatus, null);
+        recordCourierTransition(courier, previousStatus, courier.getCurrentOrderId());
 
-        dispatchService.onCourierIdle();
+        if (courier.isAvailable()) {
+            dispatchService.onCourierIdle();
+        }
         return courier;
     }
 
@@ -116,7 +120,7 @@ public class CourierService {
 
         courier.goOffDuty();
         repository.save(courier);
-        recordCourierTransition(courier, previousStatus, null);
+        recordCourierTransition(courier, previousStatus, courier.getCurrentOrderId());
 
         assignmentRepository.findActiveByCourierId(courierId)
                 .filter(assignment -> assignment.getAcceptedAt() == null)

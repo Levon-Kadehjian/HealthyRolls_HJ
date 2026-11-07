@@ -18,6 +18,15 @@
     "longitude": -73.5574
   },
   {
+    "email": "staff@sho-dan.com",
+    "hashedPassword": "staff123",
+    "name": "Sho-Dan Staff",
+    "role": "RESTAURANT_STAFF",
+    "restaurantId": { "value": "a931edab-ffd4-4b47-a4c1-6533b237a8cc" },
+    "latitude": 45.5013,
+    "longitude": -73.5745
+  },
+  {
     "email": "courier@healthyrolls.com",
     "hashedPassword": "courier123",
     "name": "Test Courier",
