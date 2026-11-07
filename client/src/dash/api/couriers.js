@@ -31,3 +31,11 @@ export function confirmPickup(orderId) {
 export function confirmDelivery(orderId) {
   return apiRequest(`/api/couriers/me/orders/${orderId}/deliver`, { method: 'POST' })
 }
+
+export function getStalledOrders() {
+  return apiRequest('/api/dispatch/stalled-orders')
+}
+
+export function reassignStalledOrder(orderId) {
+  return apiRequest(`/api/dispatch/stalled-orders/${orderId}/reassign`, { method: 'POST' })
+}

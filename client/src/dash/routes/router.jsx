@@ -22,6 +22,7 @@ import { buildOrderHistory, canCancelOrder } from '../orders/orderHistory'
 import CourierPage from '../pages/CourierPage'
 import { acceptOffer, confirmDelivery, confirmPickup, declineOffer, getMyCourier, goOffDuty, goOnDuty } from '../api/couriers'
 import { getPendingOffer } from '../api/couriers'
+import { getStalledOrders, reassignStalledOrder } from '../api/couriers'
 
 
 const ORDER_COMMANDS = {
@@ -116,11 +117,27 @@ const customerOrdersLoader = async () => {
       () => loadOrderHistory(),
       (history) => `${history.orders.length} orders`,
     )
+    if (session.role === 'OPERATOR') {
+      return { orders, failed: false, stalled: await loadStalledOrders() }
+    }
     return { orders, failed: false }
   } catch {
     return { orders: [], failed: true }
   }
 }
+
+const loadStalledOrders = async () => {
+  try {
+    return await runCommand('LIST_STALLED_ORDERS', '', () => getStalledOrders(), (stalled) => `${stalled.length} stalled`)
+  } catch {
+    return []
+  }
+}
+
+const describeReassignment = (result) =>
+  result.queued
+    ? `released from ${result.previousCourierName}, no courier available, order placed in the dispatch queue`
+    : `released from ${result.previousCourierName}, offered to ${result.offeredCourierName}`
 
 const customerOrdersAction = async ({ request }) => {
   const session = requireLogin()
@@ -129,6 +146,19 @@ const customerOrdersAction = async ({ request }) => {
   const intent = form.get('intent')
   const status = form.get('status')
   const details = `order=${String(orderId).slice(0, 8)}`
+
+  if (intent === 'REASSIGN_STALLED_ORDER') {
+    if (session.role !== 'OPERATOR') {
+      recordCommand(intent, details, 'error', 'operators only')
+      return { ok: false, error: 'Only operators can reassign orders.' }
+    }
+    try {
+      const result = await runCommand(intent, details, () => reassignStalledOrder(orderId), describeReassignment)
+      return { ok: true, reassignment: result }
+    } catch (error) {
+      return { ok: false, error: await describeError(error) }
+    }
+  }
 
   if (intent !== 'CANCEL') {
     recordCommand('ORDER_ACTION', details, 'error', `unknown action ${intent}`)
