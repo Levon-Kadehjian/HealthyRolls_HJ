@@ -186,6 +186,52 @@ public class CourierService {
     }
 
     @Transactional
+    public Courier declineOffer(UserId courierId, OrderId orderId, AuthenticatedUser actor) {
+        Objects.requireNonNull(courierId, "Courier ID is required");
+        Objects.requireNonNull(orderId, "Order ID is required");
+        Objects.requireNonNull(actor, "User context is required");
+        Objects.requireNonNull(actor.userId(), "User ID is required");
+
+        if (!policy.isOwnCourier(actor, courierId)) {
+            throw new ActionNotPermittedException(
+                    "You are not allowed to decline this offer");
+        }
+
+        Courier courier = repository.findAllForDispatch().stream()
+                .filter(candidate -> candidate.getId().equals(courierId))
+                .findFirst()
+                .orElseThrow(() -> new CourierNotFoundException(courierId));
+
+        Assignment assignment = assignmentRepository.findActiveByOrderId(orderId)
+                .filter(offer -> offer.getCourierId().equals(courierId))
+                .filter(offer -> offer.getAcceptedAt() == null)
+                .orElseThrow(() -> new OfferNotFoundException(orderId));
+
+        final CourierStatus previousStatus = courier.getStatus();
+
+        courier.goOffDuty();
+        repository.save(courier);
+
+        dispatchService.returnOfferToQueue(assignment);
+
+        CourierStateChanged event = new CourierStateChanged(
+                EventId.random(),
+                courierId,
+                orderId,
+                previousStatus,
+                courier.getStatus(),
+                Instant.now());
+
+        courierEventRepository.save(event);
+
+        log.info("Courier {} declined order {}, moved {} -> {}, event {}",
+                courierId.value(), orderId.value(), previousStatus, courier.getStatus(),
+                event.eventId().value());
+
+        return courier;
+    }
+
+    @Transactional
     public Order confirmPickup(
             UserId courierId,
             OrderId orderId,
