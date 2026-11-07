@@ -133,6 +133,23 @@ public class DispatchService {
         }
     }
 
+    @Transactional
+    public void returnOfferToQueue(Assignment offer) {
+        Objects.requireNonNull(offer, "Offer is required");
+
+        OrderId orderId = offer.getOrderId();
+
+        offer.cancel();
+        assignmentRepository.save(offer);
+
+        Order order = orderRepository.findByOrderId(orderId);
+        order.releaseCourier();
+        orderRepository.save(order);
+
+        queue.enqueue(orderId);
+        onCourierIdle();
+    }
+
     public List<OrderId> queueSnapshot() {
         return queue.snapshot();
     }

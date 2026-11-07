@@ -20,7 +20,8 @@ import { ensureSessionLocation } from '../api/auth'
 import { describeError, recordCommand, runCommand } from '../console/consoleStore'
 import { buildOrderHistory, canCancelOrder } from '../orders/orderHistory'
 import CourierPage from '../pages/CourierPage'
-import { acceptOffer, confirmDelivery, confirmPickup, getMyCourier, goOffDuty, goOnDuty } from '../api/couriers'
+import { acceptOffer, confirmDelivery, confirmPickup, declineOffer, getMyCourier, goOffDuty, goOnDuty } from '../api/couriers'
+import { getPendingOffer } from '../api/couriers'
 
 
 const ORDER_COMMANDS = {
@@ -198,10 +199,19 @@ const restaurantOrdersAction = async ({ request }) => {
 const COURIER_COMMANDS = {
   GO_ON_DUTY: () => goOnDuty(),
   GO_OFF_DUTY: () => goOffDuty(),
+  DECLINE_AND_GO_OFF_DUTY: (orderId) => declineOffer(orderId),
   ACCEPT_OFFER: (orderId) => acceptOffer(orderId),
   CONFIRM_PICKUP: (orderId) => confirmPickup(orderId),
   CONFIRM_DELIVERY: (orderId) => confirmDelivery(orderId),
 }
+
+const COURIER_RESULT_MESSAGES = {
+  ACCEPT_OFFER: () => 'offer accepted',
+  DECLINE_AND_GO_OFF_DUTY: (result) => `offer declined, now ${result.status}`,
+}
+
+const describeCourierResult = (intent, result) =>
+  COURIER_RESULT_MESSAGES[intent]?.(result) ?? `now ${result.status}`
 
 const courierLoader = async () => {
   const session = requireLogin()
@@ -214,6 +224,19 @@ const courierLoader = async () => {
   } catch (error) {
     recordCommand('LOAD_COURIER', '', 'error', await describeError(error))
     return { courier: null, failed: true }
+  }
+}
+
+const courierPageLoader = async () => {
+  const data = await courierLoader()
+  if (data.failed) {
+    return { ...data, offer: null }
+  }
+  try {
+    return { ...data, offer: await getPendingOffer() }
+  } catch (error) {
+    recordCommand('LOAD_OFFER', '', 'error', await describeError(error))
+    return { ...data, offer: null }
   }
 }
 
@@ -230,7 +253,7 @@ const courierAction = async ({ request }) => {
   }
 
   try {
-    await runCommand(intent, details, () => command(orderId), (result) => `now ${result.status}`)
+    await runCommand(intent, details, () => command(orderId), (result) => describeCourierResult(intent, result))
     return { ok: true }
   } catch (error) {
     return { ok: false, error: await describeError(error) }
@@ -409,7 +432,7 @@ export const router = createBrowserRouter([
           {
             path: 'courier',
             element: <CourierPage />,
-            loader: courierLoader,
+            loader: courierPageLoader,
             action: courierAction,
           },
           {

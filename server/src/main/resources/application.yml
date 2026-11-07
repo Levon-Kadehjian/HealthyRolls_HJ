@@ -43,6 +43,8 @@ healthyrolls:
         # DLV
         - { path-pattern: /api/couriers/me/on-duty, method: POST, allowed-rules: [COURIER] }
         - { path-pattern: /api/couriers/me/off-duty, method: POST, allowed-rules: [COURIER] }
+        - { path-pattern: /api/couriers/me/orders/*/accept, method: POST, allowed-rules: [COURIER] }
+        - { path-pattern: /api/couriers/me/orders/*/decline, method: POST, allowed-rules: [COURIER] }
         - { path-pattern: /api/couriers/me, method: GET, allowed-rules: [COURIER] }
         - { path-pattern: /api/couriers/me/offer, method: GET, allowed-rules: [COURIER] }
         - { path-pattern: /api/couriers/me/orders/*/pickup, method: POST, allowed-rules: [COURIER] }

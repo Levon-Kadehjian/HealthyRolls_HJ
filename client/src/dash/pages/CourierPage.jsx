@@ -20,14 +20,50 @@ function describeStep(courier) {
     case 'IDLE':
       return 'You will be offered the next ready order near you.'
     case 'ASSIGNED':
-      return courier.offerAccepted
-        ? 'Head to the restaurant and confirm pickup.'
-        : 'A ready order has been offered to you. Accept it to start.'
+      return 'Head to the restaurant and confirm pickup.'
     case 'CARRYING':
       return 'Bring the order to the customer and confirm delivery.'
     default:
       return ''
   }
+}
+
+function OfferActions({ offer }) {
+  const fetcher = useFetcher()
+  const busy = fetcher.state !== 'idle'
+  const pendingIntent = busy ? fetcher.formData?.get('intent') : null
+  const error = fetcher.data?.ok === false ? fetcher.data.error : null
+
+  return (
+    <fetcher.Form method="post">
+      <input type="hidden" name="orderId" value={offer.orderId} />
+      {error && (
+        <p className="courier-action-error" role="alert">
+          {error}
+        </p>
+      )}
+      <div className="courier-actions">
+        <button
+          type="submit"
+          name="intent"
+          value="ACCEPT_OFFER"
+          className="btn-primary courier-btn"
+          disabled={busy}
+        >
+          {pendingIntent === 'ACCEPT_OFFER' ? 'Accepting…' : 'Accept offer'}
+        </button>
+        <button
+          type="submit"
+          name="intent"
+          value="DECLINE_AND_GO_OFF_DUTY"
+          className="btn-secondary courier-btn"
+          disabled={busy}
+        >
+          {pendingIntent === 'DECLINE_AND_GO_OFF_DUTY' ? 'Declining…' : 'Decline offer & go off duty'}
+        </button>
+      </div>
+    </fetcher.Form>
+  )
 }
 
 function CourierActions({ courier }) {
@@ -42,7 +78,6 @@ function CourierActions({ courier }) {
   const buttons = [
     { intent: 'GO_ON_DUTY', label: 'Go on duty', pending: 'Going on duty…', enabled: courier.status === 'OFFLINE' },
     { intent: 'GO_OFF_DUTY', label: 'Go off duty', pending: 'Going off duty…', enabled: courier.status === 'IDLE' && !holdsOrder },
-    { intent: 'ACCEPT_OFFER', label: 'Accept offer', pending: 'Accepting…', enabled: assigned && !courier.offerAccepted },
     { intent: 'CONFIRM_PICKUP', label: 'Confirm pickup', pending: 'Confirming…', enabled: assigned && courier.offerAccepted },
     { intent: 'CONFIRM_DELIVERY', label: 'Confirm delivery', pending: 'Confirming…', enabled: courier.status === 'CARRYING' },
   ]
@@ -74,7 +109,7 @@ function CourierActions({ courier }) {
 }
 
 export default function CourierPage() {
-  const { courier, failed } = useLoaderData()
+  const { courier, offer, failed } = useLoaderData()
   const revalidator = useRevalidator()
   const refreshing = revalidator.state === 'loading'
 
@@ -122,9 +157,19 @@ export default function CourierPage() {
             <h3 id="courier-status-title">{STATUS_LABELS[courier.status] ?? courier.status}</h3>
             <span className="courier-badge">{courier.status}</span>
           </div>
+          {offer ? (
+            <>
+              <p className="courier-card-note">A ready order has been offered to you. Accept it to start.</p>
+              <p className="courier-order">Order #{shortId(offer.orderId)}</p>
+              <OfferActions offer={offer} />
+            </>
+          ) : (
+            <>
           <p className="courier-card-note">{describeStep(courier)}</p>
           {courier.currentOrderId && <p className="courier-order">Order #{shortId(courier.currentOrderId)}</p>}
           <CourierActions courier={courier} />
+            </>
+          )}
         </section>
       )}
     </div>
