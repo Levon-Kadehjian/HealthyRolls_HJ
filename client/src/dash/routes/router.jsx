@@ -21,7 +21,7 @@ import { describeError, recordCommand, runCommand } from '../console/consoleStor
 import { buildOrderHistory, canCancelOrder } from '../orders/orderHistory'
 import CourierPage from '../pages/CourierPage'
 import { acceptOffer, confirmDelivery, confirmPickup, declineOffer, getMyCourier, goOffDuty, goOnDuty } from '../api/couriers'
-import { getPendingOffer } from '../api/couriers'
+import { getPendingOffer, getMyActiveOrder } from '../api/couriers'
 
 
 const ORDER_COMMANDS = {
@@ -229,15 +229,29 @@ const courierLoader = async () => {
 
 const courierPageLoader = async () => {
   const data = await courierLoader()
+
   if (data.failed) {
-    return { ...data, offer: null }
+    return { ...data, offer: null, activeOrder: null, orderFailed: false }
   }
+
+  let offer = null
+  let activeOrder = null
+  let orderFailed = false
+
   try {
-    return { ...data, offer: await getPendingOffer() }
+    offer = await getPendingOffer()
   } catch (error) {
     recordCommand('LOAD_OFFER', '', 'error', await describeError(error))
-    return { ...data, offer: null }
   }
+
+  try {
+    activeOrder = await getMyActiveOrder()
+  } catch (error) {
+    orderFailed = true
+    recordCommand('LOAD_COURIER_ORDER', '', 'error', await describeError(error))
+  }
+
+  return { ...data, offer, activeOrder, orderFailed }
 }
 
 const courierAction = async ({ request }) => {

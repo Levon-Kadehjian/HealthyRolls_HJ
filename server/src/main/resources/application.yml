@@ -49,6 +49,7 @@ healthyrolls:
         - { path-pattern: /api/couriers/me/offer, method: GET, allowed-rules: [COURIER] }
         - { path-pattern: /api/couriers/me/orders/*/pickup, method: POST, allowed-rules: [COURIER] }
         - { path-pattern: /api/couriers/me/orders/*/deliver, method: POST, allowed-rules: [COURIER] }
+        - { path-pattern: /api/couriers/me/order, method: GET, allowed-rules: [COURIER] }
 
         # Operator
         - { path-pattern: /api/admin/reset, method: POST, allowed-rules: [OPERATOR] }

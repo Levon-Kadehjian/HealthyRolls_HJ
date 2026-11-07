@@ -81,6 +81,16 @@ public class CourierController {
                 .orElseGet(() -> ResponseEntity.noContent().build());
     }
 
+    @GetMapping("/me/order")
+    public ResponseEntity<CourierOrderResponse> getActiveOrder(
+            @RequestAttribute(AuthenticatedUser.REQUEST_ATTRIBUTE) AuthenticatedUser user) {
+
+        return courierService.getActiveOrder(user.userId(), user)
+                .map(CourierOrderResponse::from)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.noContent().build());
+    }
+
     @PostMapping("/me/orders/{orderId}/pickup")
     public ResponseEntity<OrderResponse> confirmPickup(
             @RequestAttribute(AuthenticatedUser.REQUEST_ATTRIBUTE) AuthenticatedUser user,

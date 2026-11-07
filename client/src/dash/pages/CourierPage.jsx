@@ -153,7 +153,7 @@ switch (courier.status) {
 }
 
 export default function CourierPage() {
-  const { courier, offer, failed } = useLoaderData()
+  const { courier, offer, activeOrder, orderFailed, failed } = useLoaderData()
   const revalidator = useRevalidator()
   const refreshing = revalidator.state === 'loading'
 
@@ -224,6 +224,22 @@ const displayedOrderId = hasPendingOffer ? offer.orderId : courier?.currentOrder
           {displayedOrderId != null && (
             <p className="courier-order">
               Order #{shortId(displayedOrderId)}
+            </p>
+          )}
+          {displayedOrderId != null &&
+            activeOrder?.orderId === displayedOrderId && (
+              <ul className="courier-order-items">
+                {activeOrder.items.map((item, index) => (
+                  <li key={index}>
+                    {item.quantity} × {item.name}
+                  </li>
+                ))}
+              </ul>
+            )}
+
+          {displayedOrderId != null && orderFailed && (
+            <p className="courier-load-error" role="alert">
+              Order items could not be loaded. Try refreshing.
             </p>
           )}
 

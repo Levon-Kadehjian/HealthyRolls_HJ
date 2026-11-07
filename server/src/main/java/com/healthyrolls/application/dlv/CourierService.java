@@ -35,359 +35,371 @@ import com.healthyrolls.domain.ord.order.IOrderRepository;
 @Service
 public class CourierService {
 
-    private static final Logger log = LoggerFactory.getLogger(CourierService.class);
+        private static final Logger log = LoggerFactory.getLogger(CourierService.class);
 
-    private final DispatchService dispatchService;
-    private final ICourierRepository repository;
-    private final DeliveryAccessPolicy policy;
-    private final IAssignmentRepository assignmentRepository;
-    private final IOrderRepository orderRepository;
-    private final OrderService orderService;
-    private final ICourierEventRepository courierEventRepository;
+        private final DispatchService dispatchService;
+        private final ICourierRepository repository;
+        private final DeliveryAccessPolicy policy;
+        private final IAssignmentRepository assignmentRepository;
+        private final IOrderRepository orderRepository;
+        private final OrderService orderService;
+        private final ICourierEventRepository courierEventRepository;
 
-    public CourierService(
-            ICourierRepository repository,
-            DeliveryAccessPolicy policy,
-            DispatchService dispatchService,
-            OrderService orderService,
-            IAssignmentRepository assignmentRepository,
-            IOrderRepository orderRepository,
-            ICourierEventRepository courierEventRepository) {
+        public CourierService(
+                        ICourierRepository repository,
+                        DeliveryAccessPolicy policy,
+                        DispatchService dispatchService,
+                        OrderService orderService,
+                        IAssignmentRepository assignmentRepository,
+                        IOrderRepository orderRepository,
+                        ICourierEventRepository courierEventRepository) {
 
-        this.repository = Objects.requireNonNull(
-                repository, "Courier repository is required");
+                this.repository = Objects.requireNonNull(
+                                repository, "Courier repository is required");
 
-        this.policy = Objects.requireNonNull(
-                policy, "Delivery access policy is required");
+                this.policy = Objects.requireNonNull(
+                                policy, "Delivery access policy is required");
 
-        this.dispatchService = Objects.requireNonNull(
-                dispatchService, "Dispatch service is required");
-        this.assignmentRepository = Objects.requireNonNull(
-                assignmentRepository, "Assignment repository is required");
-        this.orderRepository = Objects.requireNonNull(
-                orderRepository, "Order repository is required");
-        this.orderService = Objects.requireNonNull(
-                orderService, "Order service is required");
-        this.courierEventRepository = Objects.requireNonNull(
-                courierEventRepository, "Courier event repository is required");
-    }
-
-    @Transactional
-    public Courier goOnDuty(UserId courierId, AuthenticatedUser actor) {
-        Objects.requireNonNull(courierId, "Courier ID is required");
-        Objects.requireNonNull(actor, "User context is required");
-        Objects.requireNonNull(actor.userId(), "User ID is required");
-
-        if (!policy.isOwnCourier(actor, courierId)) {
-            throw new ActionNotPermittedException(
-                    "You are not allowed to change this courier's duty status");
+                this.dispatchService = Objects.requireNonNull(
+                                dispatchService, "Dispatch service is required");
+                this.assignmentRepository = Objects.requireNonNull(
+                                assignmentRepository, "Assignment repository is required");
+                this.orderRepository = Objects.requireNonNull(
+                                orderRepository, "Order repository is required");
+                this.orderService = Objects.requireNonNull(
+                                orderService, "Order service is required");
+                this.courierEventRepository = Objects.requireNonNull(
+                                courierEventRepository, "Courier event repository is required");
         }
 
-        Courier courier = repository.findAllForDispatch().stream()
-                .filter(candidate -> candidate.getId().equals(courierId))
-                .findFirst()
-                .orElseThrow(() -> new CourierNotFoundException(courierId));
+        @Transactional
+        public Courier goOnDuty(UserId courierId, AuthenticatedUser actor) {
+                Objects.requireNonNull(courierId, "Courier ID is required");
+                Objects.requireNonNull(actor, "User context is required");
+                Objects.requireNonNull(actor.userId(), "User ID is required");
 
-        final CourierStatus previousStatus = courier.getStatus();
+                if (!policy.isOwnCourier(actor, courierId)) {
+                        throw new ActionNotPermittedException(
+                                        "You are not allowed to change this courier's duty status");
+                }
 
-        courier.goOnDuty();
-        repository.save(courier);
-        recordCourierTransition(courier, previousStatus, courier.getCurrentOrderId());
+                Courier courier = repository.findAllForDispatch().stream()
+                                .filter(candidate -> candidate.getId().equals(courierId))
+                                .findFirst()
+                                .orElseThrow(() -> new CourierNotFoundException(courierId));
 
-        if (courier.isAvailable()) {
-            dispatchService.onCourierIdle();
-        }
-        return courier;
-    }
+                final CourierStatus previousStatus = courier.getStatus();
 
-    @Transactional
-    public Courier goOffDuty(UserId courierId, AuthenticatedUser actor) {
-        Objects.requireNonNull(courierId, "Courier ID is required");
-        Objects.requireNonNull(actor, "User context is required");
-        Objects.requireNonNull(actor.userId(), "User ID is required");
+                courier.goOnDuty();
+                repository.save(courier);
+                recordCourierTransition(courier, previousStatus, courier.getCurrentOrderId());
 
-        if (!policy.isOwnCourier(actor, courierId)) {
-            throw new ActionNotPermittedException(
-                    "You are not allowed to change this courier's duty status");
-        }
-
-        Courier courier = repository.findAllForDispatch().stream()
-                .filter(candidate -> candidate.getId().equals(courierId))
-                .findFirst()
-                .orElseThrow(() -> new CourierNotFoundException(courierId));
-
-        final CourierStatus previousStatus = courier.getStatus();
-
-        courier.goOffDuty();
-        repository.save(courier);
-        recordCourierTransition(courier, previousStatus, courier.getCurrentOrderId());
-
-        assignmentRepository.findActiveByCourierId(courierId)
-                .filter(assignment -> assignment.getAcceptedAt() == null)
-                .ifPresent(dispatchService::returnOfferToQueue);
-
-        return courier;
-    }
-
-    @Transactional
-    public Order acceptOffer(UserId courierId, OrderId orderId, AuthenticatedUser actor) {
-        Objects.requireNonNull(courierId, "Courier ID is required");
-        Objects.requireNonNull(orderId, "Order ID is required");
-        Objects.requireNonNull(actor, "User context is required");
-        Objects.requireNonNull(actor.userId(), "User ID is required");
-
-        Courier courier = repository.findAllForDispatch().stream()
-                .filter(candidate -> candidate.getId().equals(courierId))
-                .findFirst()
-                .orElseThrow(() -> new CourierNotFoundException(courierId));
-
-        if (!policy.canAcceptOffer(actor, courier)) {
-            throw new ActionNotPermittedException(
-                    "You are not allowed to accept this offer");
+                if (courier.isAvailable()) {
+                        dispatchService.onCourierIdle();
+                }
+                return courier;
         }
 
-        Assignment assignment = assignmentRepository.findActiveByOrderId(orderId)
-                .orElseThrow(() -> new OfferNotFoundException(orderId));
+        @Transactional
+        public Courier goOffDuty(UserId courierId, AuthenticatedUser actor) {
+                Objects.requireNonNull(courierId, "Courier ID is required");
+                Objects.requireNonNull(actor, "User context is required");
+                Objects.requireNonNull(actor.userId(), "User ID is required");
 
-        if (!assignment.getCourierId().equals(courierId)) {
-            throw new OfferNotFoundException(orderId);
+                if (!policy.isOwnCourier(actor, courierId)) {
+                        throw new ActionNotPermittedException(
+                                        "You are not allowed to change this courier's duty status");
+                }
+
+                Courier courier = repository.findAllForDispatch().stream()
+                                .filter(candidate -> candidate.getId().equals(courierId))
+                                .findFirst()
+                                .orElseThrow(() -> new CourierNotFoundException(courierId));
+
+                final CourierStatus previousStatus = courier.getStatus();
+
+                courier.goOffDuty();
+                repository.save(courier);
+                recordCourierTransition(courier, previousStatus, courier.getCurrentOrderId());
+
+                assignmentRepository.findActiveByCourierId(courierId)
+                                .filter(assignment -> assignment.getAcceptedAt() == null)
+                                .ifPresent(dispatchService::returnOfferToQueue);
+
+                return courier;
         }
 
-        if (assignment.getAcceptedAt() != null) {
-            throw new OfferNotFoundException(orderId);
+        @Transactional
+        public Order acceptOffer(UserId courierId, OrderId orderId, AuthenticatedUser actor) {
+                Objects.requireNonNull(courierId, "Courier ID is required");
+                Objects.requireNonNull(orderId, "Order ID is required");
+                Objects.requireNonNull(actor, "User context is required");
+                Objects.requireNonNull(actor.userId(), "User ID is required");
+
+                Courier courier = repository.findAllForDispatch().stream()
+                                .filter(candidate -> candidate.getId().equals(courierId))
+                                .findFirst()
+                                .orElseThrow(() -> new CourierNotFoundException(courierId));
+
+                if (!policy.canAcceptOffer(actor, courier)) {
+                        throw new ActionNotPermittedException(
+                                        "You are not allowed to accept this offer");
+                }
+
+                Assignment assignment = assignmentRepository.findActiveByOrderId(orderId)
+                                .orElseThrow(() -> new OfferNotFoundException(orderId));
+
+                if (!assignment.getCourierId().equals(courierId)) {
+                        throw new OfferNotFoundException(orderId);
+                }
+
+                if (assignment.getAcceptedAt() != null) {
+                        throw new OfferNotFoundException(orderId);
+                }
+
+                Order order = orderRepository.findByOrderId(orderId);
+
+                if (order.status() != OrderStatus.READY) {
+                        throw new InvalidTransitionException(
+                                        "Cannot accept an offer for an order in state " + order.status());
+                }
+
+                if (order.getCourierId() != null && !order.getCourierId().equals(courierId.value())) {
+                        throw new InvalidTransitionException(
+                                        "Order " + orderId.value() + " is already assigned to another courier");
+                }
+
+                final CourierStatus previousStatus = courier.getStatus();
+
+                order.assignCourier(courierId);
+                assignment.accept();
+                courier.assign(orderId);
+
+                orderRepository.save(order);
+                assignmentRepository.save(assignment);
+                repository.save(courier);
+
+                CourierStateChanged event = new CourierStateChanged(
+                                EventId.random(),
+                                courierId,
+                                orderId,
+                                previousStatus,
+                                courier.getStatus(),
+                                Instant.now());
+
+                courierEventRepository.save(event);
+
+                log.info("Courier {} accepted order {}, moved {} -> {}, event {}",
+                                courierId.value(), orderId.value(), previousStatus, courier.getStatus(),
+                                event.eventId().value());
+
+                return order;
         }
 
-        Order order = orderRepository.findByOrderId(orderId);
+        @Transactional
+        public Courier declineOffer(UserId courierId, OrderId orderId, AuthenticatedUser actor) {
+                Objects.requireNonNull(courierId, "Courier ID is required");
+                Objects.requireNonNull(orderId, "Order ID is required");
+                Objects.requireNonNull(actor, "User context is required");
+                Objects.requireNonNull(actor.userId(), "User ID is required");
 
-        if (order.status() != OrderStatus.READY) {
-            throw new InvalidTransitionException(
-                    "Cannot accept an offer for an order in state " + order.status());
+                if (!policy.isOwnCourier(actor, courierId)) {
+                        throw new ActionNotPermittedException(
+                                        "You are not allowed to decline this offer");
+                }
+
+                Courier courier = repository.findAllForDispatch().stream()
+                                .filter(candidate -> candidate.getId().equals(courierId))
+                                .findFirst()
+                                .orElseThrow(() -> new CourierNotFoundException(courierId));
+
+                Assignment assignment = assignmentRepository.findActiveByOrderId(orderId)
+                                .filter(offer -> offer.getCourierId().equals(courierId))
+                                .filter(offer -> offer.getAcceptedAt() == null)
+                                .orElseThrow(() -> new OfferNotFoundException(orderId));
+
+                final CourierStatus previousStatus = courier.getStatus();
+
+                courier.goOffDuty();
+                repository.save(courier);
+
+                dispatchService.returnOfferToQueue(assignment);
+
+                CourierStateChanged event = new CourierStateChanged(
+                                EventId.random(),
+                                courierId,
+                                orderId,
+                                previousStatus,
+                                courier.getStatus(),
+                                Instant.now());
+
+                courierEventRepository.save(event);
+
+                log.info("Courier {} declined order {}, moved {} -> {}, event {}",
+                                courierId.value(), orderId.value(), previousStatus, courier.getStatus(),
+                                event.eventId().value());
+
+                return courier;
         }
 
-        if (order.getCourierId() != null && !order.getCourierId().equals(courierId.value())) {
-            throw new InvalidTransitionException(
-                    "Order " + orderId.value() + " is already assigned to another courier");
+        @Transactional
+        public Order confirmPickup(
+                        UserId courierId,
+                        OrderId orderId,
+                        AuthenticatedUser actor) {
+
+                Objects.requireNonNull(courierId, "Courier ID is required");
+                Objects.requireNonNull(orderId, "Order ID is required");
+                Objects.requireNonNull(actor, "User context is required");
+                Objects.requireNonNull(actor.userId(), "User ID is required");
+
+                if (!policy.isOwnCourier(actor, courierId)) {
+                        throw new ActionNotPermittedException(
+                                        "You cannot confirm pickup for another courier");
+                }
+
+                Courier courier = repository.findAllForDispatch().stream()
+                                .filter(candidate -> candidate.getId().equals(courierId))
+                                .findFirst()
+                                .orElseThrow(() -> new CourierNotFoundException(courierId));
+
+                if (!policy.canConfirmPickup(actor, courier, orderId)) {
+                        throw new ActionNotPermittedException(
+                                        "You cannot confirm pickup for this order");
+                }
+
+                Assignment assignment = assignmentRepository
+                                .findActiveByCourierId(courierId)
+                                .filter(current -> current.getOrderId().equals(orderId))
+                                .orElseThrow(() -> new InvalidAssignmentTransitionException(
+                                                "No active assignment exists for this courier and order"));
+
+                Order order = orderService.getOrder(orderId, actor);
+
+                if (order.status() != OrderStatus.READY) {
+                        throw new InvalidTransitionException(
+                                        "Only ready orders can be picked up");
+                }
+
+                final CourierStatus previousStatus = courier.getStatus();
+
+                assignment.markPickedUp();
+                courier.confirmPickup();
+
+                assignmentRepository.save(assignment);
+                repository.save(courier);
+                recordCourierTransition(courier, previousStatus, orderId);
+
+                orderService.changeOrder(orderId, OrderAction.PICK_UP, actor);
+
+                return orderService.getOrder(orderId, actor);
         }
 
-        final CourierStatus previousStatus = courier.getStatus();
+        @Transactional
+        public Order confirmDelivery(
+                        UserId courierId,
+                        OrderId orderId,
+                        AuthenticatedUser actor) {
 
-        order.assignCourier(courierId);
-        assignment.accept();
-        courier.assign(orderId);
+                Objects.requireNonNull(courierId, "Courier ID is required");
+                Objects.requireNonNull(orderId, "Order ID is required");
+                Objects.requireNonNull(actor, "User context is required");
+                Objects.requireNonNull(actor.userId(), "User ID is required");
 
-        orderRepository.save(order);
-        assignmentRepository.save(assignment);
-        repository.save(courier);
+                if (!policy.isOwnCourier(actor, courierId)) {
+                        throw new ActionNotPermittedException(
+                                        "You cannot confirm delivery for another courier");
+                }
 
-        CourierStateChanged event = new CourierStateChanged(
-                EventId.random(),
-                courierId,
-                orderId,
-                previousStatus,
-                courier.getStatus(),
-                Instant.now());
+                Courier courier = repository.findAllForDispatch().stream()
+                                .filter(candidate -> candidate.getId().equals(courierId))
+                                .findFirst()
+                                .orElseThrow(() -> new CourierNotFoundException(courierId));
 
-        courierEventRepository.save(event);
+                if (!policy.canConfirmDelivery(actor, courier, orderId)) {
+                        throw new ActionNotPermittedException(
+                                        "You cannot confirm delivery for this order");
+                }
 
-        log.info("Courier {} accepted order {}, moved {} -> {}, event {}",
-                courierId.value(), orderId.value(), previousStatus, courier.getStatus(),
-                event.eventId().value());
+                Assignment assignment = assignmentRepository
+                                .findActiveByCourierId(courierId)
+                                .filter(current -> current.getOrderId().equals(orderId))
+                                .orElseThrow(() -> new InvalidAssignmentTransitionException(
+                                                "No active assignment exists for this courier and order"));
 
-        return order;
-    }
+                Order order = orderService.getOrder(orderId, actor);
 
-    @Transactional
-    public Courier declineOffer(UserId courierId, OrderId orderId, AuthenticatedUser actor) {
-        Objects.requireNonNull(courierId, "Courier ID is required");
-        Objects.requireNonNull(orderId, "Order ID is required");
-        Objects.requireNonNull(actor, "User context is required");
-        Objects.requireNonNull(actor.userId(), "User ID is required");
+                if (order.status() != OrderStatus.PICKED_UP) {
+                        throw new InvalidTransitionException(
+                                        "Only picked-up orders can be delivered");
+                }
 
-        if (!policy.isOwnCourier(actor, courierId)) {
-            throw new ActionNotPermittedException(
-                    "You are not allowed to decline this offer");
+                final CourierStatus previousStatus = courier.getStatus();
+
+                assignment.markDelivered();
+                courier.confirmDelivery();
+
+                assignmentRepository.save(assignment);
+                repository.save(courier);
+                recordCourierTransition(courier, previousStatus, orderId);
+
+                orderService.changeOrder(orderId, OrderAction.DELIVER, actor);
+
+                dispatchService.onCourierIdle();
+
+                return orderService.getOrder(orderId, actor);
         }
 
-        Courier courier = repository.findAllForDispatch().stream()
-                .filter(candidate -> candidate.getId().equals(courierId))
-                .findFirst()
-                .orElseThrow(() -> new CourierNotFoundException(courierId));
+        @Transactional(readOnly = true)
+        public Courier getCourier(UserId courierId, AuthenticatedUser actor) {
+                Objects.requireNonNull(courierId, "Courier ID is required");
+                Objects.requireNonNull(actor, "User context is required");
+                Objects.requireNonNull(actor.userId(), "User ID is required");
 
-        Assignment assignment = assignmentRepository.findActiveByOrderId(orderId)
-                .filter(offer -> offer.getCourierId().equals(courierId))
-                .filter(offer -> offer.getAcceptedAt() == null)
-                .orElseThrow(() -> new OfferNotFoundException(orderId));
+                Courier courier = repository.findById(courierId)
+                                .orElseThrow(() -> new CourierNotFoundException(courierId));
 
-        final CourierStatus previousStatus = courier.getStatus();
+                if (!policy.canView(actor, courier)) {
+                        throw new CourierNotFoundException(courierId);
+                }
 
-        courier.goOffDuty();
-        repository.save(courier);
-
-        dispatchService.returnOfferToQueue(assignment);
-
-        CourierStateChanged event = new CourierStateChanged(
-                EventId.random(),
-                courierId,
-                orderId,
-                previousStatus,
-                courier.getStatus(),
-                Instant.now());
-
-        courierEventRepository.save(event);
-
-        log.info("Courier {} declined order {}, moved {} -> {}, event {}",
-                courierId.value(), orderId.value(), previousStatus, courier.getStatus(),
-                event.eventId().value());
-
-        return courier;
-    }
-
-    @Transactional
-    public Order confirmPickup(
-            UserId courierId,
-            OrderId orderId,
-            AuthenticatedUser actor) {
-
-        Objects.requireNonNull(courierId, "Courier ID is required");
-        Objects.requireNonNull(orderId, "Order ID is required");
-        Objects.requireNonNull(actor, "User context is required");
-        Objects.requireNonNull(actor.userId(), "User ID is required");
-
-        if (!policy.isOwnCourier(actor, courierId)) {
-            throw new ActionNotPermittedException(
-                    "You cannot confirm pickup for another courier");
+                return courier;
         }
 
-        Courier courier = repository.findAllForDispatch().stream()
-                .filter(candidate -> candidate.getId().equals(courierId))
-                .findFirst()
-                .orElseThrow(() -> new CourierNotFoundException(courierId));
+        @Transactional(readOnly = true)
+        public Optional<Assignment> getPendingOffer(
+                        UserId courierId,
+                        AuthenticatedUser actor) {
 
-        if (!policy.canConfirmPickup(actor, courier, orderId)) {
-            throw new ActionNotPermittedException(
-                    "You cannot confirm pickup for this order");
+                getCourier(courierId, actor);
+
+                return assignmentRepository.findActiveByCourierId(courierId)
+                                .filter(assignment -> assignment.getAcceptedAt() == null);
         }
 
-        Assignment assignment = assignmentRepository
-                .findActiveByCourierId(courierId)
-                .filter(current -> current.getOrderId().equals(orderId))
-                .orElseThrow(() -> new InvalidAssignmentTransitionException(
-                        "No active assignment exists for this courier and order"));
+        @Transactional(readOnly = true)
+        public Optional<Order> getActiveOrder(
+                        UserId courierId,
+                        AuthenticatedUser actor) {
 
-        Order order = orderService.getOrder(orderId, actor);
+                getCourier(courierId, actor);
 
-        if (order.status() != OrderStatus.READY) {
-            throw new InvalidTransitionException(
-                    "Only ready orders can be picked up");
+                return assignmentRepository.findActiveByCourierId(courierId)
+                                .map(assignment -> orderService.getOrder(
+                                                assignment.getOrderId(), actor));
         }
 
-        final CourierStatus previousStatus = courier.getStatus();
+        private void recordCourierTransition(
+                        Courier courier,
+                        CourierStatus previousStatus,
+                        OrderId orderId) {
 
-        assignment.markPickedUp();
-        courier.confirmPickup();
-
-        assignmentRepository.save(assignment);
-        repository.save(courier);
-        recordCourierTransition(courier, previousStatus, orderId);
-
-        orderService.changeOrder(orderId, OrderAction.PICK_UP, actor);
-
-        return orderService.getOrder(orderId, actor);
-    }
-
-    @Transactional
-    public Order confirmDelivery(
-            UserId courierId,
-            OrderId orderId,
-            AuthenticatedUser actor) {
-
-        Objects.requireNonNull(courierId, "Courier ID is required");
-        Objects.requireNonNull(orderId, "Order ID is required");
-        Objects.requireNonNull(actor, "User context is required");
-        Objects.requireNonNull(actor.userId(), "User ID is required");
-
-        if (!policy.isOwnCourier(actor, courierId)) {
-            throw new ActionNotPermittedException(
-                    "You cannot confirm delivery for another courier");
+                courierEventRepository.save(new CourierStateChanged(
+                                EventId.random(),
+                                courier.getId(),
+                                orderId,
+                                previousStatus,
+                                courier.getStatus(),
+                                Instant.now()));
         }
-
-        Courier courier = repository.findAllForDispatch().stream()
-                .filter(candidate -> candidate.getId().equals(courierId))
-                .findFirst()
-                .orElseThrow(() -> new CourierNotFoundException(courierId));
-
-        if (!policy.canConfirmDelivery(actor, courier, orderId)) {
-            throw new ActionNotPermittedException(
-                    "You cannot confirm delivery for this order");
-        }
-
-        Assignment assignment = assignmentRepository
-                .findActiveByCourierId(courierId)
-                .filter(current -> current.getOrderId().equals(orderId))
-                .orElseThrow(() -> new InvalidAssignmentTransitionException(
-                        "No active assignment exists for this courier and order"));
-
-        Order order = orderService.getOrder(orderId, actor);
-
-        if (order.status() != OrderStatus.PICKED_UP) {
-            throw new InvalidTransitionException(
-                    "Only picked-up orders can be delivered");
-        }
-
-        final CourierStatus previousStatus = courier.getStatus();
-
-        assignment.markDelivered();
-        courier.confirmDelivery();
-
-        assignmentRepository.save(assignment);
-        repository.save(courier);
-        recordCourierTransition(courier, previousStatus, orderId);
-
-        orderService.changeOrder(orderId, OrderAction.DELIVER, actor);
-
-        dispatchService.onCourierIdle();
-
-        return orderService.getOrder(orderId, actor);
-    }
-
-    @Transactional(readOnly = true)
-    public Courier getCourier(UserId courierId, AuthenticatedUser actor) {
-        Objects.requireNonNull(courierId, "Courier ID is required");
-        Objects.requireNonNull(actor, "User context is required");
-        Objects.requireNonNull(actor.userId(), "User ID is required");
-
-        Courier courier = repository.findById(courierId)
-                .orElseThrow(() -> new CourierNotFoundException(courierId));
-
-        if (!policy.canView(actor, courier)) {
-            throw new CourierNotFoundException(courierId);
-        }
-
-        return courier;
-    }
-
-    @Transactional(readOnly = true)
-    public Optional<Assignment> getPendingOffer(
-            UserId courierId,
-            AuthenticatedUser actor) {
-
-        getCourier(courierId, actor);
-
-        return assignmentRepository.findActiveByCourierId(courierId)
-                .filter(assignment -> assignment.getAcceptedAt() == null);
-    }
-
-    private void recordCourierTransition(
-            Courier courier,
-            CourierStatus previousStatus,
-            OrderId orderId) {
-
-        courierEventRepository.save(new CourierStateChanged(
-                EventId.random(),
-                courier.getId(),
-                orderId,
-                previousStatus,
-                courier.getStatus(),
-                Instant.now()));
-    }
 }
