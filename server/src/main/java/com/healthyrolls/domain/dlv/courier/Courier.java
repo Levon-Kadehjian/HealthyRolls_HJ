@@ -147,8 +147,8 @@ public class Courier {
     }
 
     public double distanceTo(double lat, double lon) {
-        double latitudeDifference = this.latitude - latitude;
-        double longitudeDifference = this.longitude - longitude;
+        double latitudeDifference = this.latitude - lat;
+        double longitudeDifference = this.longitude - lon;
 
         return Math.hypot(latitudeDifference, longitudeDifference);
     }
