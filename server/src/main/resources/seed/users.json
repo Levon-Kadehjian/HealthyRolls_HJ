@@ -24,7 +24,8 @@
     "role": "COURIER",
     "restaurantId": null,
     "latitude": 45.5185,
-    "longitude": -73.5765
+    "longitude": -73.5765,
+    "courierStatus": "OFFLINE"
   },
     {
     "email": "courier2@healthyrolls.com",
@@ -33,7 +34,8 @@
     "role": "COURIER",
     "restaurantId": null,
     "latitude": 45.5135,
-    "longitude": -73.5574
+    "longitude": -73.5574,
+    "courierStatus": "OFFLINE"
   },
   {
     "email": "courier3@healthyrolls.com",
@@ -42,7 +44,8 @@
     "role": "COURIER",
     "restaurantId": null,
     "latitude": 45.4955,
-    "longitude": -73.5574
+    "longitude": -73.5574,
+    "courierStatus": "OFFLINE"
   },
   {
     "email": "operator@healthyrolls.com",
