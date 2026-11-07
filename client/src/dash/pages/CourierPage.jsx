@@ -77,7 +77,7 @@ function CourierActions({ courier }) {
 
   const buttons = [
     { intent: 'GO_ON_DUTY', label: 'Go on duty', pending: 'Going on duty…', enabled: courier.status === 'OFFLINE' },
-    { intent: 'GO_OFF_DUTY', label: 'Go off duty', pending: 'Going off duty…', enabled: courier.status === 'IDLE' && !holdsOrder },
+    { intent: 'GO_OFF_DUTY', label: 'Go off duty', pending: 'Going off duty…', enabled: courier.status === 'IDLE' || courier.status === 'ASSIGNED' },
     { intent: 'CONFIRM_PICKUP', label: 'Confirm pickup', pending: 'Confirming…', enabled: assigned && courier.offerAccepted },
     { intent: 'CONFIRM_DELIVERY', label: 'Confirm delivery', pending: 'Confirming…', enabled: courier.status === 'CARRYING' },
   ]
