@@ -85,12 +85,20 @@ public class CourierService {
                     "You are not allowed to change this courier's duty status");
         }
 
-        Courier courier = repository.findById(courierId)
+        Courier courier = repository.findAllForDispatch().stream()
+                .filter(candidate -> candidate.getId().equals(courierId))
+                .findFirst()
                 .orElseThrow(() -> new CourierNotFoundException(courierId));
+
+        final CourierStatus previousStatus = courier.getStatus();
 
         courier.goOnDuty();
         repository.save(courier);
-        dispatchService.onCourierIdle();
+        recordCourierTransition(courier, previousStatus, courier.getCurrentOrderId());
+
+        if (courier.isAvailable()) {
+            dispatchService.onCourierIdle();
+        }
         return courier;
     }
 
@@ -110,8 +118,11 @@ public class CourierService {
                 .findFirst()
                 .orElseThrow(() -> new CourierNotFoundException(courierId));
 
+        final CourierStatus previousStatus = courier.getStatus();
+
         courier.goOffDuty();
         repository.save(courier);
+        recordCourierTransition(courier, previousStatus, courier.getCurrentOrderId());
 
         assignmentRepository.findActiveByCourierId(courierId)
                 .filter(assignment -> assignment.getAcceptedAt() == null)
@@ -272,11 +283,14 @@ public class CourierService {
                     "Only ready orders can be picked up");
         }
 
+        final CourierStatus previousStatus = courier.getStatus();
+
         assignment.markPickedUp();
         courier.confirmPickup();
 
         assignmentRepository.save(assignment);
         repository.save(courier);
+        recordCourierTransition(courier, previousStatus, orderId);
 
         orderService.changeOrder(orderId, OrderAction.PICK_UP, actor);
 
@@ -322,11 +336,14 @@ public class CourierService {
                     "Only picked-up orders can be delivered");
         }
 
+        final CourierStatus previousStatus = courier.getStatus();
+
         assignment.markDelivered();
         courier.confirmDelivery();
 
         assignmentRepository.save(assignment);
         repository.save(courier);
+        recordCourierTransition(courier, previousStatus, orderId);
 
         orderService.changeOrder(orderId, OrderAction.DELIVER, actor);
 
@@ -360,6 +377,32 @@ public class CourierService {
 
         return assignmentRepository.findActiveByCourierId(courierId)
                 .filter(assignment -> assignment.getAcceptedAt() == null);
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<Order> getActiveOrder(
+            UserId courierId,
+            AuthenticatedUser actor) {
+
+        getCourier(courierId, actor);
+
+        return assignmentRepository.findActiveByCourierId(courierId)
+                .map(assignment -> orderService.getOrder(
+                        assignment.getOrderId(), actor));
+    }
+
+    private void recordCourierTransition(
+            Courier courier,
+            CourierStatus previousStatus,
+            OrderId orderId) {
+
+        courierEventRepository.save(new CourierStateChanged(
+                EventId.random(),
+                courier.getId(),
+                orderId,
+                previousStatus,
+                courier.getStatus(),
+                Instant.now()));
     }
 
     @Transactional(readOnly = true)

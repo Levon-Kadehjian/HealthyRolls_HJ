@@ -75,12 +75,20 @@ public class SeedCourierLoader {
         if (courierRepository.findById(user.get().id()).isPresent()) {
             return false;
         }
+        CourierStatus status = seed.courierStatus();
+
+        if (status != CourierStatus.OFFLINE && status != CourierStatus.IDLE) {
+            throw new IllegalArgumentException(
+                    "Seed courier " + seed.email()
+                            + " must specify OFFLINE or IDLE status");
+        }
+
         courierRepository.save(new Courier(
                 user.get().id(),
                 user.get().name(),
                 seed.latitude(),
                 seed.longitude(),
-                CourierStatus.OFFLINE,
+                status,
                 null));
         return true;
     }

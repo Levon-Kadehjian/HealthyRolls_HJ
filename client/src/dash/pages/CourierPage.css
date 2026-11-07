@@ -89,6 +89,15 @@
   font-size: 14px;
 }
 
+.courier-order-items {
+  margin: 0 0 1rem;
+  padding-left: 1.25rem;
+}
+
+.courier-order-items li {
+  margin-bottom: 0.25rem;
+}
+
 .courier-actions {
   display: flex;
   flex-wrap: wrap;

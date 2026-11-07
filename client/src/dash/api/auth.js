@@ -85,12 +85,18 @@ export async function loginUser({ email, password, role = 'CUSTOMER', name }) {
   return { ok: true, session }
 }
 
-export async function registerUser({ name, email, password }) {
+export async function registerUser({ name, email, password,latitude, longitude, }) {
   try {
     const response = await fetch('/api/users/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email, hashedPassword: password }),
+      body: JSON.stringify({
+        name,
+        email,
+        hashedPassword: password,
+        latitude,
+        longitude,
+      }),
     })
 
     if (response.ok) {

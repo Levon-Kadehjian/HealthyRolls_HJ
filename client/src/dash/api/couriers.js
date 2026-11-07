@@ -16,6 +16,10 @@ export function getPendingOffer() {
   return apiRequest('/api/couriers/me/offer')
 }
 
+export function getMyActiveOrder() {
+  return apiRequest('/api/couriers/me/order')
+}
+
 export function acceptOffer(orderId) {
   return apiRequest(`/api/couriers/me/orders/${orderId}/accept`, { method: 'POST' })
 }

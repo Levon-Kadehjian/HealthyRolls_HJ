@@ -16,11 +16,15 @@ const shortId = (id) => String(id ?? '').slice(0, 8)
 function describeStep(courier) {
   switch (courier.status) {
     case 'OFFLINE':
-      return 'Go on duty to start receiving orders.'
+      return courier.currentOrderId != null
+        ? 'You are off duty with an accepted order awaiting pickup. Go on duty to resume it, unless an operator reassigns it.'
+        : 'Go on duty to start receiving orders.'
     case 'IDLE':
       return 'You will be offered the next ready order near you.'
     case 'ASSIGNED':
-      return 'Head to the restaurant and confirm pickup.'
+      return courier.offerAccepted
+        ? 'Head to the restaurant and confirm pickup.'
+        : 'A ready order has been offered to you. Accept it to start.'
     case 'CARRYING':
       return 'Bring the order to the customer and confirm delivery.'
     default:
@@ -28,68 +32,102 @@ function describeStep(courier) {
   }
 }
 
-function OfferActions({ offer }) {
-  const fetcher = useFetcher()
-  const busy = fetcher.state !== 'idle'
-  const pendingIntent = busy ? fetcher.formData?.get('intent') : null
-  const error = fetcher.data?.ok === false ? fetcher.data.error : null
-
-  return (
-    <fetcher.Form method="post">
-      <input type="hidden" name="orderId" value={offer.orderId} />
-      {error && (
-        <p className="courier-action-error" role="alert">
-          {error}
-        </p>
-      )}
-      <div className="courier-actions">
-        <button
-          type="submit"
-          name="intent"
-          value="ACCEPT_OFFER"
-          className="btn-primary courier-btn"
-          disabled={busy}
-        >
-          {pendingIntent === 'ACCEPT_OFFER' ? 'Accepting…' : 'Accept offer'}
-        </button>
-        <button
-          type="submit"
-          name="intent"
-          value="DECLINE_AND_GO_OFF_DUTY"
-          className="btn-secondary courier-btn"
-          disabled={busy}
-        >
-          {pendingIntent === 'DECLINE_AND_GO_OFF_DUTY' ? 'Declining…' : 'Decline offer & go off duty'}
-        </button>
-      </div>
-    </fetcher.Form>
-  )
-}
-
-function CourierActions({ courier }) {
+function CourierActions({ courier, offer }) {
   const fetcher = useFetcher()
   const busy = fetcher.state !== 'idle'
   const pendingIntent = busy ? fetcher.formData?.get('intent') : null
   const error = fetcher.data?.ok === false ? fetcher.data.error : null
 
   const holdsOrder = courier.currentOrderId != null
-  const assigned = courier.status === 'ASSIGNED'
 
-  const buttons = [
-    { intent: 'GO_ON_DUTY', label: 'Go on duty', pending: 'Going on duty…', enabled: courier.status === 'OFFLINE' },
-    { intent: 'GO_OFF_DUTY', label: 'Go off duty', pending: 'Going off duty…', enabled: courier.status === 'IDLE' || courier.status === 'ASSIGNED' },
-    { intent: 'CONFIRM_PICKUP', label: 'Confirm pickup', pending: 'Confirming…', enabled: assigned && courier.offerAccepted },
-    { intent: 'CONFIRM_DELIVERY', label: 'Confirm delivery', pending: 'Confirming…', enabled: courier.status === 'CARRYING' },
-  ]
+  // An offer may exist before the courier becomes ASSIGNED.
+  const hasPendingOffer = courier.status === 'IDLE' && offer?.orderId != null && courier.offerAccepted !== true
+
+  const orderId = hasPendingOffer ? offer.orderId : courier.currentOrderId
+
+  let buttons = []
+
+switch (courier.status) {
+  case 'OFFLINE':
+    buttons = [
+      {
+        intent: 'GO_ON_DUTY',
+        label: 'Go on duty',
+        pending: 'Going on duty…',
+        enabled: true,
+      },
+    ]
+    break
+
+  case 'IDLE':
+    buttons = hasPendingOffer
+      ? [
+          {
+            intent: 'ACCEPT_OFFER',
+            label: 'Accept offer',
+            pending: 'Accepting…',
+            enabled: true,
+          },
+          {
+            intent: 'DECLINE_AND_GO_OFF_DUTY',
+            label: 'Decline & go off duty',
+            pending: 'Declining…',
+            enabled: true,
+            secondary: true,
+          },
+        ]
+      : [
+          {
+            intent: 'GO_OFF_DUTY',
+            label: 'Go off duty',
+            pending: 'Going off duty…',
+            enabled: true,
+          },
+        ]
+    break
+
+  case 'ASSIGNED':
+    buttons = [
+      {
+        intent: 'CONFIRM_PICKUP',
+        label: 'Confirm pickup',
+        pending: 'Confirming…',
+        enabled: holdsOrder && courier.offerAccepted === true,
+      },
+      {
+        intent: 'GO_OFF_DUTY',
+        label: 'Go off duty',
+        pending: 'Going off duty…',
+        enabled: true,
+        secondary: true,
+      },
+    ]
+    break
+
+  case 'CARRYING':
+    buttons = [
+      {
+        intent: 'CONFIRM_DELIVERY',
+        label: 'Confirm delivery',
+        pending: 'Confirming…',
+        enabled: holdsOrder,
+      },
+    ]
+    break
+}
 
   return (
     <fetcher.Form method="post">
-      {holdsOrder && <input type="hidden" name="orderId" value={courier.currentOrderId} />}
+      {orderId != null && (
+        <input type="hidden" name="orderId" value={orderId} />
+      )}
+
       {error && (
         <p className="courier-action-error" role="alert">
           {error}
         </p>
       )}
+
       <div className="courier-actions">
         {buttons.map((button) => (
           <button
@@ -97,10 +135,16 @@ function CourierActions({ courier }) {
             type="submit"
             name="intent"
             value={button.intent}
-            className={`${button.enabled ? 'btn-primary' : 'btn-secondary'} courier-btn`}
+            className={`${
+              button.enabled && !button.secondary
+                ? 'btn-primary'
+                : 'btn-secondary'
+            } courier-btn`}
             disabled={busy || !button.enabled}
           >
-            {pendingIntent === button.intent ? button.pending : button.label}
+            {pendingIntent === button.intent
+              ? button.pending
+              : button.label}
           </button>
         ))}
       </div>
@@ -109,29 +153,39 @@ function CourierActions({ courier }) {
 }
 
 export default function CourierPage() {
-  const { courier, offer, failed } = useLoaderData()
+  const { courier, offer, activeOrder, orderFailed, failed } = useLoaderData()
   const revalidator = useRevalidator()
   const refreshing = revalidator.state === 'loading'
 
-    useEffect(() => {
+  useEffect(() => {
     if (failed) {
       return undefined
     }
+
     const timer = setInterval(() => {
       if (revalidator.state === 'idle') {
         revalidator.revalidate()
       }
     }, REFRESH_MS)
+
     return () => clearInterval(timer)
   }, [revalidator, failed])
+
+  const hasPendingOffer = courier?.status === 'IDLE' && offer?.orderId != null &&courier.offerAccepted !== true
+
+const displayedOrderId = hasPendingOffer ? offer.orderId : courier?.currentOrderId
 
   return (
     <div className="courier-page">
       <header className="page-header courier-header">
         <div>
           <h2>Deliveries{courier ? ` · ${courier.name}` : ''}</h2>
-          <p>Go on duty, accept the order offered to you, then confirm pickup and delivery.</p>
+          <p>
+            Go on duty, accept the order offered to you,
+            then confirm pickup and delivery.
+          </p>
         </div>
+
         <button
           type="button"
           className="btn-secondary"
@@ -144,7 +198,8 @@ export default function CourierPage() {
 
       {failed && (
         <p className="courier-load-error" role="alert">
-          Your courier profile could not be loaded. Check the output console for details.
+          Your courier profile could not be loaded.
+          Check the output console for details.
         </p>
       )}
 
@@ -154,22 +209,41 @@ export default function CourierPage() {
           aria-labelledby="courier-status-title"
         >
           <div className="courier-card-header">
-            <h3 id="courier-status-title">{STATUS_LABELS[courier.status] ?? courier.status}</h3>
+            <h3 id="courier-status-title">
+              {STATUS_LABELS[courier.status] ?? courier.status}
+            </h3>
             <span className="courier-badge">{courier.status}</span>
           </div>
-          {offer ? (
-            <>
-              <p className="courier-card-note">A ready order has been offered to you. Accept it to start.</p>
-              <p className="courier-order">Order #{shortId(offer.orderId)}</p>
-              <OfferActions offer={offer} />
-            </>
-          ) : (
-            <>
-          <p className="courier-card-note">{describeStep(courier)}</p>
-          {courier.currentOrderId && <p className="courier-order">Order #{shortId(courier.currentOrderId)}</p>}
-          <CourierActions courier={courier} />
-            </>
+
+          <p className="courier-card-note">
+            {hasPendingOffer
+              ? 'A ready order has been offered to you. Accept it to start.'
+              : describeStep(courier)}
+          </p>
+
+          {displayedOrderId != null && (
+            <p className="courier-order">
+              Order #{shortId(displayedOrderId)}
+            </p>
           )}
+          {displayedOrderId != null &&
+            activeOrder?.orderId === displayedOrderId && (
+              <ul className="courier-order-items">
+                {activeOrder.items.map((item, index) => (
+                  <li key={index}>
+                    {item.quantity} × {item.name}
+                  </li>
+                ))}
+              </ul>
+            )}
+
+          {displayedOrderId != null && orderFailed && (
+            <p className="courier-load-error" role="alert">
+              Order items could not be loaded. Try refreshing.
+            </p>
+          )}
+
+          <CourierActions courier={courier} offer={offer} />
         </section>
       )}
     </div>

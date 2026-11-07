@@ -9,6 +9,8 @@ public interface IRestaurantRepository {
 
     Restaurant findById(UUID restaurantId);
 
+    void lockById(UUID restaurantId);
+
     Restaurant save(Restaurant restaurant);
 
 }
