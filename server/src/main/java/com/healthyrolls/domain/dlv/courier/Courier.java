@@ -77,7 +77,6 @@ public class Courier {
 
     public void goOnDuty() {
         require(CourierStatus.OFFLINE, "go on duty");
-
         status = currentOrderId == null ? CourierStatus.IDLE : CourierStatus.ASSIGNED;
     }
 
@@ -134,7 +133,20 @@ public class Courier {
         }
     }
 
-    public double distanceTo(double latitude, double longitude) {
+    public void releaseStalledOrder(OrderId orderId) {
+        Objects.requireNonNull(orderId, "Order ID is required");
+
+        if (!orderId.equals(currentOrderId)) {
+            throw new InvalidCourierTransitionException(
+                    "This is not the courier's current order");
+        }
+
+        require(CourierStatus.OFFLINE, "release a stalled order");
+
+        currentOrderId = null;
+    }
+
+    public double distanceTo(double lat, double lon) {
         double latitudeDifference = this.latitude - latitude;
         double longitudeDifference = this.longitude - longitude;
 

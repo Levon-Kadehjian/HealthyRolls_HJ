@@ -133,8 +133,61 @@ function OrderSection({ title, orders, empty }) {
   )
 }
 
+function StalledOrders({ stalled, orders }) {
+  const fetcher = useFetcher()
+  const busy = fetcher.state !== 'idle'
+  const pendingOrderId = busy ? fetcher.formData?.get('orderId') : null
+  const error = fetcher.data?.ok === false ? fetcher.data.error : null
+  const result = fetcher.data?.ok ? fetcher.data.reassignment : null
+  const restaurantName = (orderId) => orders.find((order) => order.orderId === orderId)?.restaurantName ?? 'Restaurant'
+
+  return (
+    <section className="orders-section">
+      <h3>
+        Stalled orders <span className="orders-count">{stalled.length}</span>
+      </h3>
+      {error && (
+        <p className="order-error" role="alert">
+          {error}
+        </p>
+      )}
+      {result && (
+        <p className="order-note" role="status">
+          Order #{shortId(result.orderId)} released from {result.previousCourierName}.{' '}
+          {result.queued
+            ? 'No courier is available, so it is waiting in the dispatch queue.'
+            : `Offered to ${result.offeredCourierName}.`}
+        </p>
+      )}
+      {stalled.length === 0 ? (
+        <p className="orders-section-empty">No ready order is held by an offline courier.</p>
+      ) : (
+        <ul className="order-list">
+          {stalled.map((item) => (
+            <li key={item.orderId} className="order-card">
+              <div className="order-card-header">
+                <div>
+                  <h4>{restaurantName(item.orderId)}</h4>
+                  <span className="order-card-id">Order #{shortId(item.orderId)}</span>
+                </div>
+              </div>
+              <p className="order-note">Accepted by {item.courierName}, who is now offline.</p>
+              <fetcher.Form method="post" className="order-actions">
+                <input type="hidden" name="orderId" value={item.orderId} />
+                <button type="submit" name="intent" value="REASSIGN_STALLED_ORDER" className="order-btn order-btn-neutral" disabled={busy}>
+                  {pendingOrderId === item.orderId ? 'Reassigning…' : 'Reassign order'}
+                </button>
+              </fetcher.Form>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  )
+}
+
 export default function OrdersPage() {
-  const { orders, failed } = useLoaderData()
+  const { orders, failed, stalled } = useLoaderData()
   const session = useSession()
   const isOperator = session?.role === 'OPERATOR'
   const revalidator = useRevalidator()
@@ -160,6 +213,8 @@ export default function OrdersPage() {
           {isOperator ? 'Orders could not be loaded.' : 'Your orders could not be loaded.'} Check the output console for details.
         </p>
       )}
+
+      {isOperator && stalled && <StalledOrders stalled={stalled} orders={orders} />}
 
       {!failed && orders.length === 0 ? (
         <div className="orders-empty-card">
