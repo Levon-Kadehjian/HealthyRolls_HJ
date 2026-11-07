@@ -31,6 +31,8 @@ import com.healthyrolls.domain.dlv.courier.ICourierEventRepository;
 import com.healthyrolls.domain.dlv.exceptions.OfferNotFoundException;
 import com.healthyrolls.domain.ord.order.EventId;
 import com.healthyrolls.domain.ord.order.IOrderRepository;
+import java.util.List;
+import com.healthyrolls.domain.dlv.exceptions.OrderNotStalledException;
 
 @Service
 public class CourierService {
@@ -358,5 +360,90 @@ public class CourierService {
 
         return assignmentRepository.findActiveByCourierId(courierId)
                 .filter(assignment -> assignment.getAcceptedAt() == null);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Courier> getStalledCouriers(AuthenticatedUser actor) {
+        Objects.requireNonNull(actor, "User context is required");
+        Objects.requireNonNull(actor.userId(), "User ID is required");
+
+        if (!policy.canReassignStalledOrder(actor)) {
+            throw new ActionNotPermittedException(
+                    "You are not allowed to view stalled orders");
+        }
+
+        return repository.findByStatus(CourierStatus.OFFLINE).stream()
+                .filter(courier -> courier.getCurrentOrderId() != null)
+                .toList();
+    }
+
+    @Transactional
+    public StalledOrderReassignment reassignStalledOrder(OrderId orderId, AuthenticatedUser actor) {
+        Objects.requireNonNull(orderId, "Order ID is required");
+        Objects.requireNonNull(actor, "User context is required");
+        Objects.requireNonNull(actor.userId(), "User ID is required");
+
+        if (!policy.canReassignStalledOrder(actor)) {
+            throw new ActionNotPermittedException(
+                    "You are not allowed to reassign this order");
+        }
+
+        List<Courier> lockedCouriers = repository.findAllForDispatch();
+
+        Order order = orderRepository.findByOrderId(orderId);
+
+        Assignment assignment = assignmentRepository.findActiveByOrderId(orderId)
+                .orElseThrow(() -> new OrderNotStalledException(orderId));
+
+        Courier previousCourier = lockedCouriers.stream()
+                .filter(candidate -> candidate.getId().equals(assignment.getCourierId()))
+                .findFirst()
+                .orElseThrow(() -> new CourierNotFoundException(assignment.getCourierId()));
+
+        boolean stalled = order.status() == OrderStatus.READY
+                && assignment.getAcceptedAt() != null
+                && assignment.getPickedUpAt() == null
+                && previousCourier.getStatus() == CourierStatus.OFFLINE
+                && orderId.equals(previousCourier.getCurrentOrderId());
+
+        if (!stalled) {
+            throw new OrderNotStalledException(orderId);
+        }
+
+        final CourierStatus previousStatus = previousCourier.getStatus();
+
+        assignment.cancel();
+        order.releaseCourier();
+        previousCourier.releaseStalledOrder(orderId);
+
+        assignmentRepository.save(assignment);
+        orderRepository.save(order);
+        repository.save(previousCourier);
+
+        CourierStateChanged event = new CourierStateChanged(
+                EventId.random(),
+                previousCourier.getId(),
+                orderId,
+                previousStatus,
+                previousCourier.getStatus(),
+                Instant.now());
+
+        courierEventRepository.save(event);
+
+        Courier offeredCourier = dispatchService.dispatch(orderId)
+                .flatMap(offer -> repository.findById(offer.getCourierId()))
+                .orElse(null);
+
+        if (offeredCourier == null) {
+            log.info("Operator {} reassigned order {} from courier {}, no courier available, order queued, event {}",
+                    actor.userId().value(), orderId.value(), previousCourier.getId().value(),
+                    event.eventId().value());
+        } else {
+            log.info("Operator {} reassigned order {} from courier {}, offered to courier {}, event {}",
+                    actor.userId().value(), orderId.value(), previousCourier.getId().value(),
+                    offeredCourier.getId().value(), event.eventId().value());
+        }
+
+        return new StalledOrderReassignment(orderId, previousCourier, offeredCourier);
     }
 }

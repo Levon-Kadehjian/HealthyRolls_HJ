@@ -36,9 +36,10 @@ public class Courier {
             throw new IllegalArgumentException("Longitude must be between -180 and 180");
         }
         boolean holdsOrder = status == CourierStatus.ASSIGNED || status == CourierStatus.CARRYING;
-        if (holdsOrder != (currentOrderId != null)) {
+        boolean mayHoldOrder = holdsOrder || status == CourierStatus.OFFLINE;
+        if ((holdsOrder && currentOrderId == null) || (!mayHoldOrder && currentOrderId != null)) {
             throw new IllegalArgumentException(
-                    "A courier has a current order only while ASSIGNED or CARRYING");
+                    "A courier has a current order only while ASSIGNED, CARRYING or OFFLINE");
         }
 
         this.latitude = latitude;
@@ -76,14 +77,16 @@ public class Courier {
 
     public void goOnDuty() {
         require(CourierStatus.OFFLINE, "go on duty");
-        status = CourierStatus.IDLE;
+        status = currentOrderId == null ? CourierStatus.IDLE : CourierStatus.ASSIGNED;
     }
 
     public void goOffDuty() {
-        if (currentOrderId != null) {
+        if (status == CourierStatus.CARRYING) {
             throw new CourierCarryingOrderException(id);
         }
-        require(CourierStatus.IDLE, "go off duty");
+        if (status != CourierStatus.ASSIGNED) {
+            require(CourierStatus.IDLE, "go off duty");
+        }
         status = CourierStatus.OFFLINE;
     }
 
@@ -113,10 +116,28 @@ public class Courier {
                     "This is not the courier's current order");
         }
 
+        if (status == CourierStatus.OFFLINE) {
+            currentOrderId = null;
+            return;
+        }
+
         require(CourierStatus.ASSIGNED, "release a cancelled order");
 
         currentOrderId = null;
         status = CourierStatus.IDLE;
+    }
+
+    public void releaseStalledOrder(OrderId orderId) {
+        Objects.requireNonNull(orderId, "Order ID is required");
+
+        if (!orderId.equals(currentOrderId)) {
+            throw new InvalidCourierTransitionException(
+                    "This is not the courier's current order");
+        }
+
+        require(CourierStatus.OFFLINE, "release a stalled order");
+
+        currentOrderId = null;
     }
 
     // source: https://stackoverflow.com/a/16794680

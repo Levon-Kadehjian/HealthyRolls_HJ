@@ -45,4 +45,8 @@ public class DeliveryAccessPolicy {
         return actor.role() == UserRole.COURIER
                 && actor.userId().equals(courier.getId());
     }
+
+    public boolean canReassignStalledOrder(AuthenticatedUser actor) {
+        return actor.role() == UserRole.OPERATOR;
+    }
 }
