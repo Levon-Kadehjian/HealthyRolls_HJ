@@ -29,6 +29,24 @@ public record LedgerEntry(
     }
 
     public static LedgerEntry refund(UUID orderId, BigDecimal amount) {
-        throw new UnsupportedOperationException("Not implemented");
+        return new LedgerEntry(
+                UUID.randomUUID(),
+                orderId,
+                LedgerEntryType.REFUND,
+                null,
+                amount.negate(),
+                OrderStatus.REFUNDED,
+                Instant.now());
+    }
+
+    public static LedgerEntry refund(Order order, BigDecimal amount) {
+        return new LedgerEntry(
+                UUID.randomUUID(),
+                order.getOrderId().value(),
+                LedgerEntryType.REFUND,
+                order.getCustomerId(),
+                amount.negate(),
+                OrderStatus.REFUNDED,
+                Instant.now());
     }
 }

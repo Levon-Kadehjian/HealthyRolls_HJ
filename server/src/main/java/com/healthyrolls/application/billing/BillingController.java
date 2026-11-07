@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -50,6 +51,21 @@ public class BillingController {
                 .findFirst()
                 .orElseThrow(() -> new ActionNotPermittedException("Invoice is not available"));
 
+        return new LedgerEntryResponse(
+                entry.entryId(),
+                entry.orderId(),
+                entry.type(),
+                entry.customerId(),
+                entry.amount(),
+                entry.orderStatus(),
+                entry.occurredAt());
+    }
+
+    @PostMapping("/orders/{orderId}/refund")
+    public LedgerEntryResponse refundOrder(
+            @PathVariable UUID orderId,
+            @RequestAttribute(AuthenticatedUser.REQUEST_ATTRIBUTE) AuthenticatedUser user) {
+        LedgerEntry entry = billingService.refundOrder(orderId, user);
         return new LedgerEntryResponse(
                 entry.entryId(),
                 entry.orderId(),

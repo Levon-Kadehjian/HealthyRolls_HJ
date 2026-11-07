@@ -43,6 +43,7 @@ healthyrolls:
         - { path-pattern: /api/billing/history, method: GET, allowed-rules: [CUSTOMER, RESTAURANT_STAFF, COURIER, OPERATOR] }
         - { path-pattern: /api/billing/customers/*/history, method: GET, allowed-rules: [CUSTOMER, OPERATOR] }
         - { path-pattern: /api/billing/orders/*, method: GET, allowed-rules: [CUSTOMER, RESTAURANT_STAFF, COURIER, OPERATOR] }
+        - { path-pattern: /api/billing/orders/*/refund, method: POST, allowed-rules: [OPERATOR] }
 
         # Operator
         - { path-pattern: /api/admin/reset, method: POST, allowed-rules: [OPERATOR] }
