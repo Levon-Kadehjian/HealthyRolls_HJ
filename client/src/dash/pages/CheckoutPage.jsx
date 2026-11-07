@@ -6,31 +6,16 @@ import { useCart } from '../cart/useCart'
 import { useSession } from '../auth/useSession'
 import { placeOrder } from '../api/orders'
 import { describeError, recordCommand, runCommand } from '../console/consoleStore'
-import {
-    TEST_CARD,
-    estimateDeliveryWindow,
-    formatCardNumber,
-    formatExpiry,
-    validateCheckout,
-} from '../checkout/checkoutForm'
+import { estimateDeliveryWindow } from '../checkout/checkoutForm'
 import './CheckoutPage.css'
 
 const currency = new Intl.NumberFormat('en-CA', { style: 'currency', currency: 'CAD' })
-
-const EMPTY_FORM = {
-    cardName: '',
-    cardNumber: '',
-    expiry: '',
-    cvc: '',
-}
 
 export default function CheckoutPage() {
     const { restaurant, lines, itemCount, subtotal, clearCart } = useCart()
     const session = useSession()
     const deliveryLocation =
     session?.latitude != null && session?.longitude != null ? `${session.latitude}, ${session.longitude}` : 'Delivery location not set'
-    const [form, setForm] = useState(() => ({ ...EMPTY_FORM, ...TEST_CARD}))
-    const [fieldErrors, setFieldErrors] = useState({})
     const [submitting, setSubmitting] = useState(false)
     const [error, setError] = useState('')
     const [placedOrder, setPlacedOrder] = useState(null)
@@ -108,22 +93,10 @@ export default function CheckoutPage() {
             ? 'One or more selected items are unavailable. Return to your cart to remove them.'
             : '')
 
-    function updateField(name, value) {
-        setForm((current) => ({ ...current, [name]: value }))
-        setFieldErrors((current) => ({ ...current, [name]: undefined }))
-    }
-
     async function handlePlaceOrder() {
 
         if (submitting || unavailableReason) return
         setError('')
-
-        const errors = validateCheckout(form)
-        setFieldErrors(errors)
-        if (Object.keys(errors).length > 0) {
-            recordCommand('PLACE_ORDER', `restaurant=${restaurant.name}`, 'error', 'checkout form incomplete')
-            return
-        }
 
         setSubmitting(true)
         try {
@@ -139,7 +112,6 @@ export default function CheckoutPage() {
                 restaurantName: restaurant.name,
                 total: subtotal,
                 deliveryLocation,
-                cardLast4: form.cardNumber.replace(/\D/g, '').slice(-4),
                 estimatedDelivery: estimateDeliveryWindow(),
             })
             clearCart()
@@ -154,7 +126,7 @@ export default function CheckoutPage() {
         return (
             <div className="checkout-page">
                 <div className="orders-empty-card">
-                    <h3>Order Placed!</h3>
+                    <h3>Order placed.</h3>
                     <p>
                         Your order from <strong>{placedOrder.restaurantName}</strong> was sent to the restaurant.
                     </p>
@@ -176,9 +148,9 @@ export default function CheckoutPage() {
                             <span className="checkout-confirmation-value">{placedOrder.deliveryLocation}</span>
                         </div>
                         <div className="checkout-summary-row">
-                            <span>Paid</span>
+                            <span>Item subtotal</span>
                             <span>
-                                {currency.format(placedOrder.total)} · card ending {placedOrder.cardLast4} (test card)
+                                {currency.format(placedOrder.total)}
                             </span>
                         </div>
                     </div>
