@@ -12,8 +12,16 @@ export function goOffDuty() {
   return apiRequest('/api/couriers/me/off-duty', { method: 'POST' })
 }
 
+export function getPendingOffer() {
+  return apiRequest('/api/couriers/me/offer')
+}
+
 export function acceptOffer(orderId) {
   return apiRequest(`/api/couriers/me/orders/${orderId}/accept`, { method: 'POST' })
+}
+
+export function declineOffer(orderId) {
+  return apiRequest(`/api/couriers/me/orders/${orderId}/decline`, { method: 'POST' })
 }
 
 export function confirmPickup(orderId) {

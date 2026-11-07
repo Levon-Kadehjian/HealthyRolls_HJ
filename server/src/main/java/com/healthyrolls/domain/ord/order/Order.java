@@ -94,6 +94,13 @@ public class Order {
         courierId = courier.value();
     }
 
+    public void releaseCourier() {
+        if (status() != OrderStatus.READY) {
+            throw new InvalidTransitionException("Cannot release the courier of an order in state " + status());
+        }
+        courierId = null;
+    }
+
     public void apply(OrderAction action) {
         apply(action, null);
     }

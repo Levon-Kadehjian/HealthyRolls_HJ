@@ -40,4 +40,9 @@ public class DeliveryAccessPolicy {
         return isOwnCourier(actor, courier.getId())
                 && orderId.equals(courier.getCurrentOrderId());
     }
+
+    public boolean canAcceptOffer(AuthenticatedUser actor, Courier courier) {
+        return actor.role() == UserRole.COURIER
+                && actor.userId().equals(courier.getId());
+    }
 }
