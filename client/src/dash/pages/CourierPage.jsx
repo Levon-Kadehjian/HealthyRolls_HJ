@@ -55,11 +55,11 @@ function OfferActions({ offer }) {
         <button
           type="submit"
           name="intent"
-          value="GO_OFF_DUTY"
+          value="DECLINE_AND_GO_OFF_DUTY"
           className="btn-secondary courier-btn"
           disabled={busy}
         >
-          {pendingIntent === 'GO_OFF_DUTY' ? 'Going off duty…' : 'Go off duty'}
+          {pendingIntent === 'DECLINE_AND_GO_OFF_DUTY' ? 'Declining…' : 'Decline offer & go off duty'}
         </button>
       </div>
     </fetcher.Form>

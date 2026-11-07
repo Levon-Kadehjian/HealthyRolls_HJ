@@ -199,6 +199,7 @@ const restaurantOrdersAction = async ({ request }) => {
 const COURIER_COMMANDS = {
   GO_ON_DUTY: () => goOnDuty(),
   GO_OFF_DUTY: () => goOffDuty(),
+  DECLINE_AND_GO_OFF_DUTY: () => goOffDuty(),
   ACCEPT_OFFER: (orderId) => acceptOffer(orderId),
   CONFIRM_PICKUP: (orderId) => confirmPickup(orderId),
   CONFIRM_DELIVERY: (orderId) => confirmDelivery(orderId),
