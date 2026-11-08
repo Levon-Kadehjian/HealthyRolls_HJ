@@ -7,6 +7,7 @@ import { clearSession } from '../auth/session'
 import { describeError, recordCommand, runCommand } from '../console/consoleStore'
 import { resetSystem } from '../api/admin'
 import './Navbar.css'
+import { LogOut, RotateCcw, Settings, ShoppingCart } from 'lucide-react'
 
 const linkClass = ({ isActive }) => `nav-link ${isActive ? 'nav-link-active' : ''}`
 
@@ -147,20 +148,7 @@ export default function Navbar() {
               )}
               {session.role === 'CUSTOMER' && (
                 <NavLink to="/cart" className={({ isActive }) => `nav-icon-link ${isActive ? 'nav-link-active' : ''}`} aria-label={`Cart, ${itemCount} items`}>
-                  <svg
-                    className="nav-icon"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.9"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
-                  >
-                    <circle cx="9" cy="20" r="1.5" />
-                    <circle cx="18" cy="20" r="1.5" />
-                    <path d="M2 3h3l2.7 12.4a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 2-1.5L21 8H6" />
-                  </svg>
+                  <ShoppingCart className="nav-icon" strokeWidth={1.9} aria-hidden="true" />
                   {itemCount > 0 && <span className="nav-badge" aria-hidden="true">{itemCount}</span>}
                 </NavLink>
               )}
@@ -184,19 +172,7 @@ export default function Navbar() {
                       </div>
                     )}
                     <Link to="/account" className="nav-menu-item" role="menuitem">
-                      <svg
-                        className="nav-menu-icon"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.9"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        aria-hidden="true"
-                      >
-                        <circle cx="12" cy="12" r="3" />
-                        <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" />
-                      </svg>
+                      <Settings className="nav-menu-icon" strokeWidth={1.9} aria-hidden="true" />
                       Account Settings
                     </Link>
                     {session.role === 'OPERATOR' && (
@@ -207,19 +183,7 @@ export default function Navbar() {
                         onClick={handleReset}
                         disabled={resetting}
                       >
-                        <svg
-                          className="nav-menu-icon"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="1.9"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          aria-hidden="true"
-                        >
-                          <path d="M3 11a9 9 0 1 1 2.6 7.4" />
-                          <path d="M3 4v7h7" />
-                        </svg>
+                        <RotateCcw className="nav-menu-icon" strokeWidth={1.9} aria-hidden="true" />
                         {resetting ? 'Resetting…' : 'Reset system'}
                       </button>
                     )}
@@ -228,20 +192,7 @@ export default function Navbar() {
                     )}
                     <div className="nav-menu-divider" role="separator" />
                     <button type="button" className="nav-menu-item nav-menu-item-danger" role="menuitem" onClick={logout}>
-                      <svg
-                        className="nav-menu-icon"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.9"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        aria-hidden="true"
-                      >
-                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                        <path d="M16 17l5-5-5-5" />
-                        <path d="M21 12H9" />
-                      </svg>
+                      <LogOut className="nav-menu-icon" strokeWidth={1.9} aria-hidden="true" />
                       Log out
                     </button>
                   </div>

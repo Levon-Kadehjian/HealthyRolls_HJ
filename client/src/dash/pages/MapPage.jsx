@@ -12,11 +12,21 @@ const STATUS_LABELS = { OPEN: 'Open', PAUSED: 'Paused', CLOSED: 'Closed' }
 const formatDistance = (meters) => (meters < 1000 ? `${Math.round(meters)} m` : `${(meters / 1000).toFixed(1)} km`)
 
 export default function MapPage() {
-  const { restaurants, orders, couriers, courier: me } = useLoaderData()
+  const data = useLoaderData()
+  const { orders, courier: me } = data
   const session = useSession()
+  const isStaff = session?.role === 'RESTAURANT_STAFF'
+  const { restaurants, couriers } = data
+  const assignedIds = new Set(
+    isStaff
+      ? orders
+          .filter((o) => o.restaurantId === session.restaurantId && o.courierId && !['DELIVERED', 'CANCELLED'].includes(o.status))
+          .map((o) => o.courierId)
+      : [],
+  )
   const [shown, setShown] = useState(new Set(BANDS))
   const [params] = useSearchParams()
-  const [selectedId, setSelectedId] = useState(params.get('restaurant'))
+  const [selectedId, setSelectedId] = useState(params.get('restaurant') ?? (isStaff ? session.restaurantId : null))
 
   const home = me ? [me.latitude, me.longitude] : session?.latitude != null ? [session.latitude, session.longitude] : null
   const visible = restaurants.filter((restaurant) => shown.has(queueBand(restaurant)))
@@ -60,7 +70,12 @@ export default function MapPage() {
     })),
     ...(home ? [{ id: 'home', position: home, kind: 'home', popup: <div className="map-popup"><h4>You are here</h4></div> }] : []),
   ]
-  const lines = home && selected ? [{ id: 'route', positions: [home, [selected.latitude, selected.longitude]] }] : []
+  const own = isStaff ? restaurants.find((r) => r.id === session.restaurantId) : null
+  const lines = own
+    ? onDuty
+        .filter((c) => assignedIds.has(c.courierId))
+        .map((c) => ({ id: `route-${c.courierId}`, positions: [[own.latitude, own.longitude], [c.latitude, c.longitude]] }))
+    : home && selected ? [{ id: 'route', positions: [home, [selected.latitude, selected.longitude]] }] : []
 
   const toggle = (band) =>
     setShown((current) => {
