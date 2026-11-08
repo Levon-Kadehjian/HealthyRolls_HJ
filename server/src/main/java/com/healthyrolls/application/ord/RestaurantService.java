@@ -8,6 +8,7 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.healthyrolls.domain.common.AuthenticatedUser;
@@ -67,6 +68,11 @@ public class RestaurantService {
             throw new ActionNotPermittedException("You cannot browse this restaurant's menu");
         }
         return repository.findById(restaurantId);
+    }
+
+    @Transactional(propagation = Propagation.MANDATORY)
+    public void lockPreparationQueue(UUID restaurantId) {
+        repository.lockById(Objects.requireNonNull(restaurantId, "Restaurant ID is required"));
     }
 
     public boolean isOpen(UUID restaurantId) {

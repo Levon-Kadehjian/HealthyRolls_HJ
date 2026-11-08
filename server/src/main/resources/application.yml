@@ -44,10 +44,16 @@ healthyrolls:
         # DLV
         - { path-pattern: /api/couriers/me/on-duty, method: POST, allowed-rules: [COURIER] }
         - { path-pattern: /api/couriers/me/off-duty, method: POST, allowed-rules: [COURIER] }
+        - { path-pattern: /api/couriers/me/orders/*/accept, method: POST, allowed-rules: [COURIER] }
+        - { path-pattern: /api/couriers/me/orders/*/decline, method: POST, allowed-rules: [COURIER] }
         - { path-pattern: /api/couriers/me, method: GET, allowed-rules: [COURIER] }
         - { path-pattern: /api/couriers/me/offer, method: GET, allowed-rules: [COURIER] }
         - { path-pattern: /api/couriers/me/orders/*/pickup, method: POST, allowed-rules: [COURIER] }
         - { path-pattern: /api/couriers/me/orders/*/deliver, method: POST, allowed-rules: [COURIER] }
+        - { path-pattern: /api/couriers/me/order, method: GET, allowed-rules: [COURIER] }
+        - { path-pattern: /api/dispatch/stalled-orders, method: GET, allowed-rules: [OPERATOR] }
+        - { path-pattern: /api/dispatch/stalled-orders/*/reassign, method: POST, allowed-rules: [OPERATOR] }
+        - { path-pattern: /api/dispatch/couriers, method: GET, allowed-rules: [CUSTOMER, RESTAURANT_STAFF, COURIER, OPERATOR] }
 
         # Operator
         - { path-pattern: /api/admin/reset, method: POST, allowed-rules: [OPERATOR] }

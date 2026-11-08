@@ -21,8 +21,10 @@ import { ensureSessionLocation } from '../api/auth'
 import { describeError, recordCommand, runCommand } from '../console/consoleStore'
 import { buildOrderHistory, canCancelOrder } from '../orders/orderHistory'
 import CourierPage from '../pages/CourierPage'
-import { acceptOffer, confirmDelivery, confirmPickup, getMyCourier, goOffDuty, goOnDuty } from '../api/couriers'
-
+import CourierMapPage from '../pages/CourierMapPage'
+import { acceptOffer, confirmDelivery, confirmPickup, declineOffer, getMyCourier, goOffDuty, goOnDuty } from '../api/couriers'
+import { getPendingOffer, getMyActiveOrder } from '../api/couriers'
+import { getStalledOrders, listCouriers, reassignStalledOrder } from '../api/couriers'
 
 const ORDER_COMMANDS = {
   ACCEPT: 'ACCEPT_ORDER',
@@ -116,11 +118,27 @@ const customerOrdersLoader = async () => {
       () => loadOrderHistory(),
       (history) => `${history.orders.length} orders`,
     )
+    if (session.role === 'OPERATOR') {
+      return { orders, failed: false, stalled: await loadStalledOrders() }
+    }
     return { orders, failed: false }
   } catch {
     return { orders: [], failed: true }
   }
 }
+
+const loadStalledOrders = async () => {
+  try {
+    return await runCommand('LIST_STALLED_ORDERS', '', () => getStalledOrders(), (stalled) => `${stalled.length} stalled`)
+  } catch {
+    return []
+  }
+}
+
+const describeReassignment = (result) =>
+  result.queued
+    ? `released from ${result.previousCourierName}, no courier available, order placed in the dispatch queue`
+    : `released from ${result.previousCourierName}, offered to ${result.offeredCourierName}`
 
 const customerOrdersAction = async ({ request }) => {
   const session = requireLogin()
@@ -129,6 +147,19 @@ const customerOrdersAction = async ({ request }) => {
   const intent = form.get('intent')
   const status = form.get('status')
   const details = `order=${String(orderId).slice(0, 8)}`
+
+  if (intent === 'REASSIGN_STALLED_ORDER') {
+    if (session.role !== 'OPERATOR') {
+      recordCommand(intent, details, 'error', 'operators only')
+      return { ok: false, error: 'Only operators can reassign orders.' }
+    }
+    try {
+      const result = await runCommand(intent, details, () => reassignStalledOrder(orderId), describeReassignment)
+      return { ok: true, reassignment: result }
+    } catch (error) {
+      return { ok: false, error: await describeError(error) }
+    }
+  }
 
   if (intent !== 'CANCEL') {
     recordCommand('ORDER_ACTION', details, 'error', `unknown action ${intent}`)
@@ -199,10 +230,19 @@ const restaurantOrdersAction = async ({ request }) => {
 const COURIER_COMMANDS = {
   GO_ON_DUTY: () => goOnDuty(),
   GO_OFF_DUTY: () => goOffDuty(),
+  DECLINE_AND_GO_OFF_DUTY: (orderId) => declineOffer(orderId),
   ACCEPT_OFFER: (orderId) => acceptOffer(orderId),
   CONFIRM_PICKUP: (orderId) => confirmPickup(orderId),
   CONFIRM_DELIVERY: (orderId) => confirmDelivery(orderId),
 }
+
+const COURIER_RESULT_MESSAGES = {
+  ACCEPT_OFFER: () => 'offer accepted',
+  DECLINE_AND_GO_OFF_DUTY: (result) => `offer declined, now ${result.status}`,
+}
+
+const describeCourierResult = (intent, result) =>
+  COURIER_RESULT_MESSAGES[intent]?.(result) ?? `now ${result.status}`
 
 const courierLoader = async () => {
   const session = requireLogin()
@@ -218,6 +258,55 @@ const courierLoader = async () => {
   }
 }
 
+const courierPageLoader = async () => {
+  const data = await courierLoader()
+
+  if (data.failed) {
+    return { ...data, offer: null, activeOrder: null, orderFailed: false }
+  }
+
+  let offer = null
+  let activeOrder = null
+  let orderFailed = false
+
+  try {
+    offer = await getPendingOffer()
+  } catch (error) {
+    recordCommand('LOAD_OFFER', '', 'error', await describeError(error))
+  }
+
+  try {
+    activeOrder = await getMyActiveOrder()
+  } catch (error) {
+    orderFailed = true
+    recordCommand('LOAD_COURIER_ORDER', '', 'error', await describeError(error))
+  }
+
+  return { ...data, offer, activeOrder, orderFailed }
+}
+
+const loadMapRestaurants = async () => {
+  try {
+    return await runCommand('BROWSE_RESTAURANTS', 'map', () => getRestaurants(), (restaurants) => `${restaurants.length} restaurants`)
+  } catch {
+    return []
+  }
+}
+
+const loadMapCouriers = async () => {
+  try {
+    return await runCommand('LIST_COURIERS', '', () => listCouriers(), (couriers) => `${couriers.length} couriers`)
+  } catch {
+    return []
+  }
+}
+
+const courierMapLoader = async () => {
+  const { courier } = await courierLoader()
+  const [restaurants, couriers] = await Promise.all([loadMapRestaurants(), loadMapCouriers()])
+  return { courier, restaurants, couriers }
+}
+
 const courierAction = async ({ request }) => {
   const form = await request.formData()
   const intent = form.get('intent')
@@ -231,7 +320,7 @@ const courierAction = async ({ request }) => {
   }
 
   try {
-    await runCommand(intent, details, () => command(orderId), (result) => `now ${result.status}`)
+    await runCommand(intent, details, () => command(orderId), (result) => describeCourierResult(intent, result))
     return { ok: true }
   } catch (error) {
     return { ok: false, error: await describeError(error) }
@@ -452,8 +541,13 @@ export const router = createBrowserRouter([
           {
             path: 'courier',
             element: <CourierPage />,
-            loader: courierLoader,
+            loader: courierPageLoader,
             action: courierAction,
+          },
+          {
+            path: 'map',
+            element: <CourierMapPage />,
+            loader: courierMapLoader,
           },
           {
             path: 'account',

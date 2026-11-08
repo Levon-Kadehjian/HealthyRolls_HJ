@@ -1,6 +1,7 @@
 package com.healthyrolls.application.dlv;
 
 import java.util.Comparator;
+import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -10,6 +11,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 
+import com.healthyrolls.domain.dlv.courier.CourierStateChanged;
+import com.healthyrolls.domain.dlv.courier.CourierStatus;
+import com.healthyrolls.domain.dlv.courier.ICourierEventRepository;
+import com.healthyrolls.domain.ord.order.EventId;
 import com.healthyrolls.domain.dlv.courier.Courier;
 import com.healthyrolls.domain.dlv.courier.ICourierRepository;
 import com.healthyrolls.domain.dlv.delivery.Assignment;
@@ -32,6 +37,7 @@ public class DispatchService {
     private final IAssignmentRepository assignmentRepository;
     private final IOrderRepository orderRepository;
     private final IRestaurantRepository restaurantRepository;
+    private final ICourierEventRepository courierEventRepository;
     private final NearestCourierSelector selector;
     private final DispatchQueue queue;
 
@@ -40,6 +46,7 @@ public class DispatchService {
             IAssignmentRepository assignmentRepository,
             IOrderRepository orderRepository,
             IRestaurantRepository restaurantRepository,
+            ICourierEventRepository courierEventRepository,
             NearestCourierSelector selector,
             DispatchQueue queue) {
 
@@ -51,6 +58,8 @@ public class DispatchService {
                 orderRepository, "Order repository is required");
         this.restaurantRepository = Objects.requireNonNull(
                 restaurantRepository, "Restaurant repository is required");
+        this.courierEventRepository = Objects.requireNonNull(
+                courierEventRepository, "Courier event repository is required");
         this.selector = Objects.requireNonNull(
                 selector, "Courier selector is required");
         this.queue = Objects.requireNonNull(
@@ -133,6 +142,23 @@ public class DispatchService {
         }
     }
 
+    @Transactional
+    public void returnOfferToQueue(Assignment offer) {
+        Objects.requireNonNull(offer, "Offer is required");
+
+        OrderId orderId = offer.getOrderId();
+
+        offer.cancel();
+        assignmentRepository.save(offer);
+
+        Order order = orderRepository.findByOrderId(orderId);
+        order.releaseCourier();
+        orderRepository.save(order);
+
+        queue.enqueue(orderId);
+        onCourierIdle();
+    }
+
     public List<OrderId> queueSnapshot() {
         return queue.snapshot();
     }
@@ -157,8 +183,20 @@ public class DispatchService {
         assignment.cancel();
 
         if (orderId.equals(courier.getCurrentOrderId())) {
+            final CourierStatus previousStatus = courier.getStatus();
+
             courier.releaseCancelledOrder(orderId);
             courierRepository.save(courier);
+
+            if (previousStatus != courier.getStatus()) {
+                courierEventRepository.save(new CourierStateChanged(
+                        EventId.random(),
+                        courier.getId(),
+                        orderId,
+                        previousStatus,
+                        courier.getStatus(),
+                        Instant.now()));
+            }
         }
 
         assignmentRepository.save(assignment);

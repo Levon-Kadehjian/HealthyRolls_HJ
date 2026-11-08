@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import sushiLogo from '../assets/sushi-logo.png'
 import { useSession } from '../auth/useSession'
 import { loginUser, registerUser } from '../api/auth'
+import { recordCommand } from '../console/consoleStore'
 import PasswordInput from '../components/PasswordInput'
 import './AuthPage.css'
 
@@ -22,6 +23,8 @@ export default function AuthPage({ initialMode = 'login' }) {
   const [role, setRole] = useState('CUSTOMER')
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
+  const [latitude, setLatitude] = useState('')
+  const [longitude, setLongitude] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
@@ -68,21 +71,42 @@ export default function AuthPage({ initialMode = 'login' }) {
     }
   }
 
+  const reportValidationError = (message) => {
+    setError(message)
+    recordCommand(mode === 'signup' ? 'REGISTER' : 'LOGIN', 'Form validation', 'error', message)
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
 
     if (mode === 'signup') {
-      if (!name.trim()) {
-        setError('Please enter your full name.')
+      const lat = Number(latitude)
+      const lon = Number(longitude)
+      
+      if (
+        latitude.trim() === '' ||
+        longitude.trim() === '' ||
+        !Number.isFinite(lat) ||
+        !Number.isFinite(lon) ||
+        lat < -90 ||
+        lat > 90 ||
+        lon < -180 ||
+        lon > 180
+      ) {
+        reportValidationError('Enter a valid delivery latitude and longitude.')
         return
       }
-      if (password.length < 6) {
-        setError('Password must be at least 6 characters.')
+      if (!name.trim()) {
+        reportValidationError('Please enter your full name.')
+        return
+      }
+      if (!password.trim() || password.length < 6) {
+        reportValidationError('Password must be at least 6 characters.')
         return
       }
       if (password !== confirmPassword) {
-        setError('Passwords do not match.')
+        reportValidationError('Passwords do not match.')
         return
       }
     }
@@ -91,7 +115,7 @@ export default function AuthPage({ initialMode = 'login' }) {
     try {
       const res =
         mode === 'signup'
-          ? await registerUser({ name: name.trim(), email: email.trim(), password })
+          ? await registerUser({ name: name.trim(), email: email.trim(), password, latitude: Number(latitude), longitude: Number(longitude),})
           : await loginUser({ email: email.trim(), password, role })
 
       if (!res.ok) {
@@ -159,7 +183,11 @@ export default function AuthPage({ initialMode = 'login' }) {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="auth-form">
+        <form
+          onSubmit={handleSubmit}
+          onInvalid={(event) => reportValidationError(event.target.validationMessage)}
+          className="auth-form"
+        >
           {mode === 'login' && (
           <div className="auth-role-section">
             <span className="auth-role-label">Choose your role</span>
@@ -269,6 +297,39 @@ export default function AuthPage({ initialMode = 'login' }) {
                 autoComplete="name"
               />
             </div>
+          )}
+          {mode === 'signup' && (
+            <>
+              <div className="auth-field">
+                <label htmlFor="auth-latitude">Delivery latitude</label>
+                <input
+                  id="auth-latitude"
+                  type="number"
+                  className="auth-input"
+                  min="-90"
+                  max="90"
+                  step="any"
+                  value={latitude}
+                  onChange={(e) => setLatitude(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="auth-field">
+                <label htmlFor="auth-longitude">Delivery longitude</label>
+                <input
+                  id="auth-longitude"
+                  type="number"
+                  className="auth-input"
+                  min="-180"
+                  max="180"
+                  step="any"
+                  value={longitude}
+                  onChange={(e) => setLongitude(e.target.value)}
+                  required
+                />
+              </div>
+            </>
           )}
 
           <div className="auth-field">

@@ -251,6 +251,17 @@
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
+.auth-input::-webkit-inner-spin-button,
+.auth-input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.auth-input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
 .auth-input:focus {
   outline: none;
   border-color: var(--accent);

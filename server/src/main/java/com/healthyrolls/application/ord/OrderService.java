@@ -185,6 +185,8 @@ public class OrderService {
     }
 
     private void startNextOrderIfIdle(UUID restaurantId, AuthenticatedUser actor) {
+        restaurantService.lockPreparationQueue(restaurantId);
+
         if (repository.hasPreparingOrder(restaurantId)) {
             return;
         }

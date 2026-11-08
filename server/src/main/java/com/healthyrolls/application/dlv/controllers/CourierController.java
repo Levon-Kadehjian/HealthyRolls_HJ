@@ -37,15 +37,15 @@ public class CourierController {
         boolean offerAccepted = courier.getStatus() == CourierStatus.ASSIGNED
                 || courier.getStatus() == CourierStatus.CARRYING;
 
-        return ResponseEntity.ok(
-                CourierResponse.from(courier, offerAccepted));
+        return ResponseEntity.ok(CourierResponse.from(courier, offerAccepted));
     }
 
     @PostMapping("/me/on-duty")
     public ResponseEntity<CourierResponse> goOnDuty(
             @RequestAttribute(AuthenticatedUser.REQUEST_ATTRIBUTE) AuthenticatedUser user) {
         Courier courier = courierService.goOnDuty(user.userId(), user);
-        return ResponseEntity.ok(CourierResponse.from(courier, false));
+        boolean offerAccepted = courier.getStatus() == CourierStatus.ASSIGNED;
+        return ResponseEntity.ok(CourierResponse.from(courier, offerAccepted));
     }
 
     @PostMapping("/me/off-duty")
@@ -55,12 +55,38 @@ public class CourierController {
         return ResponseEntity.ok(CourierResponse.from(courier, false));
     }
 
+    @PostMapping("/me/orders/{orderId}/accept")
+    public ResponseEntity<OrderResponse> acceptOffer(
+            @PathVariable UUID orderId,
+            @RequestAttribute(AuthenticatedUser.REQUEST_ATTRIBUTE) AuthenticatedUser user) {
+        Order order = courierService.acceptOffer(user.userId(), new OrderId(orderId), user);
+        return ResponseEntity.ok(OrderResponse.from(order));
+    }
+
+    @PostMapping("/me/orders/{orderId}/decline")
+    public ResponseEntity<CourierResponse> declineOffer(
+            @PathVariable UUID orderId,
+            @RequestAttribute(AuthenticatedUser.REQUEST_ATTRIBUTE) AuthenticatedUser user) {
+        Courier courier = courierService.declineOffer(user.userId(), new OrderId(orderId), user);
+        return ResponseEntity.ok(CourierResponse.from(courier, false));
+    }
+
     @GetMapping("/me/offer")
     public ResponseEntity<DeliveryOfferResponse> getPendingOffer(
             @RequestAttribute(AuthenticatedUser.REQUEST_ATTRIBUTE) AuthenticatedUser user) {
 
         return courierService.getPendingOffer(user.userId(), user)
                 .map(DeliveryOfferResponse::from)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.noContent().build());
+    }
+
+    @GetMapping("/me/order")
+    public ResponseEntity<CourierOrderResponse> getActiveOrder(
+            @RequestAttribute(AuthenticatedUser.REQUEST_ATTRIBUTE) AuthenticatedUser user) {
+
+        return courierService.getActiveOrder(user.userId(), user)
+                .map(CourierOrderResponse::from)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.noContent().build());
     }

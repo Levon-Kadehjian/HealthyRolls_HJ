@@ -50,7 +50,7 @@ function OrderCard({ order, position }) {
       {order.status === 'ACCEPTED' && (
         <p className="kitchen-card-note">Starts automatically when the line is free.</p>
       )}
-      {order.status === 'READY' && <p className="kitchen-card-note">Waiting for a courier.</p>}
+      {order.status === 'READY' && (<p className="kitchen-card-note">Awaiting pickup.</p>)}
       <OrderActions order={order} />
     </li>
   )

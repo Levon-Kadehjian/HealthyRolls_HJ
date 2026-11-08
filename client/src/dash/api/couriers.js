@@ -12,8 +12,20 @@ export function goOffDuty() {
   return apiRequest('/api/couriers/me/off-duty', { method: 'POST' })
 }
 
+export function getPendingOffer() {
+  return apiRequest('/api/couriers/me/offer')
+}
+
+export function getMyActiveOrder() {
+  return apiRequest('/api/couriers/me/order')
+}
+
 export function acceptOffer(orderId) {
   return apiRequest(`/api/couriers/me/orders/${orderId}/accept`, { method: 'POST' })
+}
+
+export function declineOffer(orderId) {
+  return apiRequest(`/api/couriers/me/orders/${orderId}/decline`, { method: 'POST' })
 }
 
 export function confirmPickup(orderId) {
@@ -22,4 +34,16 @@ export function confirmPickup(orderId) {
 
 export function confirmDelivery(orderId) {
   return apiRequest(`/api/couriers/me/orders/${orderId}/deliver`, { method: 'POST' })
+}
+
+export function getStalledOrders() {
+  return apiRequest('/api/dispatch/stalled-orders')
+}
+
+export function reassignStalledOrder(orderId) {
+  return apiRequest(`/api/dispatch/stalled-orders/${orderId}/reassign`, { method: 'POST' })
+}
+
+export function listCouriers() {
+  return apiRequest('/api/dispatch/couriers')
 }

@@ -40,6 +40,12 @@ public class JpaRestaurantRepository implements IRestaurantRepository {
     }
 
     @Override
+    public void lockById(UUID restaurantId) {
+        database.findByIdForUpdate(restaurantId)
+                .orElseThrow(() -> new RestaurantNotFoundException(restaurantId));
+    }
+
+    @Override
     public Restaurant save(Restaurant restaurant) {
 
         RestaurantEntity entity = new RestaurantEntity(restaurant.getRestaurantId(), restaurant.getName(),

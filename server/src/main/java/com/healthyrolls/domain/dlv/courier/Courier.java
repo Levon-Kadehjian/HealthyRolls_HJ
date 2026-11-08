@@ -9,9 +9,6 @@ import com.healthyrolls.domain.ord.order.OrderId;
 
 public class Courier {
 
-    // used to calculate straight-line distance between 2 coordinates
-    private static final double EARTH_RADIUS_KM = 6371.0;
-
     private final UserId id;
     private final String name;
     private final double latitude;
@@ -35,10 +32,14 @@ public class Courier {
         if (!Double.isFinite(longitude) || longitude < -180 || longitude > 180) {
             throw new IllegalArgumentException("Longitude must be between -180 and 180");
         }
-        boolean holdsOrder = status == CourierStatus.ASSIGNED || status == CourierStatus.CARRYING;
-        if (holdsOrder != (currentOrderId != null)) {
-            throw new IllegalArgumentException(
-                    "A courier has a current order only while ASSIGNED or CARRYING");
+        boolean requiresOrder = status == CourierStatus.ASSIGNED || status == CourierStatus.CARRYING;
+
+        if (requiresOrder && currentOrderId == null) {
+            throw new IllegalArgumentException("An assigned or carrying courier must have a current order");
+        }
+
+        if (status == CourierStatus.IDLE && currentOrderId != null) {
+            throw new IllegalArgumentException("An idle courier cannot have a current order");
         }
 
         this.latitude = latitude;
@@ -76,14 +77,20 @@ public class Courier {
 
     public void goOnDuty() {
         require(CourierStatus.OFFLINE, "go on duty");
-        status = CourierStatus.IDLE;
+        status = currentOrderId == null ? CourierStatus.IDLE : CourierStatus.ASSIGNED;
     }
 
     public void goOffDuty() {
-        if (currentOrderId != null) {
+        if (status == CourierStatus.CARRYING) {
             throw new CourierCarryingOrderException(id);
         }
-        require(CourierStatus.IDLE, "go off duty");
+
+        if (status != CourierStatus.IDLE
+                && status != CourierStatus.ASSIGNED) {
+            throw new InvalidCourierTransitionException(
+                    "Courier cannot go off duty while " + status);
+        }
+
         status = CourierStatus.OFFLINE;
     }
 
@@ -113,20 +120,37 @@ public class Courier {
                     "This is not the courier's current order");
         }
 
-        require(CourierStatus.ASSIGNED, "release a cancelled order");
+        if (status != CourierStatus.ASSIGNED
+                && status != CourierStatus.OFFLINE) {
+            throw new InvalidCourierTransitionException(
+                    "Cannot release a cancelled order while " + status);
+        }
 
         currentOrderId = null;
-        status = CourierStatus.IDLE;
+
+        if (status == CourierStatus.ASSIGNED) {
+            status = CourierStatus.IDLE;
+        }
     }
 
-    // source: https://stackoverflow.com/a/16794680
+    public void releaseStalledOrder(OrderId orderId) {
+        Objects.requireNonNull(orderId, "Order ID is required");
+
+        if (!orderId.equals(currentOrderId)) {
+            throw new InvalidCourierTransitionException(
+                    "This is not the courier's current order");
+        }
+
+        require(CourierStatus.OFFLINE, "release a stalled order");
+
+        currentOrderId = null;
+    }
+
     public double distanceTo(double lat, double lon) {
-        double deltaLat = Math.toRadians(lat - latitude);
-        double deltaLon = Math.toRadians(lon - longitude);
-        double a = Math.pow(Math.sin(deltaLat / 2), 2)
-                + Math.cos(Math.toRadians(latitude)) * Math.cos(Math.toRadians(lat))
-                        * Math.pow(Math.sin(deltaLon / 2), 2);
-        return 2 * EARTH_RADIUS_KM * Math.asin(Math.sqrt(a));
+        double latitudeDifference = this.latitude - lat;
+        double longitudeDifference = this.longitude - lon;
+
+        return Math.hypot(latitudeDifference, longitudeDifference);
     }
 
     private void require(CourierStatus expected, String action) {
