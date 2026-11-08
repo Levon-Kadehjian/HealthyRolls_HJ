@@ -124,6 +124,9 @@
 }
 
 .nav-account {
+  display: flex;
+  align-items: center;
+  gap: 4px;
   position: relative;
   margin-left: 8px;
 }
