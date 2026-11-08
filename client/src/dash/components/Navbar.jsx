@@ -85,6 +85,8 @@ export default function Navbar() {
 
   const isStaff = session?.role === 'RESTAURANT_STAFF'
   const isCourier = session?.role === 'COURIER'
+  const isCustomer = session?.role === 'CUSTOMER'
+  const isOperator = session?.role === 'OPERATOR'
 
   return (
     <header className="site-header">
@@ -123,8 +125,6 @@ export default function Navbar() {
         <div className="nav-actions">
           {session && (
             <>
-              {isStaff && <span className="nav-role-tag">Staff</span>}
-              {isCourier && <span className="nav-role-tag">Courier</span>}
               {!isStaff && !isCourier && (
                 <NavLink to="/orders" className={linkClass}>
                   Orders
@@ -150,6 +150,10 @@ export default function Navbar() {
                 </NavLink>
               )}
               <div className="nav-account" ref={menuRef}>
+                {isStaff && <span className="nav-role-tag">Staff</span>}
+                {isCourier && <span className="nav-role-tag">Courier</span>}
+                {isCustomer && <span className="nav-role-tag">Customer</span>}
+                {isOperator && <span className="nav-role-tag">Operator</span>}
                 <button
                   type="button"
                   className="nav-avatar"
