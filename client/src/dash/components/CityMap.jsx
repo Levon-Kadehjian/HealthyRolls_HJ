@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { MapContainer, Marker, Polyline, Popup, TileLayer, useMap, useMapEvents } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
@@ -59,8 +59,16 @@ function MapClick({ onClick }) {
   return null
 }
 
-export default function CityMap({ points = [], lines = [], bounds, onSelect, onMapClick, emptyMessage = 'Nothing to show on the map yet.' }) {
+function OpenPopupOnce({ id, markers }) {
+  useEffect(() => {
+    if (id) markers.current.get(id)?.openPopup()
+  }, [])
+  return null
+}
+
+export default function CityMap({ points = [], lines = [], bounds, onSelect, onMapClick, openPopupId, emptyMessage = 'Nothing to show on the map yet.' }) {
   const fitTo = bounds ?? points.map((point) => point.position)
+  const markers = useRef(new Map())
 
   return (
     <MapContainer className="city-map" center={fitTo[0] ?? DEFAULT_CENTER} zoom={13} scrollWheelZoom>
@@ -74,6 +82,7 @@ export default function CityMap({ points = [], lines = [], bounds, onSelect, onM
       {points.map((point) => (
         <Marker
           key={point.id}
+          ref={(marker) => (marker ? markers.current.set(point.id, marker) : markers.current.delete(point.id))}
           position={point.position}
           icon={pinIcon(point.kind, point.status)}
           zIndexOffset={point.kind === 'home' ? 1000 : 0}
@@ -82,6 +91,7 @@ export default function CityMap({ points = [], lines = [], bounds, onSelect, onM
           {point.popup && <Popup>{point.popup}</Popup>}
         </Marker>
       ))}
+      <OpenPopupOnce id={openPopupId} markers={markers} />
     </MapContainer>
   )
 }

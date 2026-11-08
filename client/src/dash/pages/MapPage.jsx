@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useLoaderData } from 'react-router-dom'
+import { Link, useLoaderData, useSearchParams } from 'react-router-dom'
 import L from 'leaflet'
 import CityMap from '../components/CityMap'
 import RestaurantPanel from '../components/RestaurantPanel'
@@ -15,7 +15,8 @@ export default function MapPage() {
   const { restaurants, orders } = useLoaderData()
   const session = useSession()
   const [shown, setShown] = useState(new Set(BANDS))
-  const [selectedId, setSelectedId] = useState(null)
+  const [params] = useSearchParams()
+  const [selectedId, setSelectedId] = useState(params.get('restaurant'))
 
   const home = session?.latitude != null ? [session.latitude, session.longitude] : null
   const visible = restaurants.filter((restaurant) => shown.has(queueBand(restaurant)))
@@ -87,6 +88,7 @@ export default function MapPage() {
             bounds={bounds}
             onSelect={setSelectedId}
             onMapClick={() => setSelectedId(null)}
+            openPopupId={params.get('restaurant')}
             emptyMessage="No restaurants have been loaded into the system."
           />
 
