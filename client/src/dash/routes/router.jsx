@@ -14,7 +14,7 @@ import MapPage from '../pages/MapPage'
 import RestaurantOrdersPage from '../pages/RestaurantOrdersPage'
 import ConsolePage from '../pages/ConsolePage'
 import AuthPage from '../pages/AuthPage'
-import { addMenuItem, editMenuItem, changeMenuAvailability, pauseRestaurant, reopenRestaurant, getRestaurant, getRestaurants } from '../api/restaurants'
+import { addMenuItem, editMenuItem, changeMenuAvailability, pauseRestaurant, reopenRestaurant, getMapRestaurants, getRestaurant, getRestaurants } from '../api/restaurants'
 import { applyOrderAction, getQueueCounts, listOrderEvents, listOrders } from '../api/orders'
 import { getSession } from '../auth/session'
 import { ensureSessionLocation } from '../api/auth'
@@ -295,6 +295,45 @@ const restaurantAction = async ({ request, params }) => {
   }
 }
 
+const loadRestaurantsWithQueues = async () => {
+  requireSession()
+  const [restaurants, queues] = await Promise.all([getRestaurants(), getQueueCounts().catch(() => [])])
+  const counts = new Map(queues.map((queue) => [queue.restaurantId, queue]))
+  return restaurants.map((restaurant) => ({
+    ...restaurant,
+    queuedCount: counts.get(restaurant.id)?.queuedCount ?? 0,
+    preparingCount: counts.get(restaurant.id)?.preparingCount ?? 0,
+    readyCount: counts.get(restaurant.id)?.readyCount ?? 0,
+  }))
+}
+
+const mapLoader = () => {
+  const session = requireLogin()
+  ensureSessionLocation(session)
+  return runCommand(
+    'VIEW_MAP',
+    '',
+    async () => {
+      const [restaurants, orders] = await Promise.all([
+        getMapRestaurants(),
+        session.role === 'COURIER' ? [] : listOrders().catch(() => []),
+      ])
+      return { restaurants, orders }
+    },
+    ({ restaurants }) => `${restaurants.length} restaurants`,
+  )
+}
+
+const MAP_ORDER_INTENTS = new Set(['ACCEPT', 'REJECT', 'MARK_READY'])
+
+const mapAction = async ({ request }) => {
+  const form = await request.clone().formData()
+  const intent = form.get('intent')
+  if (intent === 'CANCEL') return customerOrdersAction({ request })
+  if (MAP_ORDER_INTENTS.has(intent)) return restaurantOrdersAction({ request })
+  return restaurantAction({ request, params: { restaurantId: form.get('restaurantId') } })
+}
+
 const restaurantsLoader = () => {
   redirectStaffToKitchen()
   redirectCourierHome()
@@ -302,17 +341,7 @@ const restaurantsLoader = () => {
   return runCommand(
     'BROWSE_RESTAURANTS',
     '',
-    async () => {
-      requireSession()
-      const [restaurants, queues] = await Promise.all([getRestaurants(), getQueueCounts().catch(() => [])])
-      const counts = new Map(queues.map((queue) => [queue.restaurantId, queue]))
-      return restaurants.map((restaurant) => ({
-        ...restaurant,
-        queuedCount: counts.get(restaurant.id)?.queuedCount ?? 0,
-        preparingCount: counts.get(restaurant.id)?.preparingCount ?? 0,
-        readyCount: counts.get(restaurant.id)?.readyCount ?? 0,
-      }))
-    },
+    loadRestaurantsWithQueues,
     (restaurants) => `${restaurants.length} restaurants`,
   )
 }
@@ -390,7 +419,8 @@ export const router = createBrowserRouter([
       {
         path: 'map',
         element: <MapPage />,
-        loader: restaurantsLoader,
+        loader: mapLoader,
+        action: mapAction,
       },
       {
         path: 'restaurants/:restaurantId',

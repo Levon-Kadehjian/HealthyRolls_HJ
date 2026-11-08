@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useLoaderData } from 'react-router-dom'
 import L from 'leaflet'
 import CityMap from '../components/CityMap'
+import RestaurantPanel from '../components/RestaurantPanel'
 import { BAND_LABELS, BANDS, queueBand } from '../components/queueBand'
 import { useSession } from '../auth/useSession'
 import './MapPage.css'
@@ -11,7 +12,7 @@ const STATUS_LABELS = { OPEN: 'Open', PAUSED: 'Paused', CLOSED: 'Closed' }
 const formatDistance = (meters) => (meters < 1000 ? `${Math.round(meters)} m` : `${(meters / 1000).toFixed(1)} km`)
 
 export default function MapPage() {
-  const restaurants = useLoaderData()
+  const { restaurants, orders } = useLoaderData()
   const session = useSession()
   const [shown, setShown] = useState(new Set(BANDS))
   const [selectedId, setSelectedId] = useState(null)
@@ -32,11 +33,9 @@ export default function MapPage() {
       popup: (
         <div className="map-popup">
           <h4>{restaurant.name}</h4>
-          <p>
-            {restaurant.queuedCount} queued
-            {restaurant.status !== 'OPEN' && ` · ${STATUS_LABELS[restaurant.status] ?? restaurant.status}`}
-          </p>
-          <Link to={`/restaurants/${restaurant.id}`}>View menu →</Link>
+          <p><strong>Queued orders: {restaurant.queuedCount}</strong></p>
+          {restaurant.status !== 'OPEN' && <p>{STATUS_LABELS[restaurant.status] ?? restaurant.status}</p>}
+          {session?.role !== 'COURIER' && <Link to={`/restaurants/${restaurant.id}`}>View menu →</Link>}
         </div>
       ),
     })),
@@ -81,32 +80,35 @@ export default function MapPage() {
           </div>
         </div>
 
-        <CityMap
-          points={points}
-          lines={lines}
-          bounds={bounds}
-          onSelect={setSelectedId}
-          emptyMessage="No restaurants have been loaded into the system."
-        />
+        <div className="map-layout">
+          <CityMap
+            points={points}
+            lines={lines}
+            bounds={bounds}
+            onSelect={setSelectedId}
+            onMapClick={() => setSelectedId(null)}
+            emptyMessage="No restaurants have been loaded into the system."
+          />
 
-        <div className="map-selection" aria-live="polite">
           {selected ? (
-            <>
-              <span className={`map-selection-dot map-filter-${queueBand(selected)}`} aria-hidden="true" />
-              <strong>{selected.name}</strong>
-              <span className="map-selection-distance">{selected.queuedCount} queued</span>
-              {distance != null && <span className="map-selection-distance">{formatDistance(distance)} away</span>}
-              <Link className="map-selection-link" to={`/restaurants/${selected.id}`}>View menu →</Link>
-            </>
+            <RestaurantPanel
+              restaurant={selected}
+              orders={orders}
+              session={session}
+              distanceLabel={distance != null ? formatDistance(distance) : null}
+              onClose={() => setSelectedId(null)}
+            />
           ) : (
-            <span className="map-selection-hint">
-              {home ? 'Select a restaurant on the map.' : 'Your location is unavailable, so distances are hidden.'}
-            </span>
+            <aside className="restaurant-panel restaurant-panel-empty" aria-live="polite">
+              <p className="map-selection-hint">
+                {home ? 'Select a restaurant on the map.' : 'Your location is unavailable, so distances are hidden.'}
+              </p>
+            </aside>
           )}
         </div>
       </section>
 
-      <Link to="/restaurants" className="map-list-link">Browse the restaurant list →</Link>
+      {session?.role !== 'COURIER' && <Link to="/restaurants" className="map-list-link">Browse the restaurant list →</Link>}
     </div>
   )
 }
