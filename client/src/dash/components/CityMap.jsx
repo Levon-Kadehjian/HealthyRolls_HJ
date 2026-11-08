@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { MapContainer, Marker, Polyline, Popup, TileLayer, useMap, useMapEvents } from 'react-leaflet'
+import { AttributionControl, MapContainer, Marker, Polyline, Popup, TileLayer, useMap, useMapEvents } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import './CityMap.css'
@@ -71,8 +71,9 @@ export default function CityMap({ points = [], lines = [], bounds, onSelect, onM
   const markers = useRef(new Map())
 
   return (
-    <MapContainer className="city-map" center={fitTo[0] ?? DEFAULT_CENTER} zoom={13} scrollWheelZoom>
+    <MapContainer className="city-map" center={fitTo[0] ?? DEFAULT_CENTER} zoom={13} scrollWheelZoom attributionControl={false}>
       <TileLayer url={TILE_URL} attribution={ATTRIBUTION} />
+      <AttributionControl prefix={false} />
       <FitBounds bounds={fitTo} />
       {onMapClick && <MapClick onClick={onMapClick} />}
       {fitTo.length === 0 && <div className="city-map-empty">{emptyMessage}</div>}
