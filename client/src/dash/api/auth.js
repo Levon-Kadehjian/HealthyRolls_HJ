@@ -29,6 +29,19 @@ async function fetchProfile(accessToken) {
   }
 }
 
+export async function ensureSessionLocation(session) {
+  if (!session?.accessToken || session.latitude != null) return
+
+  const profile = await fetchProfile(session.accessToken)
+
+  if (profile?.latitude != null) {
+    updateSession({
+      latitude: profile.latitude,
+      longitude: profile.longitude,
+    })
+  }
+}
+
 export async function loginUser({ email, password, role = 'CUSTOMER', name }) {
   let authData = null
   let profile = null
