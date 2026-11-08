@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.healthyrolls.application.dlv.CourierService;
 import com.healthyrolls.application.dlv.StalledOrderReassignment;
 import com.healthyrolls.domain.common.AuthenticatedUser;
+import com.healthyrolls.domain.dlv.courier.CourierStatus;
 import com.healthyrolls.domain.ord.order.OrderId;
 
 @RestController
@@ -24,6 +25,19 @@ public class DispatchController {
 
     public DispatchController(CourierService courierService) {
         this.courierService = courierService;
+    }
+
+    @GetMapping("/couriers")
+    public ResponseEntity<List<CourierResponse>> getCouriers(
+            @RequestAttribute(AuthenticatedUser.REQUEST_ATTRIBUTE) AuthenticatedUser user) {
+
+        List<CourierResponse> couriers = courierService.getOnDutyCouriers(user).stream()
+                .map(courier -> CourierResponse.from(courier,
+                        courier.getStatus() == CourierStatus.ASSIGNED
+                                || courier.getStatus() == CourierStatus.CARRYING))
+                .toList();
+
+        return ResponseEntity.ok(couriers);
     }
 
     @GetMapping("/stalled-orders")

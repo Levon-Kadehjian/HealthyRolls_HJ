@@ -20,10 +20,10 @@ import { ensureSessionLocation } from '../api/auth'
 import { describeError, recordCommand, runCommand } from '../console/consoleStore'
 import { buildOrderHistory, canCancelOrder } from '../orders/orderHistory'
 import CourierPage from '../pages/CourierPage'
+import CourierMapPage from '../pages/CourierMapPage'
 import { acceptOffer, confirmDelivery, confirmPickup, declineOffer, getMyCourier, goOffDuty, goOnDuty } from '../api/couriers'
 import { getPendingOffer, getMyActiveOrder } from '../api/couriers'
-import { getStalledOrders, reassignStalledOrder } from '../api/couriers'
-
+import { getStalledOrders, listCouriers, reassignStalledOrder } from '../api/couriers'
 
 const ORDER_COMMANDS = {
   ACCEPT: 'ACCEPT_ORDER',
@@ -284,6 +284,28 @@ const courierPageLoader = async () => {
   return { ...data, offer, activeOrder, orderFailed }
 }
 
+const loadMapRestaurants = async () => {
+  try {
+    return await runCommand('BROWSE_RESTAURANTS', 'map', () => getRestaurants(), (restaurants) => `${restaurants.length} restaurants`)
+  } catch {
+    return []
+  }
+}
+
+const loadMapCouriers = async () => {
+  try {
+    return await runCommand('LIST_COURIERS', '', () => listCouriers(), (couriers) => `${couriers.length} couriers`)
+  } catch {
+    return []
+  }
+}
+
+const courierMapLoader = async () => {
+  const { courier } = await courierLoader()
+  const [restaurants, couriers] = await Promise.all([loadMapRestaurants(), loadMapCouriers()])
+  return { courier, restaurants, couriers }
+}
+
 const courierAction = async ({ request }) => {
   const form = await request.formData()
   const intent = form.get('intent')
@@ -478,6 +500,11 @@ export const router = createBrowserRouter([
             element: <CourierPage />,
             loader: courierPageLoader,
             action: courierAction,
+          },
+          {
+            path: 'map',
+            element: <CourierMapPage />,
+            loader: courierMapLoader,
           },
           {
             path: 'account',

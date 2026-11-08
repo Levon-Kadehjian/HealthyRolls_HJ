@@ -420,6 +420,15 @@ public class CourierService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
+    public List<Courier> getOnDutyCouriers(AuthenticatedUser actor) {
+        Objects.requireNonNull(actor, "User context is required");
+
+        return repository.findAll().stream()
+                .filter(courier -> courier.getStatus() != CourierStatus.OFFLINE)
+                .toList();
+    }
+
     @Transactional
     public StalledOrderReassignment reassignStalledOrder(OrderId orderId, AuthenticatedUser actor) {
         Objects.requireNonNull(orderId, "Order ID is required");

@@ -97,6 +97,19 @@
 
 .map-pin-courier {
   --pin: #8b5cf6;
+  border-radius: 4px;
+}
+
+.map-pin-courier.map-pin-idle {
+  --pin: #0d9488;
+}
+
+.map-pin-courier.map-pin-assigned {
+  --pin: #7c3aed;
+}
+
+.map-pin-courier.map-pin-carrying {
+  --pin: #db2777;
 }
 
 .map-line {
