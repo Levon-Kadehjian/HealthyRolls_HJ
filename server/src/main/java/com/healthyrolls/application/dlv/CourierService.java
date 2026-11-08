@@ -462,8 +462,6 @@ public class CourierService {
             throw new OrderNotStalledException(orderId);
         }
 
-        final CourierStatus previousStatus = previousCourier.getStatus();
-
         assignment.cancel();
         order.releaseCourier();
         previousCourier.releaseStalledOrder(orderId);
@@ -472,30 +470,26 @@ public class CourierService {
         orderRepository.save(order);
         repository.save(previousCourier);
 
-        CourierStateChanged event = new CourierStateChanged(
-                EventId.random(),
-                previousCourier.getId(),
-                orderId,
-                previousStatus,
-                previousCourier.getStatus(),
-                Instant.now());
-
-        courierEventRepository.save(event);
-
         Courier offeredCourier = dispatchService.dispatch(orderId)
                 .flatMap(offer -> repository.findById(offer.getCourierId()))
                 .orElse(null);
 
         if (offeredCourier == null) {
-            log.info("Operator {} reassigned order {} from courier {}, no courier available, order queued, event {}",
-                    actor.userId().value(), orderId.value(), previousCourier.getId().value(),
-                    event.eventId().value());
+            log.info(
+                    "Operator {} reassigned order {} from courier {}, no courier available, order queued",
+                    actor.userId().value(),
+                    orderId.value(),
+                    previousCourier.getId().value());
         } else {
-            log.info("Operator {} reassigned order {} from courier {}, offered to courier {}, event {}",
-                    actor.userId().value(), orderId.value(), previousCourier.getId().value(),
-                    offeredCourier.getId().value(), event.eventId().value());
+            log.info(
+                    "Operator {} reassigned order {} from courier {}, offered to courier {}",
+                    actor.userId().value(),
+                    orderId.value(),
+                    previousCourier.getId().value(),
+                    offeredCourier.getId().value());
         }
 
-        return new StalledOrderReassignment(orderId, previousCourier, offeredCourier);
+        return new StalledOrderReassignment(
+                orderId, previousCourier, offeredCourier);
     }
 }

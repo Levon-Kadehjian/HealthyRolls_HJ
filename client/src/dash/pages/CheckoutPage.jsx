@@ -116,7 +116,13 @@ export default function CheckoutPage() {
             })
             clearCart()
         } catch (err) {
-            setError(await describeError(err))
+            const message = await describeError(err)
+        
+            if (message.includes('Restaurant is not open')) {
+                setError('This restaurant is not accepting orders right now.')
+            } else {
+                setError('Unable to place your order. Please try again.')
+            }
         } finally {
             setSubmitting(false)
         }

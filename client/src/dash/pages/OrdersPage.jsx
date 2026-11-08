@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Link, useFetcher, useLoaderData, useRevalidator } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { Link, useFetcher, useFetchers, useLoaderData, useRevalidator } from 'react-router-dom'
 import { useSession } from '../auth/useSession'
 import {
   ACTIVE_STATUSES,
@@ -194,7 +194,46 @@ export default function OrdersPage() {
   const refreshing = revalidator.state === 'loading'
   const sorted = newestFirst(orders)
   const active = sorted.filter((order) => ACTIVE_STATUSES.includes(order.status))
+  const preparationQueues = Object.values(
+    active.reduce((queues, order) => {
+      if (order.status !== 'ACCEPTED') return queues
+  
+      const id = order.restaurantId
+  
+      if (!queues[id]) {
+        queues[id] = {
+          restaurantId: id,
+          name: order.restaurantName ?? 'Restaurant',
+          count: 0,
+        }
+      }
+  
+      queues[id].count += 1
+      return queues
+    }, {}),
+  )
+  
+  const busyRestaurants = preparationQueues.filter((restaurant) => restaurant.count >= 6,)
+
   const past = sorted.filter((order) => !ACTIVE_STATUSES.includes(order.status))
+  const waiting = active.filter((order) => order.status === 'READY' && order.courierId == null,)
+  
+  const fetchers = useFetchers()
+  const actionInProgress = fetchers.some(
+    (fetcher) => fetcher.state !== 'idle',
+  )
+  
+  useEffect(() => {
+    if (!isOperator) return undefined
+  
+    const timer = setInterval(() => {
+      if (revalidator.state === 'idle' && !actionInProgress) {
+        revalidator.revalidate()
+      }
+    }, 5000)
+  
+    return () => clearInterval(timer)
+  }, [isOperator, revalidator, actionInProgress])
 
   return (
     <div className="orders-page">
@@ -213,7 +252,52 @@ export default function OrdersPage() {
           {isOperator ? 'Orders could not be loaded.' : 'Your orders could not be loaded.'} Check the output console for details.
         </p>
       )}
+      {isOperator && !failed && busyRestaurants.length > 0 && (
+        <section className="orders-section" aria-label="Preparation queue warnings">
+          <h3>Long preparation queues</h3>
 
+          <div role="status">
+            {busyRestaurants.map((restaurant) => (
+              <p
+                key={restaurant.restaurantId}
+                className="orders-section-empty"
+              >
+                <strong>{restaurant.name}</strong> has {restaurant.count} orders
+                waiting for preparation. You can pause the restaurant from its
+                management page to stop new orders while existing orders finish.
+              </p>
+            ))}
+          </div>
+        </section>
+      )}
+      {isOperator && !failed && (
+        <section className="orders-section">
+          <h3>
+            Waiting for courier
+            <span className="orders-count">{waiting.length}</span>
+          </h3>
+
+          <p className="orders-section-empty" role="status">
+            {waiting.length > 0
+              ? `${waiting.length} ready ${
+                  waiting.length === 1 ? 'order is' : 'orders are'
+                } waiting for an available courier. Assignment will retry automatically.`
+              : 'No orders are waiting for an available courier.'}
+          </p>
+
+          {waiting.length > 0 && (
+            <ul>
+              {waiting.map((order) => (
+                <li key={order.orderId}>
+                  Order #{shortId(order.orderId)}
+                  {' — '}
+                  {order.restaurantName ?? 'Restaurant'}
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      )}
       {isOperator && stalled && <StalledOrders stalled={stalled} orders={orders} />}
 
       {!failed && orders.length === 0 ? (
