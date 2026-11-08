@@ -40,6 +40,34 @@
           "description": "Tofu, wakame and green onion in a light miso broth.",
           "price": 4.5,
           "status": "AVAILABLE"
+        },
+        {
+          "itemId": "2f0f1804-c803-4457-88d1-36efd8f3e099",
+          "name": "Unagi Roll",
+          "description": "Grilled eel, cucumber and sweet soy glaze.",
+          "price": 14.5,
+          "status": "AVAILABLE"
+        },
+        {
+          "itemId": "4c7f714e-ffea-4a37-a2de-7c424feb261d",
+          "name": "Rainbow Roll",
+          "description": "California roll topped with assorted sashimi.",
+          "price": 15.75,
+          "status": "AVAILABLE"
+        },
+        {
+          "itemId": "3c48a14e-8448-444c-89b6-e8d869b6a164",
+          "name": "Gyoza",
+          "description": "Pan-fried pork dumplings with ponzu.",
+          "price": 7.5,
+          "status": "AVAILABLE"
+        },
+        {
+          "itemId": "dd2c5809-83a3-4c46-9371-0a488aeb7e38",
+          "name": "Onigiri",
+          "description": "Single rice ball with salmon filling.",
+          "price": 3.5,
+          "status": "AVAILABLE"
         }
       ]
     },
@@ -77,6 +105,34 @@
           "description": "Steamed soybeans with sea salt.",
           "price": 5.0,
           "status": "SOLD_OUT"
+        },
+        {
+          "itemId": "67eee730-4ef4-4bf9-b996-82053a04464e",
+          "name": "Spicy Salmon Roll",
+          "description": "Salmon, sriracha mayo and tempura flakes.",
+          "price": 12.0,
+          "status": "AVAILABLE"
+        },
+        {
+          "itemId": "ba76a705-1501-4151-ad3f-aec401182588",
+          "name": "Chicken Katsu Bowl",
+          "description": "Panko chicken, cabbage and tonkatsu sauce over rice.",
+          "price": 15.5,
+          "status": "AVAILABLE"
+        },
+        {
+          "itemId": "5917555b-e48c-4633-8610-a757a0053fea",
+          "name": "Miso Soup",
+          "description": "Tofu, wakame and green onion.",
+          "price": 3.75,
+          "status": "AVAILABLE"
+        },
+        {
+          "itemId": "2372abce-fa68-4080-8966-732ec85cf675",
+          "name": "Mango Sticky Rice",
+          "description": "Sweet coconut rice with fresh mango.",
+          "price": 6.5,
+          "status": "SOLD_OUT"
         }
       ]
     },
@@ -107,6 +163,482 @@
           "description": "Wakame tossed in sesame dressing.",
           "price": 6.25,
           "status": "AVAILABLE"
+        },
+        {
+          "itemId": "73098cda-becf-45e2-9fe0-f592de22abdb",
+          "name": "Tuna Tataki",
+          "description": "Seared tuna with ponzu and sesame.",
+          "price": 16.0,
+          "status": "AVAILABLE"
+        },
+        {
+          "itemId": "d3c0a1c9-4b94-49ea-a520-5d9c29ce053f",
+          "name": "Chicken Teriyaki Don",
+          "description": "Grilled chicken with teriyaki glaze over rice.",
+          "price": 15.0,
+          "status": "AVAILABLE"
+        },
+        {
+          "itemId": "b5eadd8a-1b4f-42eb-810e-f9aa2ae25e2d",
+          "name": "Vegetable Tempura",
+          "description": "Seasonal vegetables in light batter.",
+          "price": 9.5,
+          "status": "AVAILABLE"
+        },
+        {
+          "itemId": "9caa09e4-5f20-4c01-8d25-47743422dbf8",
+          "name": "Green Tea Ice Cream",
+          "description": "Two scoops of matcha ice cream.",
+          "price": 5.0,
+          "status": "AVAILABLE"
+        },
+        {
+          "itemId": "bde63a04-6db5-4708-ae8d-5c9c2b127174",
+          "name": "Cucumber Roll",
+          "description": "Simple cucumber maki.",
+          "price": 4.5,
+          "status": "AVAILABLE"
+        }
+      ]
+    },
+    {
+      "id": "e14fadf7-995d-4b31-9849-17f761518afb",
+      "name": "Maki Mont-Royal",
+      "status": "OPEN",
+      "latitude": 45.5231,
+      "longitude": -73.5822,
+      "menu": [
+        {
+          "itemId": "416c8c37-ad82-473e-8d3a-7e3cb7533865",
+          "name": "Avocado Maki",
+          "description": "Avocado and cucumber in nori with sushi rice.",
+          "price": 8.5,
+          "status": "AVAILABLE"
+        },
+        {
+          "itemId": "f3d024af-eee2-4454-b6b3-cac5e64154a7",
+          "name": "Salmon Nigiri Set",
+          "description": "Six pieces of fresh salmon nigiri.",
+          "price": 14.75,
+          "status": "AVAILABLE"
+        },
+        {
+          "itemId": "41af5ebf-2736-489b-b7ac-bb425cee67c9",
+          "name": "Edamame",
+          "description": "Steamed edamame with sea salt.",
+          "price": 5.25,
+          "status": "AVAILABLE"
+        },
+        {
+          "itemId": "9ab564ae-54b2-4fb8-a2d4-941501c03919",
+          "name": "Matcha Mochi",
+          "description": "Two green tea mochi.",
+          "price": 6.0,
+          "status": "SOLD_OUT"
+        },
+        {
+          "itemId": "071f677a-eec2-4b54-872b-690c092c1274",
+          "name": "Tuna Avocado Roll",
+          "description": "Tuna and avocado with sesame seeds.",
+          "price": 11.5,
+          "status": "AVAILABLE"
+        },
+        {
+          "itemId": "3a677e76-d504-4f1c-b395-ff3ba782dfa9",
+          "name": "Sweet Potato Roll",
+          "description": "Tempura sweet potato with spicy mayo.",
+          "price": 9.75,
+          "status": "AVAILABLE"
+        },
+        {
+          "itemId": "22e90f05-5640-46be-a223-e86115a79c78",
+          "name": "Seaweed Salad",
+          "description": "Marinated wakame with sesame.",
+          "price": 6.25,
+          "status": "AVAILABLE"
+        },
+        {
+          "itemId": "5c91b755-6a92-4843-a2de-ac5889426a28",
+          "name": "Inari Pair",
+          "description": "Two sweet tofu pockets with sushi rice.",
+          "price": 5.5,
+          "status": "AVAILABLE"
+        }
+      ]
+    },
+    {
+      "id": "2c9016d8-3928-4c49-bf99-fde3490ef22c",
+      "name": "Sakura Vieux-Port",
+      "status": "OPEN",
+      "latitude": 45.5075,
+      "longitude": -73.5524,
+      "menu": [
+        {
+          "itemId": "22c91d2a-a8d6-4f41-a6cf-e06e8c0e32bc",
+          "name": "Chirashi Bowl",
+          "description": "Assorted sashimi over seasoned rice.",
+          "price": 21.0,
+          "status": "AVAILABLE"
+        },
+        {
+          "itemId": "10f9577f-8fc4-4af8-8c53-5b0653d73be6",
+          "name": "Eel Don",
+          "description": "Grilled eel with sweet soy glaze over rice.",
+          "price": 19.5,
+          "status": "AVAILABLE"
+        },
+        {
+          "itemId": "5897b488-e9e1-4950-9038-9dcddf84fa05",
+          "name": "Gyoza",
+          "description": "Pan-fried pork and cabbage dumplings.",
+          "price": 8.0,
+          "status": "AVAILABLE"
+        },
+        {
+          "itemId": "2ca02401-cf6f-4712-84bf-34593398ce9b",
+          "name": "Sashimi Moriawase",
+          "description": "Chef's selection of 12 sashimi slices.",
+          "price": 26.0,
+          "status": "AVAILABLE"
+        },
+        {
+          "itemId": "b630332d-8893-4f3d-9bff-6097f3953b1f",
+          "name": "Soba Noodle Salad",
+          "description": "Chilled buckwheat noodles with sesame dressing.",
+          "price": 12.5,
+          "status": "AVAILABLE"
+        },
+        {
+          "itemId": "2a353d7e-64bb-4f93-a6f6-009e4c3694e0",
+          "name": "Tamago Nigiri",
+          "description": "Sweet omelette nigiri, two pieces.",
+          "price": 4.25,
+          "status": "AVAILABLE"
+        },
+        {
+          "itemId": "9c243778-d1de-466c-8edd-3f67638495b1",
+          "name": "Hot Green Tea",
+          "description": "Pot of sencha.",
+          "price": 3.0,
+          "status": "AVAILABLE"
+        },
+        {
+          "itemId": "a93601c7-f496-4241-b0a9-254d3f749bfb",
+          "name": "Dorayaki",
+          "description": "Red bean pancake sandwich.",
+          "price": 4.75,
+          "status": "AVAILABLE"
+        }
+      ]
+    },
+    {
+      "id": "52210a3c-e89f-4e84-b502-b8f3a8111e5a",
+      "name": "Umami Mile End",
+      "status": "OPEN",
+      "latitude": 45.5231,
+      "longitude": -73.6003,
+      "menu": [
+        {
+          "itemId": "eb3a59ca-4fce-4c69-9be1-c58f8a9fde1d",
+          "name": "Tonkotsu Ramen",
+          "description": "Pork broth, chashu, soft egg and scallion.",
+          "price": 17.0,
+          "status": "AVAILABLE"
+        },
+        {
+          "itemId": "95f4f108-8c41-494f-9fff-d4be9f2bd734",
+          "name": "Vegan Miso Ramen",
+          "description": "Miso broth with tofu, corn and mushrooms.",
+          "price": 16.0,
+          "status": "AVAILABLE"
+        },
+        {
+          "itemId": "80a63f38-6146-4817-9493-85f5ae0217b3",
+          "name": "Karaage",
+          "description": "Japanese fried chicken with lemon.",
+          "price": 9.5,
+          "status": "AVAILABLE"
+        },
+        {
+          "itemId": "459cde77-5a59-49b0-b9c2-6853334598d8",
+          "name": "Takoyaki",
+          "description": "Octopus balls with bonito flakes.",
+          "price": 8.75,
+          "status": "SOLD_OUT"
+        },
+        {
+          "itemId": "e0db6f22-8b13-4663-9f05-ffaf9bd97959",
+          "name": "Shoyu Ramen",
+          "description": "Soy broth with chicken chashu and nori.",
+          "price": 16.5,
+          "status": "AVAILABLE"
+        },
+        {
+          "itemId": "504a48d5-f848-4c73-a453-a9262594204f",
+          "name": "Gyoza Plate",
+          "description": "Six pan-fried gyoza.",
+          "price": 8.5,
+          "status": "AVAILABLE"
+        },
+        {
+          "itemId": "6873b1e7-e619-4706-b1f0-5aa86a9d0b32",
+          "name": "Chashu Rice Bowl",
+          "description": "Braised pork over rice with pickled ginger.",
+          "price": 13.0,
+          "status": "AVAILABLE"
+        },
+        {
+          "itemId": "ca00b15d-af8a-4bef-adc3-2faa0b67e030",
+          "name": "Cold Soba",
+          "description": "Chilled soba with dipping sauce.",
+          "price": 11.0,
+          "status": "AVAILABLE"
+        }
+      ]
+    },
+    {
+      "id": "64879202-47d8-4558-8d3c-a83389903e73",
+      "name": "Izakaya Griffintown",
+      "status": "CLOSED",
+      "latitude": 45.493,
+      "longitude": -73.56,
+      "menu": [
+        {
+          "itemId": "b033a2dd-f848-405b-9c5b-9c5f8f048ecc",
+          "name": "Yakitori Skewers",
+          "description": "Four chicken skewers with tare glaze.",
+          "price": 10.0,
+          "status": "AVAILABLE"
+        },
+        {
+          "itemId": "6f0893aa-44f3-4b61-b92e-b0f1e39a8bf8",
+          "name": "Agedashi Tofu",
+          "description": "Lightly fried tofu in dashi broth.",
+          "price": 7.5,
+          "status": "AVAILABLE"
+        },
+        {
+          "itemId": "41d2cbb8-9485-44da-a8e7-2f73373e352f",
+          "name": "Pork Belly Skewers",
+          "description": "Four skewers with miso glaze.",
+          "price": 12.0,
+          "status": "AVAILABLE"
+        },
+        {
+          "itemId": "da4c5b00-67f9-405d-9f03-54fb07c25031",
+          "name": "Chicken Nanban",
+          "description": "Fried chicken with tartar sauce.",
+          "price": 14.0,
+          "status": "AVAILABLE"
+        },
+        {
+          "itemId": "9421d2d4-f043-4242-9746-4ccddea9a1d8",
+          "name": "Edamame",
+          "description": "Steamed with sea salt.",
+          "price": 5.0,
+          "status": "AVAILABLE"
+        },
+        {
+          "itemId": "83c9822a-3227-4020-a55c-36293abd9bdd",
+          "name": "Sapporo Beer",
+          "description": "Draft, 473 ml.",
+          "price": 7.5,
+          "status": "AVAILABLE"
+        },
+        {
+          "itemId": "b783d568-c632-4160-bc80-f19a0ef3c830",
+          "name": "Tsukune",
+          "description": "Chicken meatball skewers with tare.",
+          "price": 9.0,
+          "status": "AVAILABLE"
+        },
+        {
+          "itemId": "5068e540-069a-43c0-8a8e-bb9bed20b7a2",
+          "name": "Okonomiyaki",
+          "description": "Savoury cabbage pancake.",
+          "price": 13.0,
+          "status": "AVAILABLE"
+        }
+      ]
+    },
+    {
+      "id": "a4c78f28-3af8-4064-9e68-80cac67d4ccc",
+      "name": "Tempura Hochelaga",
+      "status": "OPEN",
+      "latitude": 45.5457,
+      "longitude": -73.5472,
+      "menu": [
+        {
+          "itemId": "a5aa816a-3e68-4a09-b3ca-0c16737b25ec",
+          "name": "Shrimp Tempura Set",
+          "description": "Five shrimp with dipping sauce.",
+          "price": 15.5,
+          "status": "AVAILABLE"
+        },
+        {
+          "itemId": "901ccfdf-f62e-4d60-8b59-998f3cb3146c",
+          "name": "Kakiage Don",
+          "description": "Mixed vegetable fritter over rice.",
+          "price": 12.5,
+          "status": "AVAILABLE"
+        },
+        {
+          "itemId": "23f96899-ba98-478b-bee5-e822d3422302",
+          "name": "Tempura Udon",
+          "description": "Udon in dashi with shrimp tempura.",
+          "price": 14.5,
+          "status": "AVAILABLE"
+        },
+        {
+          "itemId": "8e267c26-a7d3-40fc-8f66-d7650b1d36e6",
+          "name": "Sweet Potato Tempura",
+          "description": "Four slices with sea salt.",
+          "price": 6.5,
+          "status": "AVAILABLE"
+        },
+        {
+          "itemId": "0fb61103-49d8-4668-b791-fb6aeba43625",
+          "name": "Ebi Roll",
+          "description": "Shrimp tempura roll with eel sauce.",
+          "price": 12.0,
+          "status": "AVAILABLE"
+        },
+        {
+          "itemId": "04437f90-ff52-4e13-94e7-b98608090b1b",
+          "name": "Miso Soup",
+          "description": "Tofu and wakame.",
+          "price": 3.5,
+          "status": "AVAILABLE"
+        },
+        {
+          "itemId": "7bcf222a-08fe-44e1-bdba-51f7d2a2e9b3",
+          "name": "Matcha Latte",
+          "description": "Hot or iced.",
+          "price": 5.5,
+          "status": "AVAILABLE"
+        },
+        {
+          "itemId": "2fd1a3e7-a994-4c6e-aeb1-2d4bb015d693",
+          "name": "Anko Taiyaki",
+          "description": "Fish-shaped cake with red bean.",
+          "price": 4.5,
+          "status": "AVAILABLE"
+        }
+      ]
+    },
+    {
+      "id": "2fa6ba36-ad8e-4d58-b602-387acaf3ffa8",
+      "name": "Bento Westmount",
+      "status": "OPEN",
+      "latitude": 45.4857,
+      "longitude": -73.5991,
+      "menu": [
+        {
+          "itemId": "4a5a48f8-2c75-438d-a70b-bc45cbb6b1b2",
+          "name": "Salmon Bento",
+          "description": "Grilled salmon, rice, salad and tamagoyaki.",
+          "price": 18.5,
+          "status": "AVAILABLE"
+        },
+        {
+          "itemId": "bc3472b0-1f13-41f2-8f94-50e6e81763ba",
+          "name": "Chicken Karaage Bento",
+          "description": "Fried chicken, rice and pickles.",
+          "price": 16.5,
+          "status": "AVAILABLE"
+        },
+        {
+          "itemId": "587c4d2d-bc3d-45b5-a5c4-f3f22e392f83",
+          "name": "Vegetarian Bento",
+          "description": "Tofu, vegetables, rice and miso soup.",
+          "price": 15.0,
+          "status": "AVAILABLE"
+        },
+        {
+          "itemId": "c82da3f1-8a8c-432a-a299-97720afd0a9a",
+          "name": "Tonkatsu Bento",
+          "description": "Breaded pork cutlet with rice.",
+          "price": 17.5,
+          "status": "AVAILABLE"
+        },
+        {
+          "itemId": "c6f1c28d-b837-4227-ab38-7a05ffef38a1",
+          "name": "Mini Chirashi",
+          "description": "Small sashimi bowl.",
+          "price": 14.0,
+          "status": "AVAILABLE"
+        },
+        {
+          "itemId": "8d3fd0df-57f9-4c67-aec8-dcc4c30d6efd",
+          "name": "Tamagoyaki",
+          "description": "Rolled omelette, four slices.",
+          "price": 4.5,
+          "status": "AVAILABLE"
+        },
+        {
+          "itemId": "b59c84a6-724c-42b3-8536-4da1f174c882",
+          "name": "Pickled Vegetables",
+          "description": "Daily selection.",
+          "price": 3.0,
+          "status": "AVAILABLE"
+        },
+        {
+          "itemId": "be91e173-7367-4731-901a-f2ce3dfc0496",
+          "name": "Sparkling Yuzu",
+          "description": "Chilled yuzu soda.",
+          "price": 3.5,
+          "status": "AVAILABLE"
+        }
+      ]
+    },
+    {
+      "id": "4fa8d37b-1893-4958-953a-2af9dc6e66eb",
+      "name": "Poke Verdun",
+      "status": "OPEN",
+      "latitude": 45.459,
+      "longitude": -73.571,
+      "menu": [
+        {
+          "itemId": "04a2c534-940a-436f-86f8-bf0578ce06ad",
+          "name": "Tuna Poke Bowl",
+          "description": "Ahi tuna, avocado, edamame and rice.",
+          "price": 16.0,
+          "status": "SOLD_OUT"
+        },
+        {
+          "itemId": "52c104a2-590e-42da-8154-ffd5278907cf",
+          "name": "Salmon Poke Bowl",
+          "description": "Marinated salmon, cucumber and seaweed.",
+          "price": 15.5,
+          "status": "SOLD_OUT"
+        },
+        {
+          "itemId": "0210d421-91d8-4677-bd26-d5391792050c",
+          "name": "Tofu Poke Bowl",
+          "description": "Sesame tofu, mango and cabbage.",
+          "price": 13.5,
+          "status": "SOLD_OUT"
+        },
+        {
+          "itemId": "f1d4e430-a8dd-4bc7-866f-21765d9a367a",
+          "name": "Shrimp Poke Bowl",
+          "description": "Cooked shrimp, corn and avocado.",
+          "price": 15.0,
+          "status": "SOLD_OUT"
+        },
+        {
+          "itemId": "090ea692-185c-4d13-afcb-f6eaeb3e6bf7",
+          "name": "Build Your Own Bowl",
+          "description": "Pick a base, protein and three toppings.",
+          "price": 14.5,
+          "status": "SOLD_OUT"
+        },
+        {
+          "itemId": "3dd36a44-d87a-400a-9121-4a8a32951f39",
+          "name": "Side Salad",
+          "description": "Mixed greens with ginger dressing.",
+          "price": 4.5,
+          "status": "SOLD_OUT"
         }
       ]
     }
