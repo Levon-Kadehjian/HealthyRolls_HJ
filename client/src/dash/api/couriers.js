@@ -43,3 +43,7 @@ export function getStalledOrders() {
 export function reassignStalledOrder(orderId) {
   return apiRequest(`/api/dispatch/stalled-orders/${orderId}/reassign`, { method: 'POST' })
 }
+
+export function listCouriers() {
+  return apiRequest('/api/dispatch/couriers')
+}
