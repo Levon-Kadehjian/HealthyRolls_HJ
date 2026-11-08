@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,6 +46,16 @@ public class BillingService {
         this.orderEventRepository = orderEventRepository;
     }
 
+    @EventListener
+    public void onOrderStateChanged(OrderStateChanged event) {
+        if (event.toStatus() == OrderStatus.DELIVERED) {
+            Order order = orderRepository.findByOrderId(event.orderId());
+            onDelivered(order);
+            log.info("Processed billing on delivery for order {}", event.orderId().value());
+        }
+    }
+
+    @Transactional
     public OrderSummary onDelivered(Order order) {
         if (order.status() != OrderStatus.DELIVERED) {
             throw new IllegalStateException("Only delivered orders can be billed");
@@ -55,8 +66,14 @@ public class BillingService {
             throw new IllegalStateException("Only delivered orders can be billed");
         }
 
+        final var existingEntries = ledgerRepository.findByOrderId(persistedOrder.getOrderId().value());
+        final boolean alreadyCharged = existingEntries.stream()
+                .anyMatch(entry -> entry.type() == LedgerEntryType.CHARGE);
+
         var fare = fareCalculator.compute(persistedOrder);
-        ledgerRepository.append(LedgerEntry.charge(persistedOrder, fare));
+        if (!alreadyCharged) {
+            ledgerRepository.append(LedgerEntry.charge(persistedOrder, fare));
+        }
 
         return new OrderSummary(
                 persistedOrder,
@@ -90,7 +107,7 @@ public class BillingService {
         }
 
         var entries = ledgerRepository.findByOrderId(order.getOrderId().value());
-        var charge = entries.stream()
+        final LedgerEntry charge = entries.stream()
                 .filter(entry -> entry.type() == LedgerEntryType.CHARGE)
                 .findFirst()
                 .orElseThrow(() -> new InvalidTransitionException("Order has no original charge"));

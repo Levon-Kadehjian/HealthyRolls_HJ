@@ -4,6 +4,7 @@ import { useSession } from '../auth/useSession'
 import {
   ACTIVE_STATUSES,
   canCancelOrder,
+  canRefundOrder,
   formatDateTime,
   formatMoney,
   newestFirst,
@@ -46,6 +47,45 @@ function CancelOrder({ order, fetcher }) {
         </button>
         <button type="submit" name="intent" value="CANCEL" className="order-btn order-btn-danger" disabled={busy}>
           {busy ? 'Cancelling…' : 'Yes, cancel'}
+        </button>
+      </div>
+    </fetcher.Form>
+  )
+}
+
+function RefundOrder({ order, fetcher }) {
+  const session = useSession()
+  const [confirming, setConfirming] = useState(false)
+  const busy = fetcher.state !== 'idle'
+
+  if (!canRefundOrder(session?.role, order.status)) {
+    return null
+  }
+
+  if (!confirming) {
+    return (
+      <div className="order-actions">
+        <button type="button" className="order-btn order-btn-danger" onClick={() => setConfirming(true)}>
+          Refund order
+        </button>
+      </div>
+    )
+  }
+
+  return (
+    <fetcher.Form method="post" className="order-confirm">
+      <input type="hidden" name="orderId" value={order.orderId} />
+      <input type="hidden" name="status" value={order.status} />
+      <p className="order-confirm-text">
+        <strong>Refund this order?</strong>
+        <span>The customer will receive a full refund. This cannot be undone.</span>
+      </p>
+      <div className="order-confirm-buttons">
+        <button type="button" className="order-btn order-btn-neutral" onClick={() => setConfirming(false)} disabled={busy}>
+          Keep order
+        </button>
+        <button type="submit" name="intent" value="REFUND" className="order-btn order-btn-danger" disabled={busy}>
+          {busy ? 'Refunding…' : 'Yes, refund'}
         </button>
       </div>
     </fetcher.Form>
@@ -96,9 +136,15 @@ function OrderCard({ order }) {
 
       {order.total !== null && (
         <div className="order-total">
-          <span>Total</span>
+          <span>{order.billedTotal != null ? 'Billed Total' : 'Total'}</span>
           <span>{formatMoney(order.total)}</span>
         </div>
+      )}
+
+      {order.refunded && (
+        <p className="order-note" style={{ color: '#c0392b', fontWeight: 600 }}>
+          Refunded: {order.refundAmount != null ? formatMoney(order.refundAmount) : 'Full refund issued'}
+        </p>
       )}
 
       {order.rejectionReason && <p className="order-note">Restaurant note: “{order.rejectionReason}”</p>}
@@ -110,6 +156,7 @@ function OrderCard({ order }) {
       )}
 
       <CancelOrder order={order} fetcher={fetcher} />
+      <RefundOrder order={order} fetcher={fetcher} />
     </li>
   )
 }
