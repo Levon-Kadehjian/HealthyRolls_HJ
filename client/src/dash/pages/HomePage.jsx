@@ -38,6 +38,7 @@ const STATUS_LABELS = { OPEN: 'Open', PAUSED: 'Paused', CLOSED: 'Closed' }
 
 export default function HomePage() {
   const session = useSession()
+  const isOperator = session?.role === 'OPERATOR'
 
   const [previews, setPreviews] = useState([])
   const [loading, setLoading] = useState(false)
@@ -129,12 +130,12 @@ export default function HomePage() {
               <div className="landing-preview-body">
                 <h3 className="landing-preview-name">{restaurant.name}</h3>
                 <div className="landing-preview-action">
-                  {restaurant.status === 'OPEN' ? (
+                  {isOperator || restaurant.status === 'OPEN' ? (
                     <Link
                       to={session ? `/restaurants/${restaurant.id}` : '/login'}
                       className="landing-preview-link"
                     >
-                      <span>Order</span>
+                      <span>{isOperator ? 'Manage' : 'Order'}</span>
                       <span aria-hidden="true">&rarr;</span>
                     </Link>
                   ) : (

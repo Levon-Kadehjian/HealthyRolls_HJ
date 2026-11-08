@@ -96,14 +96,49 @@ const dashboardIndexLoader = () => {
 
 const loadRestaurantCatalog = async (restaurantIds) => {
   const ids = [...new Set(restaurantIds)].filter(Boolean)
-  const restaurants = await Promise.all(ids.map((id) => getRestaurant(id).catch(() => null)))
+
+  const restaurants = await Promise.all(
+    ids.map(async (id) => {
+      try {
+        return await getRestaurant(id)
+      } catch (error) {
+        recordCommand(
+          'LOAD_RESTAURANT',
+          `restaurant=${id}`,
+          'error',
+          await describeError(error),
+        )
+        return null
+      }
+    }),
+  )
+
   return restaurants.filter(Boolean)
 }
 
 const loadOrderHistory = async (knownRestaurantIds = []) => {
-  const [orders, events] = await Promise.all([listOrders(), listOrderEvents().catch(() => [])])
-  const restaurants = await loadRestaurantCatalog([...knownRestaurantIds, ...orders.map((order) => order.restaurantId)])
-  return { orders: buildOrderHistory(orders, events, restaurants), restaurants }
+  const [orders, events] = await Promise.all([
+    listOrders(),
+    listOrderEvents().catch(async (error) => {
+      recordCommand(
+        'LOAD_ORDER_EVENTS',
+        '',
+        'error',
+        await describeError(error),
+      )
+      return []
+    }),
+  ])
+
+  const restaurants = await loadRestaurantCatalog([
+    ...knownRestaurantIds,
+    ...orders.map((order) => order.restaurantId),
+  ])
+
+  return {
+    orders: buildOrderHistory(orders, events, restaurants),
+    restaurants,
+  }
 }
 
 const customerOrdersLoader = async () => {
