@@ -10,17 +10,17 @@ import CartPage from '../pages/CartPage'
 import CheckoutPage from '../pages/CheckoutPage'
 import RestaurantMenuPage from '../pages/RestaurantMenuPage'
 import RestaurantsPage from '../pages/RestaurantsPage'
+import MapPage from '../pages/MapPage'
 import RestaurantOrdersPage from '../pages/RestaurantOrdersPage'
 import ConsolePage from '../pages/ConsolePage'
 import AuthPage from '../pages/AuthPage'
-import { addMenuItem, editMenuItem, changeMenuAvailability, pauseRestaurant, reopenRestaurant, getRestaurant, getRestaurants } from '../api/restaurants'
-import { applyOrderAction, listOrderEvents, listOrders } from '../api/orders'
+import { addMenuItem, editMenuItem, changeMenuAvailability, pauseRestaurant, reopenRestaurant, getMapRestaurants, getRestaurant, getRestaurants } from '../api/restaurants'
+import { applyOrderAction, getQueueCounts, listOrderEvents, listOrders } from '../api/orders'
 import { getSession } from '../auth/session'
 import { ensureSessionLocation } from '../api/auth'
 import { describeError, recordCommand, runCommand } from '../console/consoleStore'
 import { buildOrderHistory, canCancelOrder } from '../orders/orderHistory'
 import CourierPage from '../pages/CourierPage'
-import CourierMapPage from '../pages/CourierMapPage'
 import { acceptOffer, confirmDelivery, confirmPickup, declineOffer, getMyCourier, goOffDuty, goOnDuty } from '../api/couriers'
 import { getPendingOffer, getMyActiveOrder } from '../api/couriers'
 import { getStalledOrders, listCouriers, reassignStalledOrder } from '../api/couriers'
@@ -319,26 +319,12 @@ const courierPageLoader = async () => {
   return { ...data, offer, activeOrder, orderFailed }
 }
 
-const loadMapRestaurants = async () => {
-  try {
-    return await runCommand('BROWSE_RESTAURANTS', 'map', () => getRestaurants(), (restaurants) => `${restaurants.length} restaurants`)
-  } catch {
-    return []
-  }
-}
-
 const loadMapCouriers = async () => {
   try {
     return await runCommand('LIST_COURIERS', '', () => listCouriers(), (couriers) => `${couriers.length} couriers`)
   } catch {
     return []
   }
-}
-
-const courierMapLoader = async () => {
-  const { courier } = await courierLoader()
-  const [restaurants, couriers] = await Promise.all([loadMapRestaurants(), loadMapCouriers()])
-  return { courier, restaurants, couriers }
 }
 
 const courierAction = async ({ request }) => {
@@ -418,6 +404,48 @@ const restaurantAction = async ({ request, params }) => {
   }
 }
 
+const loadRestaurantsWithQueues = async () => {
+  requireSession()
+  const [restaurants, queues] = await Promise.all([getRestaurants(), getQueueCounts().catch(() => [])])
+  const counts = new Map(queues.map((queue) => [queue.restaurantId, queue]))
+  return restaurants.map((restaurant) => ({
+    ...restaurant,
+    queuedCount: counts.get(restaurant.id)?.queuedCount ?? 0,
+    preparingCount: counts.get(restaurant.id)?.preparingCount ?? 0,
+    readyCount: counts.get(restaurant.id)?.readyCount ?? 0,
+  }))
+}
+
+const mapLoader = () => {
+  const session = requireLogin()
+  ensureSessionLocation(session)
+  return runCommand(
+    'VIEW_MAP',
+    '',
+    async () => {
+      const isCourier = session.role === 'COURIER'
+      const [restaurants, orders, couriers, courier] = await Promise.all([
+        getMapRestaurants(),
+        isCourier ? [] : listOrders().catch(() => []),
+        loadMapCouriers(),
+        isCourier ? getMyCourier().catch(() => null) : null,
+      ])
+      return { restaurants, orders, couriers, courier }
+    },
+    ({ restaurants }) => `${restaurants.length} restaurants`,
+  )
+}
+
+const MAP_ORDER_INTENTS = new Set(['ACCEPT', 'REJECT', 'MARK_READY'])
+
+const mapAction = async ({ request }) => {
+  const form = await request.clone().formData()
+  const intent = form.get('intent')
+  if (intent === 'CANCEL') return customerOrdersAction({ request })
+  if (MAP_ORDER_INTENTS.has(intent)) return restaurantOrdersAction({ request })
+  return restaurantAction({ request, params: { restaurantId: form.get('restaurantId') } })
+}
+
 const restaurantsLoader = () => {
   redirectStaffToKitchen()
   redirectCourierHome()
@@ -425,10 +453,7 @@ const restaurantsLoader = () => {
   return runCommand(
     'BROWSE_RESTAURANTS',
     '',
-    async () => {
-      requireSession()
-      return getRestaurants()
-    },
+    loadRestaurantsWithQueues,
     (restaurants) => `${restaurants.length} restaurants`,
   )
 }
@@ -504,6 +529,12 @@ export const router = createBrowserRouter([
         loader: restaurantsLoader,
       },
       {
+        path: 'map',
+        element: <MapPage />,
+        loader: mapLoader,
+        action: mapAction,
+      },
+      {
         path: 'restaurants/:restaurantId',
         element: <RestaurantMenuPage />,
         loader: restaurantLoader,
@@ -535,11 +566,6 @@ export const router = createBrowserRouter([
             element: <CourierPage />,
             loader: courierPageLoader,
             action: courierAction,
-          },
-          {
-            path: 'map',
-            element: <CourierMapPage />,
-            loader: courierMapLoader,
           },
           {
             path: 'account',

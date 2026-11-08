@@ -75,11 +75,16 @@ export default function RestaurantMenuPage() {
           <p>{restaurant.menu.length} items on the menu</p>
         </div>
 
-        {cartIsHere && itemCount > 0 && (
-          <Link to="/cart" className="btn-primary">
-            View Cart ({itemCount})
+        <div className="restaurant-banner-actions">
+          <Link to={`/map?restaurant=${restaurant.id}`} className="btn-secondary">
+            See on map
           </Link>
-        )}
+          {cartIsHere && itemCount > 0 && (
+            <Link to="/cart" className="btn-primary">
+              View Cart ({itemCount})
+            </Link>
+          )}
+        </div>
       </header>
 
       <RestaurantStatusControls restaurant={restaurant} session={session} />

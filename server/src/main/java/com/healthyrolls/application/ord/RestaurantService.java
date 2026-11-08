@@ -1,10 +1,9 @@
 package com.healthyrolls.application.ord;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.List;
-import com.healthyrolls.domain.common.UserRole;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +12,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.healthyrolls.domain.common.AuthenticatedUser;
+import com.healthyrolls.domain.common.UserRole;
 import com.healthyrolls.domain.ord.exceptions.ActionNotPermittedException;
 import com.healthyrolls.domain.ord.restaurant.IRestaurantRepository;
 import com.healthyrolls.domain.ord.restaurant.Restaurant;
@@ -41,6 +41,15 @@ public class RestaurantService {
 
     @Transactional(readOnly = true)
     public List<Restaurant> listRestaurants(AuthenticatedUser actor) {
+        Objects.requireNonNull(actor, "Authenticated user is required");
+        if (actor.role() == UserRole.COURIER) {
+            throw new ActionNotPermittedException("Couriers cannot browse menus");
+        }
+        return listForMap(actor);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Restaurant> listForMap(AuthenticatedUser actor) {
         Objects.requireNonNull(actor, "Authenticated user is required");
         if (actor.role() == UserRole.RESTAURANT_STAFF) {
             if (actor.restaurantId() == null) {

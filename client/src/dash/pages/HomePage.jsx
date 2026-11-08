@@ -80,9 +80,16 @@ export default function HomePage() {
         <p className="landing-subtitle">Fresh, healthy rolls from Montreal's best restaurants, delivered to you.</p>
         <div className="landing-actions">
           {session ? (
-            <Link to="/restaurants" className="btn-primary">
-              Browse restaurants
-            </Link>
+            <>
+              <Link to="/restaurants" className="btn-primary">
+                Browse restaurants
+              </Link>
+              {canBrowse && (
+                <Link to="/map" className="btn-secondary">
+                  View map
+                </Link>
+              )}
+            </>
           ) : (
             <>
               <Link to="/login" className="btn-primary">
@@ -96,7 +103,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Restaurant Previews */}
       <section className="landing-previews" aria-labelledby="previews-title">
         <div className="landing-section-header">
           <h2 id="previews-title" className="landing-section-title">Partner Kitchens</h2>

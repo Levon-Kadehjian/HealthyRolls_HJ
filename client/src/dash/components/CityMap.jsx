@@ -1,5 +1,5 @@
-import { useEffect } from 'react'
-import { MapContainer, Marker, Polyline, Popup, TileLayer, useMap } from 'react-leaflet'
+import { useEffect, useRef } from 'react'
+import { MapContainer, Marker, Polyline, Popup, TileLayer, useMap, useMapEvents } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import './CityMap.css'
@@ -54,13 +54,27 @@ function FitBounds({ bounds }) {
 }
 
 
-export default function CityMap({ points = [], lines = [], bounds, onSelect, emptyMessage = 'Nothing to show on the map yet.' }) {
+function MapClick({ onClick }) {
+  useMapEvents({ click: onClick })
+  return null
+}
+
+function OpenPopupOnce({ id, markers }) {
+  useEffect(() => {
+    if (id) markers.current.get(id)?.openPopup()
+  }, [])
+  return null
+}
+
+export default function CityMap({ points = [], lines = [], bounds, onSelect, onMapClick, openPopupId, emptyMessage = 'Nothing to show on the map yet.' }) {
   const fitTo = bounds ?? points.map((point) => point.position)
+  const markers = useRef(new Map())
 
   return (
     <MapContainer className="city-map" center={fitTo[0] ?? DEFAULT_CENTER} zoom={13} scrollWheelZoom>
       <TileLayer url={TILE_URL} attribution={ATTRIBUTION} />
       <FitBounds bounds={fitTo} />
+      {onMapClick && <MapClick onClick={onMapClick} />}
       {fitTo.length === 0 && <div className="city-map-empty">{emptyMessage}</div>}
       {lines.map((line) => (
         <Polyline key={line.id} positions={line.positions} pathOptions={{ className: 'map-line' }} />
@@ -68,6 +82,7 @@ export default function CityMap({ points = [], lines = [], bounds, onSelect, emp
       {points.map((point) => (
         <Marker
           key={point.id}
+          ref={(marker) => (marker ? markers.current.set(point.id, marker) : markers.current.delete(point.id))}
           position={point.position}
           icon={pinIcon(point.kind, point.status)}
           zIndexOffset={point.kind === 'home' ? 1000 : 0}
@@ -76,6 +91,7 @@ export default function CityMap({ points = [], lines = [], bounds, onSelect, emp
           {point.popup && <Popup>{point.popup}</Popup>}
         </Marker>
       ))}
+      <OpenPopupOnce id={openPopupId} markers={markers} />
     </MapContainer>
   )
 }

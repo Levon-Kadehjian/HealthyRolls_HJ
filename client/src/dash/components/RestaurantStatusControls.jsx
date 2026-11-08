@@ -24,6 +24,7 @@ export default function RestaurantStatusControls({ restaurant, session }) {
     <div className="restaurant-status-controls">
       {(canPause || canReopen) && (
         <fetcher.Form method="post" className="restaurant-banner-actions">
+          <input type="hidden" name="restaurantId" value={restaurant.id} />
           <button type="submit" className="btn-secondary" name="intent"
             value={canPause ? 'PAUSE_RESTAURANT' : 'REOPEN_RESTAURANT'} disabled={busy}>
             {busy ? 'Updating…' : canPause ? 'Pause restaurant' : 'Reopen restaurant'}

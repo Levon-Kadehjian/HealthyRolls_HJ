@@ -101,19 +101,34 @@ export default function Navbar() {
             </NavLink>
           )}
           {session && !isStaff && !isCourier && (
-            <NavLink to="/restaurants" className={linkClass}>
-              Restaurants
-            </NavLink>
+            <>
+              <NavLink to="/restaurants" className={linkClass}>
+                Restaurants
+              </NavLink>
+              <NavLink to="/map" className={linkClass}>
+                Map
+              </NavLink>
+            </>
           )}
           {isCourier && (
-            <NavLink to="/dashboard/courier" className={linkClass}>
-              Deliveries
-            </NavLink>
+            <>
+              <NavLink to="/dashboard/courier" className={linkClass}>
+                Deliveries
+              </NavLink>
+              <NavLink to="/map" className={linkClass}>
+                Map
+              </NavLink>
+            </>
           )}
           {isStaff && (
-            <NavLink to="/dashboard/kitchen" className={linkClass}>
-              Kitchen
-            </NavLink>
+            <>
+              <NavLink to="/dashboard/kitchen" className={linkClass}>
+                Kitchen
+              </NavLink>
+              <NavLink to="/map" className={linkClass}>
+                Map
+              </NavLink>
+            </>
           )}
           <NavLink to="/about" className={linkClass}>
             About
