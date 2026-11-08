@@ -42,9 +42,6 @@ public class RestaurantService {
     @Transactional(readOnly = true)
     public List<Restaurant> listRestaurants(AuthenticatedUser actor) {
         Objects.requireNonNull(actor, "Authenticated user is required");
-        if (actor.role() == UserRole.COURIER) {
-            throw new ActionNotPermittedException("Couriers cannot browse menus");
-        }
         if (actor.role() == UserRole.RESTAURANT_STAFF) {
             if (actor.restaurantId() == null) {
                 throw new ActionNotPermittedException("No restaurant is linked to this account");
