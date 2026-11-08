@@ -13,25 +13,25 @@ async function fetchProfile(accessToken) {
     const response = await fetch('/api/users/me', {
       headers: { Authorization: `Bearer ${accessToken}` },
     })
-    return response.ok ? await response.json() : null
-  } catch {
-    return null
-  }
-}
 
-// function for existing users to work (coords)
-export async function ensureSessionLocation(session) {
-  if (!session?.accessToken || session.latitude != null) return
-  const profile = await fetchProfile(session.accessToken)
-  if (profile?.latitude != null) {
-    updateSession({ latitude: profile.latitude, longitude: profile.longitude })
+    if (!response.ok) {
+      const errJson = await response.json().catch(() => ({}))
+      const msg = errJson.detail || errJson.message || 'Could not load account information.'
+      recordCommand('LOAD_PROFILE', '', 'error', msg)
+      return null
+    }
+
+    return await response.json()
+  } catch {
+    const msg = 'Unable to load account information. Please try again.'
+    recordCommand('LOAD_PROFILE', '', 'error', msg)
+    return null
   }
 }
 
 export async function loginUser({ email, password, role = 'CUSTOMER', name }) {
   let authData = null
   let profile = null
-  let backendFailed = false
 
   try {
     const response = await fetch('/api/users/login', {
@@ -53,20 +53,25 @@ export async function loginUser({ email, password, role = 'CUSTOMER', name }) {
       const msg = errJson.detail || errJson.message || 'Invalid email or password.'
       recordCommand('LOGIN', `email=${email}`, 'error', msg)
       return { ok: false, error: msg }
-    } else {
-      backendFailed = true
+    }  else {
+      const errJson = await response.json().catch(() => ({}))
+      const msg = errJson.detail || errJson.message || 'Login failed. Please try again.'
+      recordCommand('LOGIN', `email=${email}`, 'error', msg)
+      return { ok: false, error: msg }
     }
   } catch {
-    backendFailed = true
+    const msg = 'Unable to connect to the server. Please try again.'
+    recordCommand('LOGIN', `email=${email}`, 'error', msg)
+    return { ok: false, error: msg }
   }
 
-  const effectiveRole = authData?.role || role || 'CUSTOMER'
+  const effectiveRole = authData.role
   const resolvedName = profile?.name || name
   const restaurantId = profile?.restaurantId?.value || profile?.restaurantId || null
   const session = {
-    accessToken: authData?.accessToken || `mock-token-${Date.now()}`,
-    expiresAt: authData?.expiresAt || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-    userId: authData?.userId?.value || authData?.userId || `user-${Date.now()}`,
+    accessToken: authData?.accessToken,
+    expiresAt: authData?.expiresAt,
+    userId: authData?.userId?.value ?? authData?.userId,
     role: effectiveRole,
     email,
     ...(resolvedName && { name: resolvedName }),
@@ -77,7 +82,7 @@ export async function loginUser({ email, password, role = 'CUSTOMER', name }) {
   saveSession(session)
   recordCommand(
     'LOGIN',
-    `role=${effectiveRole} email=${email}${backendFailed ? ' (offline-fallback)' : ''}`,
+    `role=${effectiveRole} email=${email}`,
     'ok',
     `Authenticated as ${effectiveRole}`,
   )
@@ -118,8 +123,9 @@ export async function registerUser({ name, email, password,latitude, longitude, 
       return { ok: false, error: msg }
     }
   } catch {
-    // Backend offline: log registration and create local session
-    recordCommand('REGISTER', `role=CUSTOMER email=${email} (offline)`, 'ok', `Created local session for ${name}`)
+    const msg = 'Unable to connect to the server. Please try again.'
+    recordCommand('REGISTER', `email=${email}`, 'error', msg)
+    return { ok: false, error: msg }
   }
 
   return loginUser({ email, password, name })
