@@ -4,18 +4,51 @@ import sushiLogo from '../assets/sushi-logo.png'
 import { useCart } from '../cart/useCart'
 import { useSession } from '../auth/useSession'
 import { clearSession } from '../auth/session'
-import { recordCommand } from '../console/consoleStore'
+import { describeError, recordCommand, runCommand } from '../console/consoleStore'
+import { resetSystem } from '../api/admin'
 import './Navbar.css'
 
 const linkClass = ({ isActive }) => `nav-link ${isActive ? 'nav-link-active' : ''}`
 
 export default function Navbar() {
-  const { itemCount } = useCart()
+  const { itemCount, clearCart } = useCart()
   const session = useSession()
   const navigate = useNavigate()
   const location = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef(null)
+  const [resetting, setResetting] = useState(false)
+  const [resetError, setResetError] = useState('')
+
+  async function handleReset() {
+    if (
+      !window.confirm(
+        'Reset the system? This removes current orders and restores the seeded accounts, restaurants, menus and couriers.',
+      )
+    ) {
+      return
+    }
+
+    setResetting(true)
+    setResetError('')
+
+    try {
+      await runCommand(
+        'RESET_SYSTEM',
+        '',
+        resetSystem,
+        () => 'Initial system state restored.',
+      )
+    } catch (error) {
+      setResetError(await describeError(error))
+      setResetting(false)
+      return
+    }
+
+    clearCart()
+    clearSession()
+    window.location.assign('/login')
+  }
 
   useEffect(() => {
     setMenuOpen(false)
@@ -151,6 +184,33 @@ export default function Navbar() {
                       </svg>
                       Account Settings
                     </Link>
+                    {session.role === 'OPERATOR' && (
+                      <button
+                        type="button"
+                        className="nav-menu-item"
+                        role="menuitem"
+                        onClick={handleReset}
+                        disabled={resetting}
+                      >
+                        <svg
+                          className="nav-menu-icon"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.9"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          aria-hidden="true"
+                        >
+                          <path d="M3 11a9 9 0 1 1 2.6 7.4" />
+                          <path d="M3 4v7h7" />
+                        </svg>
+                        {resetting ? 'Resetting…' : 'Reset system'}
+                      </button>
+                    )}
+                    {resetError && (
+                      <p className="nav-menu-error" role="alert">{resetError}</p>
+                    )}
                     <div className="nav-menu-divider" role="separator" />
                     <button type="button" className="nav-menu-item nav-menu-item-danger" role="menuitem" onClick={logout}>
                       <svg
