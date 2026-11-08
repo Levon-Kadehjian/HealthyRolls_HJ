@@ -388,11 +388,14 @@ const mapLoader = () => {
     'VIEW_MAP',
     '',
     async () => {
-      const [restaurants, orders] = await Promise.all([
+      const isCourier = session.role === 'COURIER'
+      const [restaurants, orders, couriers, courier] = await Promise.all([
         getMapRestaurants(),
-        session.role === 'COURIER' ? [] : listOrders().catch(() => []),
+        isCourier ? [] : listOrders().catch(() => []),
+        loadMapCouriers(),
+        isCourier ? getMyCourier().catch(() => null) : null,
       ])
-      return { restaurants, orders }
+      return { restaurants, orders, couriers, courier }
     },
     ({ restaurants }) => `${restaurants.length} restaurants`,
   )

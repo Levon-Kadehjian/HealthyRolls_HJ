@@ -12,18 +12,24 @@ const STATUS_LABELS = { OPEN: 'Open', PAUSED: 'Paused', CLOSED: 'Closed' }
 const formatDistance = (meters) => (meters < 1000 ? `${Math.round(meters)} m` : `${(meters / 1000).toFixed(1)} km`)
 
 export default function MapPage() {
-  const { restaurants, orders } = useLoaderData()
+  const { restaurants, orders, couriers, courier: me } = useLoaderData()
   const session = useSession()
   const [shown, setShown] = useState(new Set(BANDS))
   const [params] = useSearchParams()
   const [selectedId, setSelectedId] = useState(params.get('restaurant'))
 
-  const home = session?.latitude != null ? [session.latitude, session.longitude] : null
+  const home = me ? [me.latitude, me.longitude] : session?.latitude != null ? [session.latitude, session.longitude] : null
   const visible = restaurants.filter((restaurant) => shown.has(queueBand(restaurant)))
   const selected = visible.find((restaurant) => restaurant.id === selectedId)
   const distance = home && selected ? L.latLng(home).distanceTo([selected.latitude, selected.longitude]) : null
 
-  const bounds = [...restaurants.map((r) => [r.latitude, r.longitude]), ...(home ? [home] : [])]
+  const onDuty = couriers.filter((courier) => courier.status !== 'OFFLINE' && courier.courierId !== me?.courierId)
+
+  const bounds = [
+    ...restaurants.map((r) => [r.latitude, r.longitude]),
+    ...onDuty.map((courier) => [courier.latitude, courier.longitude]),
+    ...(home ? [home] : []),
+  ]
 
   const points = [
     ...visible.map((restaurant) => ({
@@ -37,6 +43,18 @@ export default function MapPage() {
           <p><strong>Queued orders: {restaurant.queuedCount}</strong></p>
           {restaurant.status !== 'OPEN' && <p>{STATUS_LABELS[restaurant.status] ?? restaurant.status}</p>}
           {session?.role !== 'COURIER' && <Link to={`/restaurants/${restaurant.id}`}>View menu →</Link>}
+        </div>
+      ),
+    })),
+    ...onDuty.map((courier) => ({
+      id: courier.courierId,
+      position: [courier.latitude, courier.longitude],
+      kind: 'courier',
+      status: courier.status,
+      popup: (
+        <div className="map-popup">
+          <h4>{courier.name}</h4>
+          <p>{courier.status.charAt(0) + courier.status.slice(1).toLowerCase()}</p>
         </div>
       ),
     })),
