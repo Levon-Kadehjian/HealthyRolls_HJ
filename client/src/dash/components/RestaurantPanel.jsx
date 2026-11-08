@@ -91,7 +91,7 @@ export default function RestaurantPanel({ restaurant, orders, session, distanceL
       {actions.statusControls && <RestaurantStatusControls restaurant={restaurant} session={session} />}
 
       {showOrders && (
-        <section aria-label={actions.seeQueue ? 'Order queue' : 'Your orders here'}>
+        <section className="restaurant-panel-orders" aria-label={actions.seeQueue ? 'Order queue' : 'Your orders here'}>
           <h5>{actions.seeQueue ? 'Order queue' : 'Your orders here'}</h5>
           {visibleOrders.length === 0 ? (
             <p className="panel-note">{actions.seeQueue ? 'Nothing in the queue.' : 'You have no orders at this restaurant.'}</p>
