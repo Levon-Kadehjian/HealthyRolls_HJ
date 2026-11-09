@@ -44,7 +44,7 @@ function fitMap(map, bounds) {
   if (bounds.length === 1) {
     map.setView(bounds[0], 15)
   } else if (bounds.length > 1) {
-    map.fitBounds(bounds, { padding: [40, 40] })
+    map.fitBounds(bounds, { padding: [32, 32] })
   } else {
     map.setView(DEFAULT_CENTER, 13)
   }
@@ -95,7 +95,7 @@ export default function CityMap({ points = [], lines = [], bounds, onSelect, onM
   const markers = useRef(new Map())
 
   return (
-    <MapContainer className="city-map" center={fitTo[0] ?? DEFAULT_CENTER} zoom={13} scrollWheelZoom attributionControl={false}>
+    <MapContainer className="city-map" center={fitTo[0] ?? DEFAULT_CENTER} zoom={13} zoomSnap={0.1} scrollWheelZoom attributionControl={false}>
       <TileLayer url={TILE_URL} attribution={ATTRIBUTION} />
       <AttributionControl prefix={false} />
       <FitBounds bounds={fitTo} />
