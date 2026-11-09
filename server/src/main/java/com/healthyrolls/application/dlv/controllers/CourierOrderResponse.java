@@ -7,7 +7,9 @@ import com.healthyrolls.domain.ord.order.Order;
 
 public record CourierOrderResponse(
         UUID orderId,
-        List<Item> items) {
+        List<Item> items,
+        Double deliveryLatitude,
+        Double deliveryLongitude) {
 
     public record Item(String name, int quantity) {}
 
@@ -20,6 +22,8 @@ public record CourierOrderResponse(
 
         return new CourierOrderResponse(
                 order.getOrderId().value(),
-                items);
+                items,
+                order.getDeliveryLatitude(),
+                order.getDeliveryLongitude());
     }
 }

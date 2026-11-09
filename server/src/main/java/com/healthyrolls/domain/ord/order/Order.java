@@ -21,8 +21,10 @@ public class Order {
     private long version;
     private List<OrderLine> items;
     private String rejectionReason;
+    private Double deliveryLatitude;
+    private Double deliveryLongitude;
 
-    Order(UUID customerId, UUID restaurantId, List<OrderLine> items) {
+    Order(UUID customerId, UUID restaurantId, List<OrderLine> items, Double deliveryLatitude, Double deliveryLongitude) {
 
         this.customerId = Objects.requireNonNull(customerId, "Customer ID is required");
         this.restaurantId = Objects.requireNonNull(restaurantId, "Restaurant ID is required");
@@ -35,12 +37,15 @@ public class Order {
         }
 
         this.items = List.copyOf(items);
+        this.deliveryLatitude = deliveryLatitude;
+        this.deliveryLongitude = deliveryLongitude;
         this.id = OrderId.random();
         this.state = PlacedState.INSTANCE;
     }
 
     Order(OrderRecord record, OrderStateFactory stateFactory) {
-        this(record.customerId(), record.restaurantId(), record.items());
+        this(record.customerId(), record.restaurantId(), record.items(),
+                record.deliveryLatitude(), record.deliveryLongitude());
         this.id = new OrderId(Objects.requireNonNull(record.orderId()));
         this.courierId = record.courierId();
         this.acceptedAt = record.acceptedAt();
@@ -64,6 +69,14 @@ public class Order {
 
     public UUID getCourierId() {
         return courierId;
+    }
+
+    public Double getDeliveryLatitude() {
+        return deliveryLatitude;
+    }
+
+    public Double getDeliveryLongitude() {
+        return deliveryLongitude;
     }
 
     public Instant getAcceptedAt() {

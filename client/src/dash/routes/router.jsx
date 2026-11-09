@@ -424,13 +424,14 @@ const mapLoader = () => {
     '',
     async () => {
       const isCourier = session.role === 'COURIER'
-      const [restaurants, orders, couriers, courier] = await Promise.all([
+      const [restaurants, orders, couriers, courier, activeOrder] = await Promise.all([
         getMapRestaurants(),
         isCourier ? [] : listOrders().catch(() => []),
         loadMapCouriers(),
         isCourier ? getMyCourier().catch(() => null) : null,
+        isCourier ? getMyActiveOrder().catch(() => null) : null,
       ])
-      return { restaurants, orders, couriers, courier }
+      return { restaurants, orders, couriers, courier, activeOrder: activeOrder ?? null }
     },
     ({ restaurants }) => `${restaurants.length} restaurants`,
   )

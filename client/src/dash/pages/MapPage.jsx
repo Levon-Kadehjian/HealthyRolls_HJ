@@ -13,7 +13,7 @@ const formatDistance = (meters) => (meters < 1000 ? `${Math.round(meters)} m` : 
 
 export default function MapPage() {
   const data = useLoaderData()
-  const { orders, courier: me } = data
+  const { orders, courier: me, activeOrder } = data
   const session = useSession()
   const isStaff = session?.role === 'RESTAURANT_STAFF'
   const { restaurants, couriers } = data
@@ -35,10 +35,13 @@ export default function MapPage() {
 
   const onDuty = couriers.filter((courier) => courier.status !== 'OFFLINE' && courier.courierId !== me?.courierId)
 
+  const dropOff = activeOrder?.deliveryLatitude != null ? [activeOrder.deliveryLatitude, activeOrder.deliveryLongitude] : null
+
   const bounds = [
     ...restaurants.map((r) => [r.latitude, r.longitude]),
     ...onDuty.map((courier) => [courier.latitude, courier.longitude]),
     ...(home ? [home] : []),
+    ...(dropOff ? [dropOff] : []),
   ]
 
   const points = [
@@ -68,6 +71,7 @@ export default function MapPage() {
         </div>
       ),
     })),
+    ...(dropOff ? [{ id: 'drop-off', position: dropOff, kind: 'dropoff', popup: <div className="map-popup"><h4>Drop-off</h4></div> }] : []),
     ...(home ? [{ id: 'home', position: home, kind: 'home', popup: <div className="map-popup"><h4>You are here</h4></div> }] : []),
   ]
   const own = isStaff ? restaurants.find((r) => r.id === session.restaurantId) : null
@@ -75,7 +79,10 @@ export default function MapPage() {
     ? onDuty
         .filter((c) => assignedIds.has(c.courierId))
         .map((c) => ({ id: `route-${c.courierId}`, positions: [[own.latitude, own.longitude], [c.latitude, c.longitude]] }))
-    : home && selected ? [{ id: 'route', positions: [home, [selected.latitude, selected.longitude]] }] : []
+    : [
+        ...(home && selected ? [{ id: 'route', positions: [home, [selected.latitude, selected.longitude]] }] : []),
+        ...(home && dropOff ? [{ id: 'route-dropoff', positions: [home, dropOff] }] : []),
+      ]
 
   const toggle = (band) =>
     setShown((current) => {

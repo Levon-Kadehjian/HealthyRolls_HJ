@@ -108,6 +108,12 @@
   border-radius: 4px;
 }
 
+.map-pin-dropoff {
+  --pin: #e11d48;
+  border-radius: 3px;
+  transform: rotate(45deg);
+}
+
 .map-pin-courier.map-pin-idle {
   --pin: #0d9488;
 }
