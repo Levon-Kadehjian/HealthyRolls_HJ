@@ -56,10 +56,6 @@
   --pin: var(--map-long);
 }
 
-.map-pin-restaurant.map-pin-closed {
-  --pin: #9ca3af;
-}
-
 .map-you {
   position: relative;
   display: block;
@@ -173,8 +169,8 @@
   --status: var(--map-long);
 }
 
-.map-filter-closed {
-  --status: #9ca3af;
+.map-filter-labels {
+  --status: var(--accent);
 }
 
 .map-filter {
@@ -233,6 +229,33 @@
   font-size: 0.75rem;
   line-height: 1.4rem;
   text-align: center;
+}
+
+/* Speech-bubble label: rounded box with a curved tail pointing down at the pin. */
+.city-map .map-label {
+  padding: 0.2rem 0.55rem;
+  border: 0;
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text-h);
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: none;
+  filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.55)) drop-shadow(0 1px 3px rgba(0, 0, 0, 0.25));
+}
+
+.city-map .map-label::before {
+  top: 100%;
+  left: 50%;
+  width: 16px;
+  height: 9px;
+  margin: -1px 0 0 -8px;
+  border: 0;
+  background: var(--bg);
+  clip-path: path('M0 0 Q6 1 8 9 Q10 1 16 0 Z');
 }
 
 .city-map .leaflet-tile-pane {

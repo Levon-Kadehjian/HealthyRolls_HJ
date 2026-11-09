@@ -26,6 +26,7 @@ export default function MapPage() {
       : [],
   )
   const [shown, setShown] = useState(new Set(BANDS))
+  const [showLabels, setShowLabels] = useState(true)
   const [params] = useSearchParams()
   const [selectedId, setSelectedId] = useState(params.get('restaurant') ?? (isStaff ? session.restaurantId : null))
 
@@ -51,6 +52,7 @@ export default function MapPage() {
       position: [restaurant.latitude, restaurant.longitude],
       kind: 'restaurant',
       status: queueBand(restaurant),
+      label: showLabels ? `${restaurant.name} • ${restaurant.queuedCount} queued` : null,
       popup: (
         <div className="map-popup">
           <h4>{restaurant.name}</h4>
@@ -119,6 +121,15 @@ export default function MapPage() {
                 <span className="map-filter-count">{restaurants.filter((r) => queueBand(r) === band).length}</span>
               </button>
             ))}
+            <button
+              type="button"
+              className="map-filter map-filter-labels"
+              aria-pressed={showLabels}
+              onClick={() => setShowLabels((on) => !on)}
+            >
+              <span className="map-filter-dot" aria-hidden="true" />
+              Labels
+            </button>
           </div>
         </div>
 

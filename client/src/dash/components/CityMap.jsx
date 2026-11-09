@@ -1,5 +1,5 @@
-import { useEffect, useRef } from 'react'
-import { AttributionControl, MapContainer, Marker, Polyline, Popup, TileLayer, useMap, useMapEvents } from 'react-leaflet'
+import { useEffect, useRef, useState } from 'react'
+import { AttributionControl, MapContainer, Marker, Polyline, Popup, TileLayer, Tooltip, useMap, useMapEvents } from 'react-leaflet'
 import L from 'leaflet'
 import { LocateFixed } from 'lucide-react'
 import 'leaflet/dist/leaflet.css'
@@ -93,6 +93,11 @@ function OpenPopupOnce({ id, markers }) {
 export default function CityMap({ points = [], lines = [], bounds, onSelect, onMapClick, openPopupId, emptyMessage = 'Nothing to show on the map yet.' }) {
   const fitTo = bounds ?? points.map((point) => point.position)
   const markers = useRef(new Map())
+  const [openId, setOpenId] = useState(null)
+  const select = (id) => {
+    markers.current.get(id)?.openPopup()
+    onSelect?.(id)
+  }
 
   return (
     <MapContainer className="city-map" center={fitTo[0] ?? DEFAULT_CENTER} zoom={13} zoomSnap={0.1} scrollWheelZoom attributionControl={false}>
@@ -112,9 +117,26 @@ export default function CityMap({ points = [], lines = [], bounds, onSelect, onM
           position={point.position}
           icon={pinIcon(point.kind, point.status)}
           zIndexOffset={point.kind === 'home' ? 1000 : 0}
-          eventHandlers={onSelect ? { click: () => onSelect(point.id) } : undefined}
+          eventHandlers={{
+            click: () => onSelect?.(point.id),
+            popupopen: () => setOpenId(point.id),
+            popupclose: () => setOpenId((id) => (id === point.id ? null : id)),
+          }}
         >
           {point.popup && <Popup>{point.popup}</Popup>}
+          {point.label && openId !== point.id && (
+            <Tooltip
+              permanent
+              interactive
+              opacity={1}
+              direction="top"
+              offset={[0, -12]}
+              className="map-label"
+              eventHandlers={{ click: () => select(point.id) }}
+            >
+              {point.label}
+            </Tooltip>
+          )}
         </Marker>
       ))}
       <OpenPopupOnce id={openPopupId} markers={markers} />
