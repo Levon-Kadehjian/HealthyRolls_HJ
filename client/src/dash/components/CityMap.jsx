@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { AttributionControl, MapContainer, Marker, Polyline, Popup, TileLayer, Tooltip, useMap, useMapEvents } from 'react-leaflet'
 import L from 'leaflet'
-import { LocateFixed } from 'lucide-react'
+import { renderToStaticMarkup } from 'react-dom/server'
+import { LocateFixed, Navigation2, Package, Pause } from 'lucide-react'
 import 'leaflet/dist/leaflet.css'
 import './CityMap.css'
 
@@ -10,9 +11,15 @@ const ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">Op
 
 const DEFAULT_CENTER = [45.5017, -73.5673] // Montreal coords
 
+const COURIER_BADGES = {
+  IDLE: () => <Pause size={13} fill="currentColor" />,
+  ASSIGNED: (heading) => <Navigation2 size={13} fill="currentColor" style={{ transform: `rotate(${heading ?? 0}deg)` }} />,
+  CARRYING: () => <Package size={13} />,
+}
+
 const icons = new Map()
-function pinIcon(kind, status) {
-  const key = `${kind}:${status ?? ''}`
+function pinIcon(kind, status, heading) {
+  const key = `${kind}:${status ?? ''}:${heading ?? ''}`
   if (kind === 'home' && !icons.has(key)) {
     icons.set(
       key,
@@ -26,14 +33,17 @@ function pinIcon(kind, status) {
     )
   }
   if (!icons.has(key)) {
+    const Badge = kind === 'courier' ? COURIER_BADGES[status] : null
+    const badge = Badge ? renderToStaticMarkup(Badge(heading)) : ''
+    const size = badge ? 22 : 18
     icons.set(
       key,
       L.divIcon({
         className: '',
-        html: `<span class="map-pin map-pin-${kind}${status ? ` map-pin-${status.toLowerCase()}` : ''}"></span>`,
-        iconSize: [18, 18],
-        iconAnchor: [9, 9],
-        popupAnchor: [0, -10],
+        html: `<span class="map-pin map-pin-${kind}${status ? ` map-pin-${status.toLowerCase()}` : ''}">${badge}</span>`,
+        iconSize: [size, size],
+        iconAnchor: [size / 2, size / 2],
+        popupAnchor: [0, -size / 2 - 1],
       }),
     )
   }
@@ -115,7 +125,7 @@ export default function CityMap({ points = [], lines = [], bounds, onSelect, onM
           key={point.id}
           ref={(marker) => (marker ? markers.current.set(point.id, marker) : markers.current.delete(point.id))}
           position={point.position}
-          icon={pinIcon(point.kind, point.status)}
+          icon={pinIcon(point.kind, point.status, point.heading)}
           zIndexOffset={point.kind === 'home' ? 1000 : 0}
           eventHandlers={{
             click: () => onSelect?.(point.id),

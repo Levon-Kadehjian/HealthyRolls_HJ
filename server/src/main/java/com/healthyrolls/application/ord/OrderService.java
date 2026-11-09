@@ -233,11 +233,13 @@ public class OrderService {
 
         if (null == action) {
             occurredAt = Instant.now();
-        } else occurredAt = switch (action) {
-            case ACCEPT -> order.getAcceptedAt();
-            case DELIVER -> order.getDeliveredAt();
-            default -> Instant.now();
-        };
+        } else {
+            occurredAt = switch (action) {
+                case ACCEPT -> order.getAcceptedAt();
+                case DELIVER -> order.getDeliveredAt();
+                default -> Instant.now();
+            };
+        }
 
         OrderStateChanged event = new OrderStateChanged(
                 EventId.random(),

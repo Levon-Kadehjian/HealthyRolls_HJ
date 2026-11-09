@@ -10,6 +10,9 @@ import './MapPage.css'
 
 const STATUS_LABELS = { OPEN: 'Open', PAUSED: 'Paused', CLOSED: 'Closed' }
 
+const bearing = ([lat1, lon1], [lat2, lon2]) =>
+  Math.round((Math.atan2(lon2 - lon1, lat2 - lat1) * 180) / Math.PI)
+
 const formatDistance = (meters) => (meters < 1000 ? `${Math.round(meters)} m` : `${(meters / 1000).toFixed(1)} km`)
 
 export default function MapPage() {
@@ -36,6 +39,13 @@ export default function MapPage() {
   const distance = home && selected ? L.latLng(home).distanceTo([selected.latitude, selected.longitude]) : null
 
   const onDuty = couriers.filter((courier) => courier.status !== 'OFFLINE' && courier.courierId !== me?.courierId)
+
+  const headingToRestaurant = (courier) => {
+    if (courier.status !== 'ASSIGNED') return undefined
+    const order = orders.find((o) => o.courierId === courier.courierId && !['DELIVERED', 'CANCELLED'].includes(o.status))
+    const restaurant = order && restaurants.find((r) => r.id === order.restaurantId)
+    return restaurant ? bearing([courier.latitude, courier.longitude], [restaurant.latitude, restaurant.longitude]) : undefined
+  }
 
   const dropOff = activeOrder?.deliveryLatitude != null ? [activeOrder.deliveryLatitude, activeOrder.deliveryLongitude] : null
 
@@ -67,6 +77,7 @@ export default function MapPage() {
       position: [courier.latitude, courier.longitude],
       kind: 'courier',
       status: courier.status,
+      heading: headingToRestaurant(courier),
       popup: (
         <div className="map-popup">
           <h4>{courier.name}</h4>
