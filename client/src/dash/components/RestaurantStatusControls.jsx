@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useFetcher } from 'react-router-dom'
+import './RestaurantStatusControls.css'
 
 export default function RestaurantStatusControls({ restaurant, session }) {
   const fetcher = useFetcher()
+  const dialogRef = useRef(null)
   const [dismissedSuccess, setDismissedSuccess] = useState(null)
   const busy = fetcher.state !== 'idle'
   useEffect(() => {
@@ -25,10 +27,29 @@ export default function RestaurantStatusControls({ restaurant, session }) {
       {(canPause || canReopen) && (
         <fetcher.Form method="post" className="restaurant-banner-actions">
           <input type="hidden" name="restaurantId" value={restaurant.id} />
-          <button type="submit" className="btn-secondary" name="intent"
-            value={canPause ? 'PAUSE_RESTAURANT' : 'REOPEN_RESTAURANT'} disabled={busy}>
-            {busy ? 'Updating…' : canPause ? 'Pause restaurant' : 'Reopen restaurant'}
-          </button>
+          {canPause ? (
+            <>
+              <button type="button" className="btn-secondary btn-pause btn-status" disabled={busy}
+                onClick={() => dialogRef.current?.showModal()}>
+                {busy ? 'Updating…' : 'Pause restaurant'}
+              </button>
+              <dialog ref={dialogRef} className="confirm-dialog" aria-labelledby="pause-title">
+                <h4 id="pause-title">Pause {restaurant.name}?</h4>
+                <p>New orders won&apos;t be accepted until an operator reopens it. Orders already in progress can still be prepared.</p>
+                <div className="confirm-dialog-actions">
+                  <button type="button" className="btn-secondary" onClick={() => dialogRef.current?.close()}>Cancel</button>
+                  <button type="submit" className="btn-secondary btn-pause" name="intent" value="PAUSE_RESTAURANT"
+                    onClick={() => dialogRef.current?.close()}>
+                    Yes, pause
+                  </button>
+                </div>
+              </dialog>
+            </>
+          ) : (
+            <button type="submit" className="btn-secondary btn-status" name="intent" value="REOPEN_RESTAURANT" disabled={busy}>
+              {busy ? 'Updating…' : 'Reopen restaurant'}
+            </button>
+          )}
         </fetcher.Form>
       )}
       {!isOperator && restaurant.status === 'PAUSED' && (
