@@ -45,18 +45,18 @@ public class RestaurantService {
         if (actor.role() == UserRole.COURIER) {
             throw new ActionNotPermittedException("Couriers cannot browse menus");
         }
-        return listForMap(actor);
-    }
-
-    @Transactional(readOnly = true)
-    public List<Restaurant> listForMap(AuthenticatedUser actor) {
-        Objects.requireNonNull(actor, "Authenticated user is required");
         if (actor.role() == UserRole.RESTAURANT_STAFF) {
             if (actor.restaurantId() == null) {
                 throw new ActionNotPermittedException("No restaurant is linked to this account");
             }
             return List.of(repository.findById(actor.restaurantId().value()));
         }
+        return List.copyOf(repository.findAll());
+    }
+
+    @Transactional(readOnly = true)
+    public List<Restaurant> listForMap(AuthenticatedUser actor) {
+        Objects.requireNonNull(actor, "Authenticated user is required");
         return List.copyOf(repository.findAll());
     }
 

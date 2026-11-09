@@ -108,6 +108,12 @@
   border-radius: 4px;
 }
 
+.map-pin-dropoff {
+  --pin: #e11d48;
+  border-radius: 3px;
+  transform: rotate(45deg);
+}
+
 .map-pin-courier.map-pin-idle {
   --pin: #0d9488;
 }
@@ -238,6 +244,23 @@
   background: var(--bg);
   color: var(--text-h);
   border-color: var(--border);
+}
+
+.city-map .city-map-recenter button {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 2px;
+  background: var(--bg);
+  color: var(--text-h);
+  cursor: pointer;
+}
+
+.city-map .city-map-recenter button:hover {
+  color: var(--accent);
 }
 
 .city-map .leaflet-control-attribution {

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { AttributionControl, MapContainer, Marker, Polyline, Popup, TileLayer, useMap, useMapEvents } from 'react-leaflet'
 import L from 'leaflet'
+import { LocateFixed } from 'lucide-react'
 import 'leaflet/dist/leaflet.css'
 import './CityMap.css'
 
@@ -39,18 +40,41 @@ function pinIcon(kind, status) {
   return icons.get(key)
 }
 
+function fitMap(map, bounds) {
+  if (bounds.length === 1) {
+    map.setView(bounds[0], 15)
+  } else if (bounds.length > 1) {
+    map.fitBounds(bounds, { padding: [32, 32] })
+  } else {
+    map.setView(DEFAULT_CENTER, 13)
+  }
+}
+
 function FitBounds({ bounds }) {
   const map = useMap()
   const key = JSON.stringify(bounds)
   useEffect(() => {
     const bounds = JSON.parse(key)
-    if (bounds.length === 1) {
-      map.setView(bounds[0], 15)
-    } else if (bounds.length > 1) {
-      map.fitBounds(bounds, { padding: [40, 40] })
-    }
+    if (bounds.length > 0) fitMap(map, bounds)
   }, [map, key])
   return null
+}
+
+function RecenterButton({ bounds }) {
+  const map = useMap()
+  const ref = useRef(null)
+  useEffect(() => {
+    if (ref.current) L.DomEvent.disableClickPropagation(ref.current)
+  }, [])
+  return (
+    <div className="leaflet-bottom leaflet-left">
+      <div className="leaflet-control leaflet-bar city-map-recenter" ref={ref}>
+        <button type="button" aria-label="Re-center map" title="Re-center map" onClick={() => fitMap(map, bounds)}>
+          <LocateFixed size={18} aria-hidden="true" />
+        </button>
+      </div>
+    </div>
+  )
 }
 
 
@@ -71,10 +95,11 @@ export default function CityMap({ points = [], lines = [], bounds, onSelect, onM
   const markers = useRef(new Map())
 
   return (
-    <MapContainer className="city-map" center={fitTo[0] ?? DEFAULT_CENTER} zoom={13} scrollWheelZoom attributionControl={false}>
+    <MapContainer className="city-map" center={fitTo[0] ?? DEFAULT_CENTER} zoom={13} zoomSnap={0.1} scrollWheelZoom attributionControl={false}>
       <TileLayer url={TILE_URL} attribution={ATTRIBUTION} />
       <AttributionControl prefix={false} />
       <FitBounds bounds={fitTo} />
+      <RecenterButton bounds={fitTo} />
       {onMapClick && <MapClick onClick={onMapClick} />}
       {fitTo.length === 0 && <div className="city-map-empty">{emptyMessage}</div>}
       {lines.map((line) => (

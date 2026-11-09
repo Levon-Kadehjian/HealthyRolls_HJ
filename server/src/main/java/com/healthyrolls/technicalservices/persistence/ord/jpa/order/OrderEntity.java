@@ -39,6 +39,9 @@ public class OrderEntity {
     @Column(columnDefinition = "text")
     private String rejectionReason;
 
+    private Double deliveryLatitude;
+    private Double deliveryLongitude;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private OrderStatus status;
@@ -63,6 +66,8 @@ public class OrderEntity {
         this.deliveredAt = order.getDeliveredAt();
         this.status = order.status();
         this.rejectionReason = order.getRejectionReason();
+        this.deliveryLatitude = order.getDeliveryLatitude();
+        this.deliveryLongitude = order.getDeliveryLongitude();
         this.version = order.version();
         for (var line : order.getItems()) {
             items.add(new OrderLineEntity(line));
@@ -72,6 +77,7 @@ public class OrderEntity {
     public OrderRecord toRecord() {
         return new OrderRecord(orderId, status.name(), customerId, restaurantId,
                 courierId, acceptedAt, deliveredAt, rejectionReason, version,
-                items.stream().map(OrderLineEntity::toDomain).toList());
+                items.stream().map(OrderLineEntity::toDomain).toList(),
+                deliveryLatitude, deliveryLongitude);
     }
 }

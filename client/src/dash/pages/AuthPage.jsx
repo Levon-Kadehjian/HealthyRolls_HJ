@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { Bike, ChefHat, Shield, User } from 'lucide-react'
 import sushiLogo from '../assets/sushi-logo.png'
 import { useSession } from '../auth/useSession'
 import { loginUser, registerUser } from '../api/auth'
@@ -202,10 +203,7 @@ export default function AuthPage({ initialMode = 'login' }) {
                 onKeyDown={(e) => (e.key === ' ' || e.key === 'Enter') && handleRoleSelect('CUSTOMER')}
               >
                 <div className="auth-role-icon">
-                  <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                    <circle cx="12" cy="7" r="4" />
-                  </svg>
+                  <User />
                 </div>
                 <span className="auth-role-title">Customer</span>
                 <span className="auth-role-desc">Browse & order sushi</span>
@@ -222,10 +220,7 @@ export default function AuthPage({ initialMode = 'login' }) {
                 onKeyDown={(e) => (e.key === ' ' || e.key === 'Enter') && handleRoleSelect('RESTAURANT_STAFF')}
               >
                 <div className="auth-role-icon">
-                  <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M6 13.87A4 4 0 0 1 7.41 6a5.11 5.11 0 0 1 1.05-1.54 5 5 0 0 1 7.08 0A5.11 5.11 0 0 1 16.59 6 4 4 0 0 1 18 13.87V21H6Z" />
-                    <line x1="6" y1="17" x2="18" y2="17" />
-                  </svg>
+                  <ChefHat />
                 </div>
                 <span className="auth-role-title">Restaurant Staff</span>
                 <span className="auth-role-desc">Kitchen orders & tickets</span>
@@ -242,12 +237,7 @@ export default function AuthPage({ initialMode = 'login' }) {
                 onKeyDown={(e) => (e.key === ' ' || e.key === 'Enter') && handleRoleSelect('COURIER')}
               >
                 <div className="auth-role-icon">
-                  <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="18.5" cy="17.5" r="3.5" />
-                    <circle cx="5.5" cy="17.5" r="3.5" />
-                    <circle cx="15" cy="5" r="1" />
-                    <path d="M12 17.5V14l-3-3 4-3 2 3h2" />
-                  </svg>
+                  <Bike />
                 </div>
                 <span className="auth-role-title">Courier</span>
                 <span className="auth-role-desc">Delivery partner</span>
@@ -264,9 +254,7 @@ export default function AuthPage({ initialMode = 'login' }) {
                 onKeyDown={(e) => (e.key === ' ' || e.key === 'Enter') && handleRoleSelect('OPERATOR')}
               >
                 <div className="auth-role-icon">
-                  <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                  </svg>
+                  <Shield />
                 </div>
                 <span className="auth-role-title">Operator</span>
                 <span className="auth-role-desc">Platform admin</span>

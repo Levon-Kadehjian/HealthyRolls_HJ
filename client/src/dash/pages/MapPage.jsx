@@ -12,11 +12,21 @@ const STATUS_LABELS = { OPEN: 'Open', PAUSED: 'Paused', CLOSED: 'Closed' }
 const formatDistance = (meters) => (meters < 1000 ? `${Math.round(meters)} m` : `${(meters / 1000).toFixed(1)} km`)
 
 export default function MapPage() {
-  const { restaurants, orders, couriers, courier: me } = useLoaderData()
+  const data = useLoaderData()
+  const { orders, courier: me, activeOrder } = data
   const session = useSession()
+  const isStaff = session?.role === 'RESTAURANT_STAFF'
+  const { restaurants, couriers } = data
+  const assignedIds = new Set(
+    isStaff
+      ? orders
+          .filter((o) => o.restaurantId === session.restaurantId && o.courierId && !['DELIVERED', 'CANCELLED'].includes(o.status))
+          .map((o) => o.courierId)
+      : [],
+  )
   const [shown, setShown] = useState(new Set(BANDS))
   const [params] = useSearchParams()
-  const [selectedId, setSelectedId] = useState(params.get('restaurant'))
+  const [selectedId, setSelectedId] = useState(params.get('restaurant') ?? (isStaff ? session.restaurantId : null))
 
   const home = me ? [me.latitude, me.longitude] : session?.latitude != null ? [session.latitude, session.longitude] : null
   const visible = restaurants.filter((restaurant) => shown.has(queueBand(restaurant)))
@@ -25,10 +35,13 @@ export default function MapPage() {
 
   const onDuty = couriers.filter((courier) => courier.status !== 'OFFLINE' && courier.courierId !== me?.courierId)
 
+  const dropOff = activeOrder?.deliveryLatitude != null ? [activeOrder.deliveryLatitude, activeOrder.deliveryLongitude] : null
+
   const bounds = [
     ...restaurants.map((r) => [r.latitude, r.longitude]),
     ...onDuty.map((courier) => [courier.latitude, courier.longitude]),
     ...(home ? [home] : []),
+    ...(dropOff ? [dropOff] : []),
   ]
 
   const points = [
@@ -58,9 +71,18 @@ export default function MapPage() {
         </div>
       ),
     })),
+    ...(dropOff ? [{ id: 'drop-off', position: dropOff, kind: 'dropoff', popup: <div className="map-popup"><h4>Drop-off</h4></div> }] : []),
     ...(home ? [{ id: 'home', position: home, kind: 'home', popup: <div className="map-popup"><h4>You are here</h4></div> }] : []),
   ]
-  const lines = home && selected ? [{ id: 'route', positions: [home, [selected.latitude, selected.longitude]] }] : []
+  const own = isStaff ? restaurants.find((r) => r.id === session.restaurantId) : null
+  const lines = own
+    ? onDuty
+        .filter((c) => assignedIds.has(c.courierId))
+        .map((c) => ({ id: `route-${c.courierId}`, positions: [[own.latitude, own.longitude], [c.latitude, c.longitude]] }))
+    : [
+        ...(home && selected ? [{ id: 'route', positions: [home, [selected.latitude, selected.longitude]] }] : []),
+        ...(home && dropOff ? [{ id: 'route-dropoff', positions: [home, dropOff] }] : []),
+      ]
 
   const toggle = (band) =>
     setShown((current) => {
@@ -104,7 +126,7 @@ export default function MapPage() {
             points={points}
             lines={lines}
             bounds={bounds}
-            onSelect={setSelectedId}
+            onSelect={(id) => setSelectedId(id === 'home' && isStaff ? session.restaurantId : id)}
             onMapClick={() => setSelectedId(null)}
             openPopupId={params.get('restaurant')}
             emptyMessage="No restaurants have been loaded into the system."

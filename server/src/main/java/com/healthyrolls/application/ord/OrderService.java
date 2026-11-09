@@ -29,6 +29,8 @@ import com.healthyrolls.domain.ord.order.OrderLine;
 import com.healthyrolls.domain.ord.order.OrderStateChanged;
 import com.healthyrolls.domain.ord.order.OrderStatus;
 import com.healthyrolls.domain.ord.order.QueueCounts;
+import com.healthyrolls.domain.reg.IUserRepository;
+import com.healthyrolls.domain.reg.User;
 
 @Service
 public class OrderService {
@@ -42,6 +44,7 @@ public class OrderService {
     private final MenuService menuService;
     private final OrderAccessPolicy policy;
     private final ApplicationEventPublisher events;
+    private final IUserRepository userRepository;
 
     public OrderService(
             IOrderRepository repository,
@@ -50,7 +53,10 @@ public class OrderService {
             RestaurantService restaurantService,
             MenuService menuService,
             OrderAccessPolicy policy,
-            ApplicationEventPublisher events) {
+            ApplicationEventPublisher events,
+            IUserRepository userRepository) {
+
+        this.userRepository = Objects.requireNonNull(userRepository, "User repository is required");
 
         this.repository = Objects.requireNonNull(repository, "Order repository is required");
 
@@ -87,10 +93,15 @@ public class OrderService {
 
         List<OrderLine> validatedItems = menuService.validateAndResolveItems(restaurantId, items);
 
+        User customer = userRepository.findById(actor.userId())
+                .orElseThrow(() -> new IllegalStateException("Customer account not found: " + customerId));
+
         Order order = factory.createNew(
                 customerId,
                 restaurantId,
-                validatedItems);
+                validatedItems,
+                customer.latitude(),
+                customer.longitude());
 
         OrderId orderId = order.getOrderId();
 
@@ -168,6 +179,12 @@ public class OrderService {
             return all.stream().filter(c -> c.restaurantId().equals(own)).toList();
         }
         return all;
+    }
+
+    @Transactional(readOnly = true)
+    public List<QueueCounts> queueCountsForMap(AuthenticatedUser actor) {
+        Objects.requireNonNull(actor, "User context is required");
+        return repository.countQueues();
     }
 
     @Transactional(readOnly = true)

@@ -1,4 +1,4 @@
-package com.healthyrolls.application.ord.controllers;
+package com.healthyrolls.application.dash.controllers;
 
 import java.util.UUID;
 
