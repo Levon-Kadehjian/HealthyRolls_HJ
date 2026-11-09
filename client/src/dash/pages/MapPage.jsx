@@ -3,6 +3,7 @@ import { Link, useLoaderData, useSearchParams } from 'react-router-dom'
 import L from 'leaflet'
 import CityMap from '../components/CityMap'
 import RestaurantPanel from '../components/RestaurantPanel'
+import { restaurantActions } from '../components/restaurantActions'
 import { BAND_LABELS, BANDS, queueBand } from '../components/queueBand'
 import { useSession } from '../auth/useSession'
 import './MapPage.css'
@@ -55,7 +56,7 @@ export default function MapPage() {
           <h4>{restaurant.name}</h4>
           <p><strong>Queued orders: {restaurant.queuedCount}</strong></p>
           {restaurant.status !== 'OPEN' && <p>{STATUS_LABELS[restaurant.status] ?? restaurant.status}</p>}
-          {session?.role !== 'COURIER' && <Link to={`/restaurants/${restaurant.id}`}>View menu →</Link>}
+          {restaurantActions(session, restaurant).viewMenu && <Link to={`/restaurants/${restaurant.id}`}>View menu →</Link>}
         </div>
       ),
     })),

@@ -4,7 +4,7 @@ export function restaurantActions(session, restaurant) {
   const isOperator = role === 'OPERATOR'
 
   return {
-    viewMenu: role !== 'COURIER',
+    viewMenu: role === 'CUSTOMER' || isOperator || ownStaff,
     placeOrder: role === 'CUSTOMER',
     placeOrderBlockedReason: restaurant.status === 'OPEN' ? null : `This restaurant is ${restaurant.status.toLowerCase()}.`,
     statusControls: isOperator || ownStaff,
