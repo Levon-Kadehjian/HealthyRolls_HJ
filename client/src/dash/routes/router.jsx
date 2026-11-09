@@ -14,10 +14,10 @@ import RestaurantOrdersPage from '../pages/RestaurantOrdersPage'
 import ConsolePage from '../pages/ConsolePage'
 import AuthPage from '../pages/AuthPage'
 import { addMenuItem, editMenuItem, changeMenuAvailability, pauseRestaurant, reopenRestaurant, getRestaurant, getRestaurants } from '../api/restaurants'
-import { applyOrderAction, listOrderEvents, listOrders } from '../api/orders'
+import { applyOrderAction, getBillingHistory, listOrderEvents, listOrders, refundOrder } from '../api/orders'
 import { getSession } from '../auth/session'
 import { describeError, recordCommand, runCommand } from '../console/consoleStore'
-import { buildOrderHistory, canCancelOrder } from '../orders/orderHistory'
+import { buildOrderHistory, canCancelOrder, canRefundOrder } from '../orders/orderHistory'
 
 
 const ORDER_COMMANDS = {
@@ -83,9 +83,13 @@ const loadRestaurantCatalog = async (restaurantIds) => {
 }
 
 const loadOrderHistory = async (knownRestaurantIds = []) => {
-  const [orders, events] = await Promise.all([listOrders(), listOrderEvents().catch(() => [])])
+  const [orders, events, ledger] = await Promise.all([
+    listOrders(),
+    listOrderEvents().catch(() => []),
+    getBillingHistory().catch(() => []),
+  ])
   const restaurants = await loadRestaurantCatalog([...knownRestaurantIds, ...orders.map((order) => order.restaurantId)])
-  return { orders: buildOrderHistory(orders, events, restaurants), restaurants }
+  return { orders: buildOrderHistory(orders, events, restaurants, ledger), restaurants }
 }
 
 const customerOrdersLoader = async () => {
@@ -111,6 +115,19 @@ const customerOrdersAction = async ({ request }) => {
   const intent = form.get('intent')
   const status = form.get('status')
   const details = `order=${String(orderId).slice(0, 8)}`
+
+  if (intent === 'REFUND') {
+    if (!canRefundOrder(session.role, status)) {
+      recordCommand('REFUND_ORDER', details, 'error', `order is ${status} or unauthorized`)
+      return { ok: false, error: 'Only operators can refund delivered orders.' }
+    }
+    try {
+      await runCommand('REFUND_ORDER', details, () => refundOrder(orderId), () => 'refunded')
+      return { ok: true }
+    } catch (error) {
+      return { ok: false, error: await describeError(error) }
+    }
+  }
 
   if (intent !== 'CANCEL') {
     recordCommand('ORDER_ACTION', details, 'error', `unknown action ${intent}`)
