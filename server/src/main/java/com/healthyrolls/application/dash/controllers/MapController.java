@@ -1,20 +1,22 @@
-package com.healthyrolls.application.ord.controllers;
-
-import com.healthyrolls.application.ord.OrderService;
-import com.healthyrolls.application.ord.RestaurantService;
-import com.healthyrolls.domain.common.AuthenticatedUser;
-import com.healthyrolls.domain.ord.order.QueueCounts;
+package com.healthyrolls.application.dash.controllers;
 
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.healthyrolls.application.ord.OrderService;
+import com.healthyrolls.application.ord.RestaurantService;
+import com.healthyrolls.application.ord.controllers.MapRestaurantResponse;
+import com.healthyrolls.domain.common.AuthenticatedUser;
+import com.healthyrolls.domain.ord.order.QueueCounts;
 
 @RestController
 @RequestMapping("/api/map")
