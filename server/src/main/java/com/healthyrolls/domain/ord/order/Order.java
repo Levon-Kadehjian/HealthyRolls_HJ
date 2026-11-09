@@ -24,7 +24,8 @@ public class Order {
     private Double deliveryLatitude;
     private Double deliveryLongitude;
 
-    Order(UUID customerId, UUID restaurantId, List<OrderLine> items, Double deliveryLatitude, Double deliveryLongitude) {
+    Order(UUID customerId, UUID restaurantId, List<OrderLine> items, Double deliveryLatitude,
+            Double deliveryLongitude) {
 
         this.customerId = Objects.requireNonNull(customerId, "Customer ID is required");
         this.restaurantId = Objects.requireNonNull(restaurantId, "Restaurant ID is required");
