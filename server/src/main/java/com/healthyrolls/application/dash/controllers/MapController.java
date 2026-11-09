@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.healthyrolls.application.ord.OrderService;
 import com.healthyrolls.application.ord.RestaurantService;
-import com.healthyrolls.application.ord.controllers.MapRestaurantResponse;
 import com.healthyrolls.domain.common.AuthenticatedUser;
 import com.healthyrolls.domain.ord.order.QueueCounts;
 
