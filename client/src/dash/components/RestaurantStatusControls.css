@@ -13,6 +13,17 @@
   border-color: #a93226;
 }
 
+.btn-secondary.btn-reopen {
+  background: #2e8b57;
+  border-color: #2e8b57;
+  color: #fff;
+}
+
+.btn-secondary.btn-reopen:hover:not(:disabled) {
+  background: #267349;
+  border-color: #267349;
+}
+
 .btn-pause:disabled {
   opacity: 0.5;
   cursor: not-allowed;

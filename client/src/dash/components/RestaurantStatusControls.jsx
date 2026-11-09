@@ -46,7 +46,7 @@ export default function RestaurantStatusControls({ restaurant, session }) {
               </dialog>
             </>
           ) : (
-            <button type="submit" className="btn-secondary btn-status" name="intent" value="REOPEN_RESTAURANT" disabled={busy}>
+            <button type="submit" className="btn-secondary btn-status btn-reopen" name="intent" value="REOPEN_RESTAURANT" disabled={busy}>
               {busy ? 'Updating…' : 'Reopen restaurant'}
             </button>
           )}
