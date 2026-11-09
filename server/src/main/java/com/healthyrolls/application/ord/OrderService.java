@@ -231,13 +231,13 @@ public class OrderService {
 
         Instant occurredAt;
 
-        if (action == OrderAction.ACCEPT) {
-            occurredAt = order.getAcceptedAt();
-        } else if (action == OrderAction.DELIVER) {
-            occurredAt = order.getDeliveredAt();
-        } else {
+        if (null == action) {
             occurredAt = Instant.now();
-        }
+        } else occurredAt = switch (action) {
+            case ACCEPT -> order.getAcceptedAt();
+            case DELIVER -> order.getDeliveredAt();
+            default -> Instant.now();
+        };
 
         OrderStateChanged event = new OrderStateChanged(
                 EventId.random(),
