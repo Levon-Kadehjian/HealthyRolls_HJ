@@ -1,54 +1,102 @@
 import sushiLogo from '../assets/sushi-logo.png'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { getRestaurant } from '../api/restaurants'
 import { Link } from 'react-router-dom'
 import { useCart } from '../cart/useCart'
 import { useSession } from '../auth/useSession'
 import { placeOrder } from '../api/orders'
 import { describeError, recordCommand, runCommand } from '../console/consoleStore'
-import {
-    TEST_CARD,
-    estimateDeliveryWindow,
-    formatCardNumber,
-    formatExpiry,
-    validateCheckout,
-} from '../checkout/checkoutForm'
+import { estimateDeliveryWindow } from '../checkout/checkoutForm'
 import './CheckoutPage.css'
 
 const currency = new Intl.NumberFormat('en-CA', { style: 'currency', currency: 'CAD' })
 
-const EMPTY_FORM = {
-    address: '',
-    unit: '',
-    instructions: '',
-    cardName: '',
-    cardNumber: '',
-    expiry: '',
-    cvc: '',
-}
-
 export default function CheckoutPage() {
-    const { restaurant, lines, itemCount, subtotal, hasSoldOutItems, clearCart } = useCart()
+    const { restaurant, lines, itemCount, subtotal, clearCart } = useCart()
     const session = useSession()
-    const [form, setForm] = useState(() => ({ ...EMPTY_FORM, ...TEST_CARD, address: session?.address || '' }))
-    const [fieldErrors, setFieldErrors] = useState({})
+    const deliveryLocation =
+    session?.latitude != null && session?.longitude != null ? `${session.latitude}, ${session.longitude}` : 'Delivery location not set'
     const [submitting, setSubmitting] = useState(false)
     const [error, setError] = useState('')
     const [placedOrder, setPlacedOrder] = useState(null)
 
-    function updateField(name, value) {
-        setForm((current) => ({ ...current, [name]: value }))
-        setFieldErrors((current) => ({ ...current, [name]: undefined }))
-    }
+    const [availability, setAvailability] = useState(null)
+    const [availabilityError, setAvailabilityError] = useState('')
+    const restaurantId = restaurant?.id
+
+    useEffect(() => {
+        if (!restaurantId || placedOrder) return
+
+        let cancelled = false
+        let timer
+
+        setAvailability(null)
+        setAvailabilityError('')
+
+        async function refreshAvailability() {
+            try {
+                const latest = await getRestaurant(restaurantId)
+
+                if (!cancelled) {
+                    setAvailability(latest)
+                    setAvailabilityError('')
+                }
+            } catch (err) {
+                const message = await describeError(err)
+
+                if (!cancelled) {
+                    setAvailability(null)
+                    setAvailabilityError('Unable to check availability. Retrying…')
+                    recordCommand(
+                        'CHECK_AVAILABILITY',
+                        `restaurant=${restaurantId}`,
+                        'error',
+                        message,
+                    )
+                }
+            } finally {
+                if (!cancelled) {
+                    timer = setTimeout(refreshAvailability, 5000)
+                }
+            }
+        }
+
+        refreshAvailability()
+
+        return () => {
+            cancelled = true
+            clearTimeout(timer)
+        }
+    }, [restaurantId, placedOrder])
+
+    const latestRestaurant =
+        availability?.id === restaurantId ? availability : null
+
+    const hasSoldOutItems = latestRestaurant
+        ? lines.some((line) => {
+            const latestItem = latestRestaurant.menu.find(
+                (item) => item.itemId === line.item.itemId,
+            )
+            return !latestItem || latestItem.status !== 'AVAILABLE'
+        })
+        : false
+
+    const unavailableReason = availabilityError
+        || (!latestRestaurant ? 'Checking availability…' : '')
+        || (latestRestaurant.status === 'PAUSED'
+            ? 'This restaurant is paused and is not taking new orders.'
+            : '')
+        || (latestRestaurant.status === 'CLOSED'
+            ? 'This restaurant is closed.'
+            : '')
+        || (hasSoldOutItems
+            ? 'One or more selected items are unavailable. Return to your cart to remove them.'
+            : '')
 
     async function handlePlaceOrder() {
-        setError('')
 
-        const errors = validateCheckout(form)
-        setFieldErrors(errors)
-        if (Object.keys(errors).length > 0) {
-            recordCommand('PLACE_ORDER', `restaurant=${restaurant.name}`, 'error', 'checkout form incomplete')
-            return
-        }
+        if (submitting || unavailableReason) return
+        setError('')
 
         setSubmitting(true)
         try {
@@ -63,14 +111,18 @@ export default function CheckoutPage() {
                 ...order,
                 restaurantName: restaurant.name,
                 total: subtotal,
-                address: form.unit.trim() ? `${form.address.trim()}, ${form.unit.trim()}` : form.address.trim(),
-                instructions: form.instructions.trim(),
-                cardLast4: form.cardNumber.replace(/\D/g, '').slice(-4),
+                deliveryLocation,
                 estimatedDelivery: estimateDeliveryWindow(),
             })
             clearCart()
         } catch (err) {
-            setError(await describeError(err))
+            const message = await describeError(err)
+        
+            if (message.includes('Restaurant is not open')) {
+                setError('This restaurant is not accepting orders right now.')
+            } else {
+                setError('Unable to place your order. Please try again.')
+            }
         } finally {
             setSubmitting(false)
         }
@@ -80,7 +132,7 @@ export default function CheckoutPage() {
         return (
             <div className="checkout-page">
                 <div className="orders-empty-card">
-                    <h3>Order Placed!</h3>
+                    <h3>Order placed.</h3>
                     <p>
                         Your order from <strong>{placedOrder.restaurantName}</strong> was sent to the restaurant.
                     </p>
@@ -99,18 +151,12 @@ export default function CheckoutPage() {
                         </div>
                         <div className="checkout-summary-row">
                             <span>Deliver to</span>
-                            <span className="checkout-confirmation-value">{placedOrder.address}</span>
+                            <span className="checkout-confirmation-value">{placedOrder.deliveryLocation}</span>
                         </div>
-                        {placedOrder.instructions && (
-                            <div className="checkout-summary-row">
-                                <span>Instructions</span>
-                                <span className="checkout-confirmation-value">{placedOrder.instructions}</span>
-                            </div>
-                        )}
                         <div className="checkout-summary-row">
-                            <span>Paid</span>
+                            <span>Item subtotal</span>
                             <span>
-                                {currency.format(placedOrder.total)} · card ending {placedOrder.cardLast4} (test card)
+                                {currency.format(placedOrder.total)}
                             </span>
                         </div>
                     </div>
@@ -156,103 +202,10 @@ export default function CheckoutPage() {
 
             <div className="checkout-layout">
                 <div className="checkout-main">
-                    <section className="checkout-section">
-                        <h3>Delivery Details</h3>
-
-                        <label className="checkout-field">
-                            <span>Delivery address</span>
-                            <input
-                                className={`checkout-input ${fieldErrors.address ? 'checkout-input-invalid' : ''}`}
-                                type="text"
-                                placeholder="1455 De Maisonneuve Blvd W, Montreal"
-                                value={form.address}
-                                onChange={(e) => updateField('address', e.target.value)}
-                                autoComplete="street-address"
-                            />
-                            {fieldErrors.address && <span className="checkout-field-error">{fieldErrors.address}</span>}
-                        </label>
-
-                        <label className="checkout-field">
-                            <span>Apartment / unit (optional)</span>
-                            <input
-                                className="checkout-input"
-                                type="text"
-                                placeholder="Apt 1901"
-                                value={form.unit}
-                                onChange={(e) => updateField('unit', e.target.value)}
-                            />
-                        </label>
-
-                        <label className="checkout-field">
-                            <span>Delivery instructions (optional)</span>
-                            <textarea
-                                className="checkout-input checkout-textarea"
-                                placeholder="Ring the buzzer, leave at the door…"
-                                maxLength={200}
-                                value={form.instructions}
-                                onChange={(e) => updateField('instructions', e.target.value)}
-                            />
-                        </label>
-                    </section>
-
-                    <section className="checkout-section">
-                        <h3>Payment</h3>
-                        <label className="checkout-field">
-                            <span>Name on card</span>
-                            <input
-                                className={`checkout-input ${fieldErrors.cardName ? 'checkout-input-invalid' : ''}`}
-                                type="text"
-                                value={form.cardName}
-                                onChange={(e) => updateField('cardName', e.target.value)}
-                                autoComplete="off"
-                            />
-                            {fieldErrors.cardName && <span className="checkout-field-error">{fieldErrors.cardName}</span>}
-                        </label>
-
-                        <label className="checkout-field">
-                            <span>Card number</span>
-                            <input
-                                className={`checkout-input ${fieldErrors.cardNumber ? 'checkout-input-invalid' : ''}`}
-                                type="text"
-                                inputMode="numeric"
-                                placeholder="4242 4242 4242 4242"
-                                value={form.cardNumber}
-                                onChange={(e) => updateField('cardNumber', formatCardNumber(e.target.value))}
-                                autoComplete="off"
-                            />
-                            {fieldErrors.cardNumber && <span className="checkout-field-error">{fieldErrors.cardNumber}</span>}
-                        </label>
-
-                        <div className="checkout-field-row">
-                            <label className="checkout-field">
-                                <span>Expiry</span>
-                                <input
-                                    className={`checkout-input ${fieldErrors.expiry ? 'checkout-input-invalid' : ''}`}
-                                    type="text"
-                                    inputMode="numeric"
-                                    placeholder="MM/YY"
-                                    value={form.expiry}
-                                    onChange={(e) => updateField('expiry', formatExpiry(e.target.value))}
-                                    autoComplete="off"
-                                />
-                                {fieldErrors.expiry && <span className="checkout-field-error">{fieldErrors.expiry}</span>}
-                            </label>
-
-                            <label className="checkout-field">
-                                <span>CVC</span>
-                                <input
-                                    className={`checkout-input ${fieldErrors.cvc ? 'checkout-input-invalid' : ''}`}
-                                    type="text"
-                                    inputMode="numeric"
-                                    placeholder="123"
-                                    value={form.cvc}
-                                    onChange={(e) => updateField('cvc', e.target.value.replace(/\D/g, '').slice(0, 4))}
-                                    autoComplete="off"
-                                />
-                                {fieldErrors.cvc && <span className="checkout-field-error">{fieldErrors.cvc}</span>}
-                            </label>
-                        </div>
-                    </section>
+                <section className="checkout-section">
+                    <h3>Delivery Details</h3>
+                    <p>Saved delivery location: {deliveryLocation}</p>
+                </section>
 
                     <section className="checkout-section">
                         <h3>Your Items</h3>
@@ -290,9 +243,9 @@ export default function CheckoutPage() {
                         <span>{currency.format(subtotal)}</span>
                     </div>
 
-                    {hasSoldOutItems && (
-                        <p className="checkout-error" role="alert">
-                            Your cart has sold-out items. Go back to your cart to remove them.
+                    {unavailableReason && (
+                        <p className="checkout-error" role="status">
+                            {unavailableReason}
                         </p>
                     )}
                     {error && (
@@ -305,7 +258,7 @@ export default function CheckoutPage() {
                         type="button"
                         className="btn-primary checkout-place-btn"
                         onClick={handlePlaceOrder}
-                        disabled={submitting || hasSoldOutItems}
+                        disabled={submitting || Boolean(unavailableReason)}
                     >
                         {submitting ? 'Placing Order…' : 'Place Order'}
                     </button>

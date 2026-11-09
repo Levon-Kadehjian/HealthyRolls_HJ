@@ -14,7 +14,9 @@ public record OrderRecord(
         Instant deliveredAt,
         String rejectionReason,
         long version,
-        List<OrderLine> items) {
+        List<OrderLine> items,
+        Double deliveryLatitude,
+        Double deliveryLongitude) {
     public OrderRecord {
         items = List.copyOf(items);
     }

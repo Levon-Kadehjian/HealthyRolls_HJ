@@ -60,6 +60,13 @@ public class OrderController {
         return ResponseEntity.ok(orders);
     }
 
+    @GetMapping("/queues")
+    public ResponseEntity<List<QueueCountsResponse>> queueCounts(
+            @RequestAttribute(AuthenticatedUser.REQUEST_ATTRIBUTE) AuthenticatedUser user) {
+
+        return ResponseEntity.ok(orderService.queueCounts(user).stream().map(QueueCountsResponse::from).toList());
+    }
+
     @GetMapping("/{orderId}")
     public ResponseEntity<OrderResponse> getOrder(
             @RequestAttribute(AuthenticatedUser.REQUEST_ATTRIBUTE) AuthenticatedUser user,

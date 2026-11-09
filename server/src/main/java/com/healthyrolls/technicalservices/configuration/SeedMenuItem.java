@@ -1,4 +1,4 @@
-package com.healthyrolls.technicalservices.persistence.ord.jpa.seed;
+package com.healthyrolls.technicalservices.configuration;
 
 import java.math.BigDecimal;
 import java.util.UUID;

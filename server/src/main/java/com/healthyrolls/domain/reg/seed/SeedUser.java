@@ -1,5 +1,6 @@
 package com.healthyrolls.domain.reg.seed;
 
+import com.healthyrolls.domain.dlv.courier.CourierStatus;
 import com.healthyrolls.domain.common.RestaurantId;
 import com.healthyrolls.domain.common.UserRole;
 
@@ -10,4 +11,5 @@ public record SeedUser(
         UserRole role,
         RestaurantId restaurantId,
         Double latitude,
-        Double longitude) {}
+        Double longitude,
+        CourierStatus courierStatus) {}
