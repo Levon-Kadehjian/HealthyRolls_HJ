@@ -1,4 +1,4 @@
-package com.healthyrolls.domain.ord.ledger;
+package com.healthyrolls.domain.prc.ledger;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -6,7 +6,7 @@ import java.util.UUID;
 
 import com.healthyrolls.domain.ord.order.Order;
 import com.healthyrolls.domain.ord.order.OrderStatus;
-import com.healthyrolls.domain.ord.pricing.Fare;
+import com.healthyrolls.domain.prc.pricing.Fare;
 
 public record LedgerEntry(
         UUID entryId,

@@ -1,4 +1,4 @@
-package com.healthyrolls.domain.ord.ledger;
+package com.healthyrolls.domain.prc.ledger;
 
 public enum LedgerEntryType {
     CHARGE,

@@ -1,4 +1,4 @@
-package com.healthyrolls.domain.ord.ledger;
+package com.healthyrolls.domain.prc.ledger;
 
 import java.util.List;
 import java.util.UUID;

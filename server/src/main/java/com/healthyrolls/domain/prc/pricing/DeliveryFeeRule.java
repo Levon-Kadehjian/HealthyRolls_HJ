@@ -1,20 +1,20 @@
-package com.healthyrolls.domain.ord.pricing;
+package com.healthyrolls.domain.prc.pricing;
 
 import java.math.BigDecimal;
 import java.util.List;
 
 import com.healthyrolls.domain.ord.order.OrderLine;
 
-public class ServiceFeeRule implements PricingRule {
+public class DeliveryFeeRule implements PricingRule {
 
     private final BigDecimal fee;
 
-    public ServiceFeeRule(BigDecimal fee) {
+    public DeliveryFeeRule(BigDecimal fee) {
         this.fee = fee;
     }
 
     @Override
     public FareComponent apply(List<OrderLine> lines, BigDecimal subtotal) {
-        return new FareComponent("Service fee", fee);
+        return new FareComponent("Delivery fee", fee);
     }
 }

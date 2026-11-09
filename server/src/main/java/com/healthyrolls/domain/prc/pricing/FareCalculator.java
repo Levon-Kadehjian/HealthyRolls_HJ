@@ -1,4 +1,4 @@
-package com.healthyrolls.domain.ord.pricing;
+package com.healthyrolls.domain.prc.pricing;
 
 import java.math.BigDecimal;
 import java.util.List;

@@ -1,4 +1,4 @@
-package com.healthyrolls.technicalservices.billing;
+package com.healthyrolls.technicalservices.persistence.prc;
 
 import java.util.List;
 import java.util.UUID;
@@ -6,8 +6,8 @@ import java.util.UUID;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.healthyrolls.domain.ord.ledger.ILedgerRepository;
-import com.healthyrolls.domain.ord.ledger.LedgerEntry;
+import com.healthyrolls.domain.prc.ledger.ILedgerRepository;
+import com.healthyrolls.domain.prc.ledger.LedgerEntry;
 
 @Repository
 public class JpaLedgerRepository implements ILedgerRepository {
