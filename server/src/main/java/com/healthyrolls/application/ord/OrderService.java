@@ -182,6 +182,12 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
+    public List<QueueCounts> queueCountsForMap(AuthenticatedUser actor) {
+        Objects.requireNonNull(actor, "User context is required");
+        return repository.countQueues();
+    }
+
+    @Transactional(readOnly = true)
     public List<Order> listOrders(AuthenticatedUser actor) {
 
         Objects.requireNonNull(actor, "User context is required");

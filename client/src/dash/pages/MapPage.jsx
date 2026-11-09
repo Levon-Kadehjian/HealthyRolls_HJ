@@ -126,7 +126,7 @@ export default function MapPage() {
             points={points}
             lines={lines}
             bounds={bounds}
-            onSelect={setSelectedId}
+            onSelect={(id) => setSelectedId(id === 'home' && isStaff ? session.restaurantId : id)}
             onMapClick={() => setSelectedId(null)}
             openPopupId={params.get('restaurant')}
             emptyMessage="No restaurants have been loaded into the system."

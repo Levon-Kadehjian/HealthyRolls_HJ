@@ -33,7 +33,7 @@ public class MapController {
     public ResponseEntity<List<MapRestaurantResponse>> restaurants(
             @RequestAttribute(AuthenticatedUser.REQUEST_ATTRIBUTE) AuthenticatedUser user) {
 
-        Map<UUID, QueueCounts> counts = orderService.queueCounts(user).stream()
+        Map<UUID, QueueCounts> counts = orderService.queueCountsForMap(user).stream()
                 .collect(Collectors.toMap(QueueCounts::restaurantId, Function.identity()));
 
         return ResponseEntity.ok(restaurantService.listForMap(user).stream()
