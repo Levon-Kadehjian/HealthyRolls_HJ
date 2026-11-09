@@ -8,10 +8,10 @@ import com.healthyrolls.domain.ord.order.OrderStatus;
 import com.healthyrolls.domain.prc.ledger.LedgerEntryType;
 
 public record LedgerEntryResponse(
-                UUID entryId,
-                UUID orderId,
-                LedgerEntryType type,
-                UUID customerId,
-                BigDecimal amount,
-                OrderStatus orderStatus,
-                Instant occurredAt) {}
+        UUID entryId,
+        UUID orderId,
+        LedgerEntryType type,
+        UUID customerId,
+        BigDecimal amount,
+        OrderStatus orderStatus,
+        Instant occurredAt) {}
