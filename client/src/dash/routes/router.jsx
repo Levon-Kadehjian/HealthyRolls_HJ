@@ -1,24 +1,23 @@
 import { createBrowserRouter, redirect } from 'react-router-dom'
+import { getSession } from '../auth/session'
+import { recordCommand } from '../console/consoleStore'
+import { buildOrderHistory, canCancelOrder, canRefundOrder } from '../orders/orderHistory'
 import Root from '../layouts/Root'
 import Dashboard from '../layouts/Dashboard'
-import ErrorPage from '../pages/ErrorPage'
 import HomePage from '../pages/HomePage'
+import AuthPage from '../pages/AuthPage'
 import AboutPage from '../pages/AboutPage'
-import OrdersPage from '../pages/OrdersPage'
 import AccountPage from '../pages/AccountPage'
 import CartPage from '../pages/CartPage'
 import CheckoutPage from '../pages/CheckoutPage'
-import RestaurantMenuPage from '../pages/RestaurantMenuPage'
-import RestaurantsPage from '../pages/RestaurantsPage'
+import OrdersPage from '../pages/OrdersPage'
 import RestaurantOrdersPage from '../pages/RestaurantOrdersPage'
+import RestaurantsPage from '../pages/RestaurantsPage'
+import RestaurantMenuPage from '../pages/RestaurantMenuPage'
 import ConsolePage from '../pages/ConsolePage'
-import AuthPage from '../pages/AuthPage'
+import ErrorPage from '../pages/ErrorPage'
 import { addMenuItem, editMenuItem, changeMenuAvailability, pauseRestaurant, reopenRestaurant, getRestaurant, getRestaurants } from '../api/restaurants'
 import { applyOrderAction, getBillingHistory, listOrderEvents, listOrders, refundOrder } from '../api/orders'
-import { getSession } from '../auth/session'
-import { describeError, recordCommand, runCommand } from '../console/consoleStore'
-import { buildOrderHistory, canCancelOrder, canRefundOrder } from '../orders/orderHistory'
-
 
 const ORDER_COMMANDS = {
   ACCEPT: 'ACCEPT_ORDER',
@@ -27,12 +26,20 @@ const ORDER_COMMANDS = {
 }
 
 const KITCHEN_PATH = '/dashboard/kitchen'
+const COURIER_PATH = '/dashboard/orders'
 
 const isStaffSession = (session) => session?.role === 'RESTAURANT_STAFF'
+const isCourierSession = (session) => session?.role === 'COURIER'
 
 const redirectStaffToKitchen = () => {
   if (isStaffSession(getSession())) {
     throw redirect(KITCHEN_PATH)
+  }
+}
+
+const redirectCourierToOrders = () => {
+  if (isCourierSession(getSession())) {
+    throw redirect(COURIER_PATH)
   }
 }
 
@@ -58,6 +65,7 @@ const loginRequiredLoader = () => {
 const customerOnlyLoader = () => {
   const session = requireLogin()
   redirectStaffToKitchen()
+  redirectCourierToOrders()
   if (session.role !== 'CUSTOMER') {
     throw redirect('/dashboard')
   }
@@ -66,6 +74,7 @@ const customerOnlyLoader = () => {
 
 const homeLoader = () => {
   redirectStaffToKitchen()
+  redirectCourierToOrders()
   return null
 }
 
@@ -86,7 +95,7 @@ const loadOrderHistory = async (knownRestaurantIds = []) => {
   const [orders, events, ledger] = await Promise.all([
     listOrders(),
     listOrderEvents().catch(() => []),
-    getBillingHistory().catch(() => []),
+    getBillingHistory(),
   ])
   const restaurants = await loadRestaurantCatalog([...knownRestaurantIds, ...orders.map((order) => order.restaurantId)])
   return { orders: buildOrderHistory(orders, events, restaurants, ledger), restaurants }
@@ -254,6 +263,7 @@ const restaurantAction = async ({ request, params }) => {
 
 const restaurantsLoader = () => {
   redirectStaffToKitchen()
+  redirectCourierToOrders()
   return runCommand(
     'BROWSE_RESTAURANTS',
     '',
@@ -266,6 +276,11 @@ const restaurantsLoader = () => {
 }
 
 const restaurantLoader = ({ params }) => {
+  const session = getSession()
+  if (isStaffSession(session) && session.restaurantId !== params.restaurantId) {
+    throw redirect(KITCHEN_PATH)
+  }
+  redirectCourierToOrders()
   return runCommand(
     'BROWSE_MENU',
     `restaurant=${params.restaurantId}`,
@@ -374,3 +389,33 @@ export const router = createBrowserRouter([
     ],
   },
 ])
+
+async function runCommand(name, details, command, describeSuccess = () => 'ok') {
+  recordCommand(name, details, 'running', 'in progress')
+  try {
+    const result = await command()
+    recordCommand(name, details, 'ok', describeSuccess(result))
+    return result
+  } catch (error) {
+    const message = await describeError(error)
+    recordCommand(name, details, 'error', message)
+    throw error
+  }
+}
+
+async function describeError(error) {
+  if (error && typeof error === 'object' && 'text' in error && typeof error.text === 'function') {
+    try {
+      const body = await error.text()
+      try {
+        const json = JSON.parse(body)
+        return json.detail || json.message || json.title || body
+      } catch {
+        return body
+      }
+    } catch {
+      return error.statusText || 'Request failed'
+    }
+  }
+  return error?.message || 'Operation failed'
+}

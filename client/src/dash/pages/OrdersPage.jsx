@@ -46,8 +46,8 @@ function CancelOrder({ order, fetcher }) {
           Keep order
         </button>
         <button type="submit" name="intent" value="CANCEL" className="order-btn order-btn-danger" disabled={busy}>
-          {busy ? 'Cancelling…' : 'Yes, cancel'}
-        </button>
+          {busy ? 'Cancelling…' : 'Yes, cancel'
+        }</button>
       </div>
     </fetcher.Form>
   )
@@ -85,14 +85,14 @@ function RefundOrder({ order, fetcher }) {
           Keep order
         </button>
         <button type="submit" name="intent" value="REFUND" className="order-btn order-btn-danger" disabled={busy}>
-          {busy ? 'Refunding…' : 'Yes, refund'}
-        </button>
+          {busy ? 'Refunding…' : 'Yes, refund'
+        }</button>
       </div>
     </fetcher.Form>
   )
 }
 
-function OrderCard({ order }) {
+function OrderCard({ order, isCourier }) {
   const fetcher = useFetcher()
   const error = fetcher.data?.ok === false ? fetcher.data.error : null
   const placedAt = formatDateTime(order.placedAt)
@@ -129,19 +129,26 @@ function OrderCard({ order }) {
             <span>
               <span className="order-line-qty">{line.quantity}×</span> {line.name ?? `Item ${shortId(line.menuItemId)}`}
             </span>
-            {line.price !== null && <span>{formatMoney(line.price * line.quantity)}</span>}
+            {!isCourier && line.price !== null && <span>{formatMoney(line.price * line.quantity)}</span>}
           </li>
         ))}
       </ul>
 
-      {order.total !== null && (
+      {!isCourier && (order.total !== null ? (
         <div className="order-total">
           <span>{order.billedTotal != null ? 'Billed Total' : 'Total'}</span>
           <span>{formatMoney(order.total)}</span>
         </div>
-      )}
+      ) : (
+        order.subtotal !== null && (
+          <div className="order-total">
+            <span>Subtotal</span>
+            <span>{formatMoney(order.subtotal)}</span>
+          </div>
+        )
+      ))}
 
-      {order.refunded && (
+      {!isCourier && order.refunded && (
         <p className="order-note" style={{ color: '#c0392b', fontWeight: 600 }}>
           Refunded: {order.refundAmount != null ? formatMoney(order.refundAmount) : 'Full refund issued'}
         </p>
@@ -161,7 +168,7 @@ function OrderCard({ order }) {
   )
 }
 
-function OrderSection({ title, orders, empty }) {
+function OrderSection({ title, orders, empty, isCourier }) {
   return (
     <section className="orders-section">
       <h3>
@@ -172,7 +179,7 @@ function OrderSection({ title, orders, empty }) {
       ) : (
         <ul className="order-list">
           {orders.map((order) => (
-            <OrderCard key={order.orderId} order={order} />
+            <OrderCard key={order.orderId} order={order} isCourier={isCourier} />
           ))}
         </ul>
       )}
@@ -184,18 +191,37 @@ export default function OrdersPage() {
   const { orders, failed } = useLoaderData()
   const session = useSession()
   const isOperator = session?.role === 'OPERATOR'
+  const isCourier = session?.role === 'COURIER'
   const revalidator = useRevalidator()
   const refreshing = revalidator.state === 'loading'
   const sorted = newestFirst(orders)
   const active = sorted.filter((order) => ACTIVE_STATUSES.includes(order.status))
   const past = sorted.filter((order) => !ACTIVE_STATUSES.includes(order.status))
 
+  const pageTitle = isOperator ? 'All Orders' : isCourier ? 'Delivery History' : 'Order Tracking'
+  const pageSubtitle = isOperator
+    ? 'View current and past orders across all restaurants.'
+    : isCourier
+      ? 'View your assigned and completed deliveries.'
+      : 'Keep track of your current and past sushi orders.'
+
+  const activeTitle = isCourier ? 'Active deliveries' : 'Active orders'
+  const pastTitle = isCourier ? 'Past deliveries' : 'Past orders'
+  const activeEmpty = isOperator
+    ? 'There are no active orders right now.'
+    : isCourier
+      ? 'You do not have any active deliveries right now.'
+      : 'You do not have any active orders right now.'
+  const pastEmpty = isCourier
+    ? 'Completed deliveries will show up here.'
+    : 'Completed and cancelled orders will show up here.'
+
   return (
     <div className="orders-page">
       <header className="page-header orders-header">
         <div>
-          <h2>{isOperator ? 'All Orders' : 'Order Tracking'}</h2>
-          <p>{isOperator ? 'View current and past orders across all restaurants.' : 'Keep track of your current and past sushi orders.'}</p>
+          <h2>{pageTitle}</h2>
+          <p>{pageSubtitle}</p>
         </div>
         <button type="button" className="btn-secondary" onClick={() => revalidator.revalidate()} disabled={refreshing}>
           {refreshing ? 'Refreshing…' : 'Refresh'}
@@ -204,27 +230,41 @@ export default function OrdersPage() {
 
       {failed && (
         <p className="order-error orders-load-error" role="alert">
-          {isOperator ? 'Orders could not be loaded.' : 'Your orders could not be loaded.'} Check the output console for details.
+          {isOperator ? 'Orders could not be loaded.' : isCourier ? 'Deliveries could not be loaded.' : 'Your orders could not be loaded.'} Check the output console for details.
         </p>
       )}
 
       {!failed && orders.length === 0 ? (
         <div className="orders-empty-card">
           <span className="orders-icon">📦</span>
-          <h3>No Orders Yet</h3>
-          <p>{isOperator ? 'No orders have been placed yet.' : 'You have not placed any orders yet.'}</p>
-          <Link to="/restaurants" className="btn-primary">
-            Browse Restaurants
-          </Link>
+          <h3>{isCourier ? 'No Deliveries Yet' : 'No Orders Yet'}</h3>
+          <p>
+            {isOperator
+              ? 'No orders have been placed yet.'
+              : isCourier
+                ? 'You have not been assigned any deliveries yet.'
+                : 'You have not placed any orders yet.'}
+          </p>
+          {!isCourier && (
+            <Link to="/restaurants" className="btn-primary">
+              Browse Restaurants
+            </Link>
+          )}
         </div>
       ) : (
         <>
           <OrderSection
-            title="Active orders"
+            title={activeTitle}
             orders={active}
-            empty={isOperator ? 'There are no active orders right now.' : 'You do not have any active orders right now.'}
+            empty={activeEmpty}
+            isCourier={isCourier}
           />
-          <OrderSection title="Past orders" orders={past} empty="Completed and cancelled orders will show up here." />
+          <OrderSection
+            title={pastTitle}
+            orders={past}
+            empty={pastEmpty}
+            isCourier={isCourier}
+          />
         </>
       )}
     </div>

@@ -25,6 +25,8 @@ export default function AuthPage({ initialMode = 'login' }) {
     if (session) {
       if (session.role === 'RESTAURANT_STAFF') {
         navigate('/dashboard/kitchen', { replace: true })
+      } else if (session.role === 'COURIER') {
+        navigate('/dashboard/orders', { replace: true })
       } else {
         navigate('/restaurants', { replace: true })
       }
@@ -32,7 +34,6 @@ export default function AuthPage({ initialMode = 'login' }) {
   }, [session, navigate])
 
   const handleRoleSelect = (selectedRole) => {
-    if (selectedRole === 'COURIER') return
     setRole(selectedRole)
     setError('')
   }
@@ -48,6 +49,10 @@ export default function AuthPage({ initialMode = 'login' }) {
       setEmail('staff@kyo.bar')
       setPassword('staff123')
       setName('Kyo Bar Staff')
+    } else if (targetRole === 'COURIER') {
+      setEmail('courier@healthyrolls.com')
+      setPassword('courier123')
+      setName('Test Courier')
     }
   }
 
@@ -87,6 +92,8 @@ export default function AuthPage({ initialMode = 'login' }) {
       const effectiveRole = res.session?.role || (mode === 'signup' ? 'CUSTOMER' : role)
       if (effectiveRole === 'RESTAURANT_STAFF') {
         navigate('/dashboard/kitchen')
+      } else if (effectiveRole === 'COURIER') {
+        navigate('/dashboard/orders')
       } else {
         navigate('/restaurants')
       }
@@ -108,8 +115,8 @@ export default function AuthPage({ initialMode = 'login' }) {
           <h2>{mode === 'signup' ? 'Create an Account' : 'Welcome to HealthyRolls'}</h2>
           <p className="auth-subtitle">
             {mode === 'signup'
-              ? 'Create a customer account to start ordering rolls'
-              : 'Sign in to browse restaurants or manage your kitchen'}
+              ? 'Join today and get fresh sushi delivered'
+              : 'Sign in to browse restaurants or manage your deliveries'}
           </p>
         </header>
 
@@ -185,15 +192,15 @@ export default function AuthPage({ initialMode = 'login' }) {
                 {role === 'RESTAURANT_STAFF' && <span className="auth-role-check">✓</span>}
               </div>
 
-              {/* Courier - Non clickable / disabled */}
+              {/* Courier */}
               <div
                 role="radio"
-                aria-checked={false}
-                aria-disabled="true"
-                className="auth-role-card auth-role-disabled"
-                title="Courier registration is coming in a future update"
+                tabIndex={0}
+                aria-checked={role === 'COURIER'}
+                className={`auth-role-card ${role === 'COURIER' ? 'auth-role-selected' : ''}`}
+                onClick={() => handleRoleSelect('COURIER')}
+                onKeyDown={(e) => (e.key === ' ' || e.key === 'Enter') && handleRoleSelect('COURIER')}
               >
-                <span className="auth-role-badge-soon">Soon</span>
                 <div className="auth-role-icon">
                   <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <circle cx="18.5" cy="17.5" r="3.5" />
@@ -204,6 +211,7 @@ export default function AuthPage({ initialMode = 'login' }) {
                 </div>
                 <span className="auth-role-title">Courier</span>
                 <span className="auth-role-desc">Delivery partner</span>
+                {role === 'COURIER' && <span className="auth-role-check">✓</span>}
               </div>
             </div>
           </div>
@@ -279,7 +287,7 @@ export default function AuthPage({ initialMode = 'login' }) {
               ? 'Please wait…'
               : mode === 'signup'
                 ? 'Sign Up as Customer'
-                : `Log In as ${role === 'CUSTOMER' ? 'Customer' : 'Staff'}`}
+                : `Log In as ${role === 'CUSTOMER' ? 'Customer' : role === 'COURIER' ? 'Courier' : 'Staff'}`}
           </button>
         </form>
 
@@ -300,6 +308,13 @@ export default function AuthPage({ initialMode = 'login' }) {
               onClick={() => handleQuickFill('RESTAURANT_STAFF')}
             >
               Fill Staff
+            </button>
+            <button
+              type="button"
+              className="auth-demo-btn"
+              onClick={() => handleQuickFill('COURIER')}
+            >
+              Fill Courier
             </button>
           </div>
         </div>

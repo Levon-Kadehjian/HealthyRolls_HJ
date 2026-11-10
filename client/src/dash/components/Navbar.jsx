@@ -51,22 +51,27 @@ export default function Navbar() {
   }
 
   const isStaff = session?.role === 'RESTAURANT_STAFF'
+  const isCourier = session?.role === 'COURIER'
 
   return (
     <header className="site-header">
       <div className="site-nav">
-        <Link to={isStaff ? '/dashboard/kitchen' : '/'} className="site-brand" aria-label="HealthyRolls home">
+        <Link
+          to={isStaff ? '/dashboard/kitchen' : isCourier ? '/dashboard/orders' : '/'}
+          className="site-brand"
+          aria-label="HealthyRolls home"
+        >
           <img src={sushiLogo} alt="" className="site-brand-logo" />
           <span className="site-brand-name">HealthyRolls</span>
         </Link>
 
         <nav className="nav-links" aria-label="Main">
-          {!isStaff && (
+          {!isStaff && !isCourier && (
             <NavLink to="/" end className={linkClass}>
               Home
             </NavLink>
           )}
-          {session && !isStaff && (
+          {session && !isStaff && !isCourier && (
             <NavLink to="/restaurants" className={linkClass}>
               Restaurants
             </NavLink>
@@ -74,6 +79,16 @@ export default function Navbar() {
           {isStaff && (
             <NavLink to="/dashboard/kitchen" className={linkClass}>
               Kitchen
+            </NavLink>
+          )}
+          {isStaff && session?.restaurantId && (
+            <NavLink to={`/restaurants/${session.restaurantId}`} className={linkClass}>
+              Menu
+            </NavLink>
+          )}
+          {isCourier && (
+            <NavLink to="/dashboard/orders" className={linkClass}>
+              Deliveries
             </NavLink>
           )}
           <NavLink to="/about" className={linkClass}>
@@ -85,9 +100,15 @@ export default function Navbar() {
           {session && (
             <>
               {isStaff && <span className="nav-role-tag">Staff</span>}
-              {!isStaff && (
+              {isCourier && <span className="nav-role-tag">Courier</span>}
+              {!isStaff && !isCourier && (
                 <NavLink to="/orders" className={linkClass}>
                   Orders
+                </NavLink>
+              )}
+              {isCourier && (
+                <NavLink to="/dashboard/orders" className={linkClass}>
+                  Deliveries
                 </NavLink>
               )}
               {session.role === 'CUSTOMER' && (

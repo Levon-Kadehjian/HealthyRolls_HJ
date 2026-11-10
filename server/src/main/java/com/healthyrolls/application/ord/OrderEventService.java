@@ -73,7 +73,9 @@ public class OrderEventService implements OrderEventRecorder {
                     ? List.of()
                     : orderRepository.findByRestaurantId(user.restaurantId().value());
             case OPERATOR -> orderRepository.findAll();
-            case COURIER -> List.of();
+            case COURIER -> orderRepository.findAll().stream()
+                    .filter(order -> accessPolicy.canView(user, order))
+                    .toList();
         };
     }
 }

@@ -26,7 +26,7 @@ public class OrderAccessPolicy {
                 case ACCEPT, REJECT, MARK_READY -> true;
                 default -> false;
             };
-            case OPERATOR -> action == OrderAction.CANCEL || action == OrderAction.REFUND;
+            case OPERATOR -> action == OrderAction.CANCEL;
             case COURIER -> action == OrderAction.PICK_UP || action == OrderAction.DELIVER;
         };
     }
