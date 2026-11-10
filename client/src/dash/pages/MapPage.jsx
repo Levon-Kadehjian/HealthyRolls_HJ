@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useLoaderData, useSearchParams } from 'react-router-dom'
 import L from 'leaflet'
-import CityMap from '../components/CityMap'
+import CityMap, { CourierLegend } from '../components/CityMap'
 import RestaurantPanel from '../components/RestaurantPanel'
 import { restaurantActions } from '../components/restaurantActions'
 import { BAND_LABELS, BANDS, queueBand } from '../components/queueBand'
@@ -62,7 +62,7 @@ export default function MapPage() {
       position: [restaurant.latitude, restaurant.longitude],
       kind: 'restaurant',
       status: queueBand(restaurant),
-      label: showLabels ? `${restaurant.name} • ${restaurant.queuedCount} queued` : null,
+      label: showLabels ? `${restaurant.name} · ${restaurant.queuedCount} queued` : null,
       popup: (
         <div className="map-popup">
           <h4>{restaurant.name}</h4>
@@ -171,6 +171,7 @@ export default function MapPage() {
             </aside>
           )}
         </div>
+        <CourierLegend />
       </section>
 
       {session?.role !== 'COURIER' && <Link to="/restaurants" className="map-list-link">Browse the restaurant list →</Link>}
