@@ -46,8 +46,8 @@ function CancelOrder({ order, fetcher }) {
           Keep order
         </button>
         <button type="submit" name="intent" value="CANCEL" className="order-btn order-btn-danger" disabled={busy}>
-          {busy ? 'Cancelling…' : 'Yes, cancel'
-        }</button>
+          {busy ? 'Cancelling…' : 'Yes, cancel'}
+        </button>
       </div>
     </fetcher.Form>
   )
@@ -75,7 +75,6 @@ function RefundOrder({ order, fetcher }) {
   return (
     <fetcher.Form method="post" className="order-confirm">
       <input type="hidden" name="orderId" value={order.orderId} />
-      <input type="hidden" name="status" value={order.status} />
       <p className="order-confirm-text">
         <strong>Refund this order?</strong>
         <span>The customer will receive a full refund. This cannot be undone.</span>
@@ -85,8 +84,8 @@ function RefundOrder({ order, fetcher }) {
           Keep order
         </button>
         <button type="submit" name="intent" value="REFUND" className="order-btn order-btn-danger" disabled={busy}>
-          {busy ? 'Refunding…' : 'Yes, refund'
-        }</button>
+          {busy ? 'Refunding…' : 'Yes, refund'}
+        </button>
       </div>
     </fetcher.Form>
   )
@@ -140,12 +139,7 @@ function OrderCard({ order, isCourier }) {
           <span>{formatMoney(order.total)}</span>
         </div>
       ) : (
-        order.subtotal !== null && (
-          <div className="order-total">
-            <span>Subtotal</span>
-            <span>{formatMoney(order.subtotal)}</span>
-          </div>
-        )
+        <p className="order-note">Total unavailable</p>
       ))}
 
       {!isCourier && order.refunded && (
@@ -252,9 +246,9 @@ export default function OrdersPage() {
   const preparationQueues = Object.values(
     active.reduce((queues, order) => {
       if (order.status !== 'ACCEPTED') return queues
-  
+
       const id = order.restaurantId
-  
+
       if (!queues[id]) {
         queues[id] = {
           restaurantId: id,
@@ -262,43 +256,43 @@ export default function OrdersPage() {
           count: 0,
         }
       }
-  
+
       queues[id].count += 1
       return queues
     }, {}),
   )
-  
-  const busyRestaurants = preparationQueues.filter((restaurant) => restaurant.count >= 6,)
 
-  const past = sorted.filter((order) => !ACTIVE_STATUSES.includes(order.status))
-  const waiting = active.filter((order) => order.status === 'READY' && order.courierId == null,)
-  
+  const busyRestaurants = preparationQueues.filter((restaurant) => restaurant.count >= 6)
+
+  const past = isCourier
+    ? sorted.filter((order) => order.status === 'DELIVERED')
+    : sorted.filter((order) => !ACTIVE_STATUSES.includes(order.status))
+  const waiting = active.filter((order) => order.status === 'READY' && order.courierId == null)
+
   const fetchers = useFetchers()
-  const actionInProgress = fetchers.some(
-    (fetcher) => fetcher.state !== 'idle',
-  )
-  
+  const actionInProgress = fetchers.some((fetcher) => fetcher.state !== 'idle')
+
   useEffect(() => {
     if (!isOperator) return undefined
-  
+
     const timer = setInterval(() => {
       if (revalidator.state === 'idle' && !actionInProgress) {
         revalidator.revalidate()
       }
     }, 5000)
-  
+
     return () => clearInterval(timer)
   }, [isOperator, revalidator, actionInProgress])
 
-  const pageTitle = isOperator ? 'All Orders' : isCourier ? 'Delivery History' : 'Order Tracking'
+  const pageTitle = isOperator ? 'All Orders' : isCourier ? 'Orders' : 'Order Tracking'
   const pageSubtitle = isOperator
     ? 'View current and past orders across all restaurants.'
     : isCourier
-      ? 'View your assigned and completed deliveries.'
+      ? 'View your completed deliveries.'
       : 'Keep track of your current and past sushi orders.'
 
   const activeTitle = isCourier ? 'Active deliveries' : 'Active orders'
-  const pastTitle = isCourier ? 'Past deliveries' : 'Past orders'
+  const pastTitle = isCourier ? 'Completed deliveries' : 'Past orders'
   const activeEmpty = isOperator
     ? 'There are no active orders right now.'
     : isCourier
@@ -373,7 +367,7 @@ export default function OrdersPage() {
       )}
       {isOperator && stalled && <StalledOrders stalled={stalled} orders={orders} />}
 
-      {!failed && orders.length === 0 ? (
+      {!failed && (isCourier ? past.length === 0 : orders.length === 0) ? (
         <div className="orders-empty-card">
           <span className="orders-icon">📦</span>
           <h3>{isCourier ? 'No Deliveries Yet' : 'No Orders Yet'}</h3>
@@ -381,7 +375,7 @@ export default function OrdersPage() {
             {isOperator
               ? 'No orders have been placed yet.'
               : isCourier
-                ? 'You have not been assigned any deliveries yet.'
+                ? 'You do not have any completed deliveries yet.'
                 : 'You have not placed any orders yet.'}
           </p>
           {!isCourier && (
@@ -392,12 +386,14 @@ export default function OrdersPage() {
         </div>
       ) : (
         <>
-          <OrderSection
-            title={activeTitle}
-            orders={active}
-            empty={activeEmpty}
-            isCourier={isCourier}
-          />
+          {!isCourier && (
+            <OrderSection
+              title={activeTitle}
+              orders={active}
+              empty={activeEmpty}
+              isCourier={isCourier}
+            />
+          )}
           <OrderSection
             title={pastTitle}
             orders={past}

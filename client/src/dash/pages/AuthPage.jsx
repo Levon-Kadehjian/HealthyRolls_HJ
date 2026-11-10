@@ -37,7 +37,7 @@ export default function AuthPage({ initialMode = 'login' }) {
       if (session.role === 'RESTAURANT_STAFF') {
         navigate('/dashboard/kitchen', { replace: true })
       } else if (session.role === 'COURIER') {
-        navigate('/dashboard/courier', { replace: true })
+        navigate('/courier', { replace: true })
       } else {
         navigate('/restaurants', { replace: true })
       }
@@ -129,7 +129,7 @@ export default function AuthPage({ initialMode = 'login' }) {
       if (effectiveRole === 'RESTAURANT_STAFF') {
         navigate('/dashboard/kitchen')
       } else if (effectiveRole === 'COURIER') {
-        navigate('/dashboard/courier')
+        navigate('/courier')
       } else {
         navigate('/restaurants')
       }

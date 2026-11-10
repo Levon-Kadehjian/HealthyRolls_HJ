@@ -59,7 +59,7 @@ const ORDER_COMMANDS = {
 }
 
 const KITCHEN_PATH = '/dashboard/kitchen'
-const COURIER_HOME_PATH = '/dashboard/courier'
+const COURIER_HOME_PATH = '/courier'
 
 const isStaffSession = (session) => session?.role === 'RESTAURANT_STAFF'
 const isCourierSession = (session) => session?.role === 'COURIER'
@@ -116,12 +116,23 @@ const dashboardLoader = () => ({ session: requireLogin() })
 const dashboardIndexLoader = () => {
   const session = getSession()
   if (isStaffSession(session)) return redirect('kitchen')
-  if (isCourierSession(session)) return redirect('courier')
-  return redirect('orders')
+  if (isCourierSession(session)) return redirect('/courier')
+  return redirect('/orders')
 }
 
-const loadRestaurantCatalog = async (restaurantIds) => {
+const loadRestaurantCatalog = async (restaurantIds, session) => {
   const ids = [...new Set(restaurantIds)].filter(Boolean)
+
+  if (session?.role === 'COURIER') {
+    try {
+      const mapRestaurants = await getMapRestaurants()
+      const mapById = new Map(mapRestaurants.map((r) => [r.id, r]))
+      return ids.map((id) => mapById.get(id)).filter(Boolean)
+    } catch (error) {
+      recordCommand('LOAD_MAP_RESTAURANTS', '', 'error', await describeError(error))
+      return []
+    }
+  }
 
   const restaurants = await Promise.all(
     ids.map(async (id) => {
@@ -142,7 +153,7 @@ const loadRestaurantCatalog = async (restaurantIds) => {
   return restaurants.filter(Boolean)
 }
 
-const loadOrderHistory = async (knownRestaurantIds = []) => {
+const loadOrderHistory = async (knownRestaurantIds = [], session = null) => {
   const [orders, events, ledger] = await Promise.all([
     listOrders(),
     listOrderEvents().catch(async (error) => {
@@ -163,7 +174,7 @@ const loadOrderHistory = async (knownRestaurantIds = []) => {
   const restaurants = await loadRestaurantCatalog([
     ...knownRestaurantIds,
     ...orders.map((order) => order.restaurantId),
-  ])
+  ], session)
 
   return {
     orders: buildOrderHistory(orders, events, restaurants, ledger),
@@ -178,7 +189,7 @@ const customerOrdersLoader = async () => {
     const { orders } = await runCommand(
       'LIST_ORDERS',
       `role=${session.role}`,
-      () => loadOrderHistory(),
+      () => loadOrderHistory([], session),
       (history) => `${history.orders.length} orders`,
     )
     if (session.role === 'OPERATOR') {
@@ -264,7 +275,7 @@ const restaurantOrdersLoader = async () => {
     const { orders, restaurants } = await runCommand(
       'LIST_ORDERS',
       `role=${session.role}`,
-      () => loadOrderHistory([session.restaurantId]),
+      () => loadOrderHistory([session.restaurantId], session),
       (history) => `${history.orders.length} orders`,
     )
     const ownOrders = session.restaurantId
@@ -324,7 +335,7 @@ const courierLoader = async () => {
   const session = requireLogin()
   if (!isCourierSession(session)) {
     recordCommand('OPEN_DELIVERIES', `role=${session.role}`, 'error', 'couriers only')
-    throw redirect('/dashboard')
+    throw redirect('/orders')
   }
   try {
     return { courier: await getMyCourier(), failed: false }
@@ -567,6 +578,12 @@ export const router = createBrowserRouter([
         element: <OrdersPage />,
       },
       {
+        path: 'courier',
+        element: <CourierPage />,
+        loader: courierPageLoader,
+        action: courierAction,
+      },
+      {
         path: 'account',
         loader: loginRequiredLoader,
         element: <AccountPage />,
@@ -613,9 +630,7 @@ export const router = createBrowserRouter([
           },
           {
             path: 'orders',
-            loader: customerOrdersLoader,
-            action: customerOrdersAction,
-            element: <OrdersPage />,
+            loader: () => redirect('/orders'),
           },
           {
             path: 'kitchen',
@@ -625,9 +640,7 @@ export const router = createBrowserRouter([
           },
           {
             path: 'courier',
-            element: <CourierPage />,
-            loader: courierPageLoader,
-            action: courierAction,
+            loader: () => redirect('/courier'),
           },
           {
             path: 'account',

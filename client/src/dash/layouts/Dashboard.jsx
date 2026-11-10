@@ -3,12 +3,11 @@ import './Dashboard.css'
 
 export default function Dashboard() {
   const { session } = useLoaderData()
-  const isCourier = session?.role === 'COURIER'
 
   const menuItems = [
-    { to: 'orders', label: isCourier ? 'Delivery History' : 'Orders', hiddenFor: ['RESTAURANT_STAFF'] },
+    { to: '/orders', label: 'Orders', hiddenFor: ['RESTAURANT_STAFF'] },
     { to: 'kitchen', label: 'Kitchen', roles: ['RESTAURANT_STAFF'] },
-    { to: 'courier', label: 'Active Delivery', roles: ['COURIER'] },
+    { to: '/courier', label: 'Active Delivery', roles: ['COURIER'] },
     { to: '/map', label: 'Map', roles: ['COURIER'] },
     { to: 'account', label: 'Account' },
   ]
