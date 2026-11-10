@@ -5,6 +5,13 @@ spring:
     active: ${SPRING_PROFILES_ACTIVE:postgres}
   jpa:
     open-in-view: false
+  main:
+    banner-mode: off
+
+logging:
+  level:
+    root: WARN
+    com.healthyrolls: INFO
 
 pricing:
   delivery-fee: ${DELIVERY_FEE:2.99}
@@ -26,6 +33,7 @@ healthyrolls:
         - { path-pattern: /api/users/me, method: GET, allowed-rules: [CUSTOMER, RESTAURANT_STAFF, COURIER, OPERATOR] }
 
         # ORD
+        - { path-pattern: /api/map/restaurants, method: GET, allowed-rules: [CUSTOMER, RESTAURANT_STAFF, COURIER, OPERATOR] }
         - { path-pattern: /api/restaurants/**, method: GET, allowed-rules: [CUSTOMER, RESTAURANT_STAFF, OPERATOR] }
         - { path-pattern: /api/restaurants/*/menu/**, method: PUT, allowed-rules: [RESTAURANT_STAFF] }
         - { path-pattern: /api/restaurants/*/menu, method: POST, allowed-rules: [RESTAURANT_STAFF] }
@@ -33,7 +41,7 @@ healthyrolls:
         - { path-pattern: /api/restaurants/*/reopen, method: POST, allowed-rules: [OPERATOR] }
 
         - { path-pattern: /api/orders/preparation/next, method: POST, allowed-rules: [RESTAURANT_STAFF] }
-        - { path-pattern: /api/orders/*/actions, method: POST, allowed-rules: [CUSTOMER, RESTAURANT_STAFF, COURIER, OPERATOR] }
+        - { path-pattern: /api/orders/*/actions, method: POST, allowed-rules: [CUSTOMER, RESTAURANT_STAFF, OPERATOR] }
         - { path-pattern: /api/orders, method: POST, allowed-rules: [CUSTOMER] }
         - { path-pattern: /api/orders/**, method: GET, allowed-rules: [CUSTOMER, RESTAURANT_STAFF, COURIER, OPERATOR] }
 
@@ -44,6 +52,20 @@ healthyrolls:
         - { path-pattern: /api/billing/customers/*/history, method: GET, allowed-rules: [CUSTOMER, OPERATOR] }
         - { path-pattern: /api/billing/orders/*, method: GET, allowed-rules: [CUSTOMER, RESTAURANT_STAFF, COURIER, OPERATOR] }
         - { path-pattern: /api/billing/orders/*/refund, method: POST, allowed-rules: [OPERATOR] }
+
+        # DLV
+        - { path-pattern: /api/couriers/me/on-duty, method: POST, allowed-rules: [COURIER] }
+        - { path-pattern: /api/couriers/me/off-duty, method: POST, allowed-rules: [COURIER] }
+        - { path-pattern: /api/couriers/me/orders/*/accept, method: POST, allowed-rules: [COURIER] }
+        - { path-pattern: /api/couriers/me/orders/*/decline, method: POST, allowed-rules: [COURIER] }
+        - { path-pattern: /api/couriers/me, method: GET, allowed-rules: [COURIER] }
+        - { path-pattern: /api/couriers/me/offer, method: GET, allowed-rules: [COURIER] }
+        - { path-pattern: /api/couriers/me/orders/*/pickup, method: POST, allowed-rules: [COURIER] }
+        - { path-pattern: /api/couriers/me/orders/*/deliver, method: POST, allowed-rules: [COURIER] }
+        - { path-pattern: /api/couriers/me/order, method: GET, allowed-rules: [COURIER] }
+        - { path-pattern: /api/dispatch/stalled-orders, method: GET, allowed-rules: [OPERATOR] }
+        - { path-pattern: /api/dispatch/stalled-orders/*/reassign, method: POST, allowed-rules: [OPERATOR] }
+        - { path-pattern: /api/dispatch/couriers, method: GET, allowed-rules: [CUSTOMER, RESTAURANT_STAFF, COURIER, OPERATOR] }
 
         # Operator
         - { path-pattern: /api/admin/reset, method: POST, allowed-rules: [OPERATOR] }

@@ -4,11 +4,15 @@ import './Dashboard.css'
 export default function Dashboard() {
   const { session } = useLoaderData()
   const isCourier = session?.role === 'COURIER'
+
   const menuItems = [
-    { to: 'orders', label: isCourier ? 'Deliveries' : 'Orders', hiddenFor: ['RESTAURANT_STAFF'] },
+    { to: 'orders', label: isCourier ? 'Delivery History' : 'Orders', hiddenFor: ['RESTAURANT_STAFF'] },
     { to: 'kitchen', label: 'Kitchen', roles: ['RESTAURANT_STAFF'] },
+    { to: 'courier', label: 'Active Delivery', roles: ['COURIER'] },
+    { to: '/map', label: 'Map', roles: ['COURIER'] },
     { to: 'account', label: 'Account' },
   ]
+
   const visibleItems = menuItems.filter(
     (item) =>
       (!item.roles || item.roles.includes(session?.role)) && !item.hiddenFor?.includes(session?.role),
@@ -20,7 +24,7 @@ export default function Dashboard() {
         <nav className="dashboard-menu" aria-label="Dashboard">
           {visibleItems.map((item) => (
             <NavLink
-              key={item.to}
+              key={item.to + item.label}
               to={item.to}
               className={({ isActive }) =>
                 `dashboard-link ${isActive ? 'dashboard-link-active' : ''}`

@@ -42,6 +42,10 @@ public class SeedUserLoader implements ApplicationRunner {
             return;
         }
 
+        seedUsers();
+    }
+
+    public void seedUsers() {
         load();
         verifyEveryRolePresent();
 
@@ -51,7 +55,9 @@ public class SeedUserLoader implements ApplicationRunner {
                 created++;
             }
         }
-        log.info("Seeded {} of {} users from {}", created, props.getUsers().size(), SEED_FILE);
+
+        log.info("Seeded {} of {} users from {}",
+                created, props.getUsers().size(), SEED_FILE);
     }
 
     private void load() {

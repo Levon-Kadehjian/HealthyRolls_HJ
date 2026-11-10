@@ -1,4 +1,4 @@
-package com.healthyrolls.technicalservices.persistence.ord.jpa.seed;
+package com.healthyrolls.technicalservices.configuration;
 
 import java.util.List;
 import java.util.UUID;

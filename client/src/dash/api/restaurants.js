@@ -20,6 +20,10 @@ export function changeMenuAvailability(restaurantId, itemId, status) {
   return apiRequest(`/api/restaurants/${encodeURIComponent(restaurantId)}/menu/${encodeURIComponent(itemId)}/availability`, { method: 'PUT', body: { status } })
 }
 
+export function getMapRestaurants() {
+  return apiRequest('/api/map/restaurants')
+}
+
 export async function getRestaurants() {
   return apiRequest('/api/restaurants')
 }

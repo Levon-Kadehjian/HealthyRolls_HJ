@@ -7,9 +7,10 @@ public class OrderFactory {
 
     private final OrderStateFactory stateFactory = new OrderStateFactory();
 
-    public Order createNew(UUID customerId, UUID restaurantId, List<OrderLine> items) {
+    public Order createNew(UUID customerId, UUID restaurantId, List<OrderLine> items,
+            Double deliveryLatitude, Double deliveryLongitude) {
 
-        return new Order(customerId, restaurantId, items);
+        return new Order(customerId, restaurantId, items, deliveryLatitude, deliveryLongitude);
     }
 
     public Order reconstitute(OrderRecord record) {

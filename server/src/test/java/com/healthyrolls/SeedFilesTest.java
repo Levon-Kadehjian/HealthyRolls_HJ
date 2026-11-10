@@ -13,7 +13,7 @@ import org.springframework.core.io.ClassPathResource;
 
 import com.healthyrolls.domain.common.UserRole;
 import com.healthyrolls.domain.reg.seed.SeedUser;
-import com.healthyrolls.technicalservices.persistence.ord.jpa.seed.SeedRestaurant;
+import com.healthyrolls.technicalservices.configuration.SeedRestaurant;
 
 import tools.jackson.databind.ObjectMapper;
 

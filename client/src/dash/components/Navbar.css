@@ -124,6 +124,9 @@
 }
 
 .nav-account {
+  display: flex;
+  align-items: center;
+  gap: 4px;
   position: relative;
   margin-left: 8px;
 }
@@ -255,4 +258,16 @@
     flex-basis: 100%;
     overflow-x: auto;
   }
+}
+
+.nav-menu-item:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.nav-menu-error {
+  margin: 6px 10px;
+  color: #dc2626;
+  font-size: 13px;
+  overflow-wrap: anywhere;
 }

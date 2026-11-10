@@ -4,6 +4,10 @@ export function listOrders() {
   return apiRequest('/api/orders')
 }
 
+export function getQueueCounts() {
+  return apiRequest('/api/orders/queues')
+}
+
 export function listOrderEvents() {
   return apiRequest('/api/events')
 }

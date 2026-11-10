@@ -4,18 +4,52 @@ import sushiLogo from '../assets/sushi-logo.png'
 import { useCart } from '../cart/useCart'
 import { useSession } from '../auth/useSession'
 import { clearSession } from '../auth/session'
-import { recordCommand } from '../console/consoleStore'
+import { describeError, recordCommand, runCommand } from '../console/consoleStore'
+import { resetSystem } from '../api/admin'
 import './Navbar.css'
+import { LogOut, RotateCcw, Settings, ShoppingCart } from 'lucide-react'
 
 const linkClass = ({ isActive }) => `nav-link ${isActive ? 'nav-link-active' : ''}`
 
 export default function Navbar() {
-  const { itemCount } = useCart()
+  const { itemCount, clearCart } = useCart()
   const session = useSession()
   const navigate = useNavigate()
   const location = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef(null)
+  const [resetting, setResetting] = useState(false)
+  const [resetError, setResetError] = useState('')
+
+  async function handleReset() {
+    if (
+      !window.confirm(
+        'Reset the system? This removes current orders and restores the seeded accounts, restaurants, menus and couriers.',
+      )
+    ) {
+      return
+    }
+
+    setResetting(true)
+    setResetError('')
+
+    try {
+      await runCommand(
+        'RESET_SYSTEM',
+        '',
+        resetSystem,
+        () => 'Initial system state restored.',
+      )
+    } catch (error) {
+      setResetError(await describeError(error))
+      setResetting(false)
+      return
+    }
+
+    clearCart()
+    clearSession()
+    window.location.assign('/login')
+  }
 
   useEffect(() => {
     setMenuOpen(false)
@@ -52,15 +86,13 @@ export default function Navbar() {
 
   const isStaff = session?.role === 'RESTAURANT_STAFF'
   const isCourier = session?.role === 'COURIER'
+  const isCustomer = session?.role === 'CUSTOMER'
+  const isOperator = session?.role === 'OPERATOR'
 
   return (
     <header className="site-header">
       <div className="site-nav">
-        <Link
-          to={isStaff ? '/dashboard/kitchen' : isCourier ? '/dashboard/orders' : '/'}
-          className="site-brand"
-          aria-label="HealthyRolls home"
-        >
+        <Link to={isStaff ? '/dashboard/kitchen' : isCourier ? '/dashboard/courier' : '/'} className="site-brand" aria-label="HealthyRolls home">
           <img src={sushiLogo} alt="" className="site-brand-logo" />
           <span className="site-brand-name">HealthyRolls</span>
         </Link>
@@ -72,24 +104,42 @@ export default function Navbar() {
             </NavLink>
           )}
           {session && !isStaff && !isCourier && (
-            <NavLink to="/restaurants" className={linkClass}>
-              Restaurants
-            </NavLink>
-          )}
-          {isStaff && (
-            <NavLink to="/dashboard/kitchen" className={linkClass}>
-              Kitchen
-            </NavLink>
-          )}
-          {isStaff && session?.restaurantId && (
-            <NavLink to={`/restaurants/${session.restaurantId}`} className={linkClass}>
-              Menu
-            </NavLink>
+            <>
+              <NavLink to="/restaurants" className={linkClass}>
+                Restaurants
+              </NavLink>
+              <NavLink to="/map" className={linkClass}>
+                Map
+              </NavLink>
+            </>
           )}
           {isCourier && (
-            <NavLink to="/dashboard/orders" className={linkClass}>
-              Deliveries
-            </NavLink>
+            <>
+              <NavLink to="/dashboard/courier" className={linkClass}>
+                Deliveries
+              </NavLink>
+              <NavLink to="/dashboard/orders" className={linkClass}>
+                History
+              </NavLink>
+              <NavLink to="/map" className={linkClass}>
+                Map
+              </NavLink>
+            </>
+          )}
+          {isStaff && (
+            <>
+              <NavLink to="/dashboard/kitchen" className={linkClass}>
+                Kitchen
+              </NavLink>
+              {session?.restaurantId && (
+                <NavLink to={`/restaurants/${session.restaurantId}`} className={linkClass}>
+                  Menu
+                </NavLink>
+              )}
+              <NavLink to="/map" className={linkClass}>
+                Map
+              </NavLink>
+            </>
           )}
           <NavLink to="/about" className={linkClass}>
             About
@@ -99,38 +149,22 @@ export default function Navbar() {
         <div className="nav-actions">
           {session && (
             <>
-              {isStaff && <span className="nav-role-tag">Staff</span>}
-              {isCourier && <span className="nav-role-tag">Courier</span>}
               {!isStaff && !isCourier && (
                 <NavLink to="/orders" className={linkClass}>
                   Orders
                 </NavLink>
               )}
-              {isCourier && (
-                <NavLink to="/dashboard/orders" className={linkClass}>
-                  Deliveries
-                </NavLink>
-              )}
               {session.role === 'CUSTOMER' && (
                 <NavLink to="/cart" className={({ isActive }) => `nav-icon-link ${isActive ? 'nav-link-active' : ''}`} aria-label={`Cart, ${itemCount} items`}>
-                  <svg
-                    className="nav-icon"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.9"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
-                  >
-                    <circle cx="9" cy="20" r="1.5" />
-                    <circle cx="18" cy="20" r="1.5" />
-                    <path d="M2 3h3l2.7 12.4a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 2-1.5L21 8H6" />
-                  </svg>
+                  <ShoppingCart className="nav-icon" strokeWidth={1.9} aria-hidden="true" />
                   {itemCount > 0 && <span className="nav-badge" aria-hidden="true">{itemCount}</span>}
                 </NavLink>
               )}
               <div className="nav-account" ref={menuRef}>
+                {isStaff && <span className="nav-role-tag">Staff</span>}
+                {isCourier && <span className="nav-role-tag">Courier</span>}
+                {isCustomer && <span className="nav-role-tag">Customer</span>}
+                {isOperator && <span className="nav-role-tag">Operator</span>}
                 <button
                   type="button"
                   className="nav-avatar"
@@ -150,37 +184,27 @@ export default function Navbar() {
                       </div>
                     )}
                     <Link to="/account" className="nav-menu-item" role="menuitem">
-                      <svg
-                        className="nav-menu-icon"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.9"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        aria-hidden="true"
-                      >
-                        <circle cx="12" cy="12" r="3" />
-                        <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" />
-                      </svg>
+                      <Settings className="nav-menu-icon" strokeWidth={1.9} aria-hidden="true" />
                       Account Settings
                     </Link>
+                    {session.role === 'OPERATOR' && (
+                      <button
+                        type="button"
+                        className="nav-menu-item"
+                        role="menuitem"
+                        onClick={handleReset}
+                        disabled={resetting}
+                      >
+                        <RotateCcw className="nav-menu-icon" strokeWidth={1.9} aria-hidden="true" />
+                        {resetting ? 'Resetting…' : 'Reset system'}
+                      </button>
+                    )}
+                    {resetError && (
+                      <p className="nav-menu-error" role="alert">{resetError}</p>
+                    )}
                     <div className="nav-menu-divider" role="separator" />
                     <button type="button" className="nav-menu-item nav-menu-item-danger" role="menuitem" onClick={logout}>
-                      <svg
-                        className="nav-menu-icon"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.9"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        aria-hidden="true"
-                      >
-                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                        <path d="M16 17l5-5-5-5" />
-                        <path d="M21 12H9" />
-                      </svg>
+                      <LogOut className="nav-menu-icon" strokeWidth={1.9} aria-hidden="true" />
                       Log out
                     </button>
                   </div>

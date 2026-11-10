@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { Clock, Leaf, MapPin } from 'lucide-react'
 import sushiLogo from '../assets/sushi-logo.png'
 import { useSession } from '../auth/useSession'
 import { getRestaurants } from '../api/restaurants'
@@ -10,27 +11,17 @@ const highlights = [
   {
     title: 'Fresh ingredients',
     text: 'Local produce and sushi-grade fish, prepared daily.',
-    icon: <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10ZM2 21c0-3 1.85-5.36 5.08-6" />,
+    Icon: Leaf,
   },
   {
     title: 'Montreal restaurants',
     text: 'Browse menus from healthy spots across the city.',
-    icon: (
-      <>
-        <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
-        <circle cx="12" cy="10" r="3" />
-      </>
-    ),
+    Icon: MapPin,
   },
   {
     title: 'Fast delivery',
     text: 'Order in a few taps and track it to your door.',
-    icon: (
-      <>
-        <circle cx="12" cy="12" r="10" />
-        <path d="M12 6v6l4 2" />
-      </>
-    ),
+    Icon: Clock,
   },
 ]
 
@@ -38,6 +29,7 @@ const STATUS_LABELS = { OPEN: 'Open', PAUSED: 'Paused', CLOSED: 'Closed' }
 
 export default function HomePage() {
   const session = useSession()
+  const isOperator = session?.role === 'OPERATOR'
 
   const [previews, setPreviews] = useState([])
   const [loading, setLoading] = useState(false)
@@ -79,9 +71,16 @@ export default function HomePage() {
         <p className="landing-subtitle">Fresh, healthy rolls from Montreal's best restaurants, delivered to you.</p>
         <div className="landing-actions">
           {session ? (
-            <Link to="/restaurants" className="btn-primary">
-              Browse restaurants
-            </Link>
+            <>
+              <Link to="/restaurants" className="btn-primary">
+                Browse restaurants
+              </Link>
+              {canBrowse && (
+                <Link to="/map" className="btn-secondary">
+                  View map
+                </Link>
+              )}
+            </>
           ) : (
             <>
               <Link to="/login" className="btn-primary">
@@ -95,7 +94,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Restaurant Previews */}
       <section className="landing-previews" aria-labelledby="previews-title">
         <div className="landing-section-header">
           <h2 id="previews-title" className="landing-section-title">Partner Kitchens</h2>
@@ -129,12 +127,12 @@ export default function HomePage() {
               <div className="landing-preview-body">
                 <h3 className="landing-preview-name">{restaurant.name}</h3>
                 <div className="landing-preview-action">
-                  {restaurant.status === 'OPEN' ? (
+                  {isOperator || restaurant.status === 'OPEN' ? (
                     <Link
                       to={session ? `/restaurants/${restaurant.id}` : '/login'}
                       className="landing-preview-link"
                     >
-                      <span>Order</span>
+                      <span>{isOperator ? 'Manage' : 'Order'}</span>
                       <span aria-hidden="true">&rarr;</span>
                     </Link>
                   ) : (
@@ -153,18 +151,7 @@ export default function HomePage() {
       <section className="landing-highlights" aria-label="Why HealthyRolls">
         {highlights.map((highlight) => (
           <div key={highlight.title} className="landing-highlight">
-            <svg
-              className="landing-highlight-icon"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              {highlight.icon}
-            </svg>
+            <highlight.Icon className="landing-highlight-icon" strokeWidth={1.8} aria-hidden="true" />
             <h3>{highlight.title}</h3>
             <p>{highlight.text}</p>
           </div>
