@@ -406,7 +406,13 @@ const restaurantAction = async ({ request, params }) => {
 
 const loadRestaurantsWithQueues = async () => {
   requireSession()
-  const [restaurants, queues] = await Promise.all([getRestaurants(), getQueueCounts().catch(() => [])])
+  const [restaurants, queues] = await Promise.all([
+    getRestaurants(),
+    getQueueCounts().catch(async (error) => {
+      recordCommand('LOAD_QUEUE_COUNTS', '', 'error', await describeError(error))
+      return []
+    }),
+  ])
   const counts = new Map(queues.map((queue) => [queue.restaurantId, queue]))
   return restaurants.map((restaurant) => ({
     ...restaurant,
@@ -426,10 +432,23 @@ const mapLoader = () => {
       const isCourier = session.role === 'COURIER'
       const [restaurants, orders, couriers, courier, activeOrder] = await Promise.all([
         getMapRestaurants(),
-        isCourier ? [] : listOrders().catch(() => []),
+      
+        isCourier ? [] : listOrders().catch(async (error) => {
+          recordCommand('LOAD_MAP_ORDERS', '', 'error', await describeError(error))
+          return []
+        }),
+      
         loadMapCouriers(),
-        isCourier ? getMyCourier().catch(() => null) : null,
-        isCourier ? getMyActiveOrder().catch(() => null) : null,
+      
+        isCourier ? getMyCourier().catch(async (error) => {
+          recordCommand('LOAD_COURIER', '', 'error', await describeError(error))
+          return null
+        }) : null,
+      
+        isCourier ? getMyActiveOrder().catch(async (error) => {
+          recordCommand('LOAD_COURIER_ORDER', '', 'error', await describeError(error))
+          return null
+        }) : null,
       ])
       return { restaurants, orders, couriers, courier, activeOrder: activeOrder ?? null }
     },
