@@ -1,4 +1,4 @@
-package com.healthyrolls.application.billing;
+package com.healthyrolls.application.prc;
 
 import static org.springframework.http.HttpStatus.CONFLICT;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
@@ -13,7 +13,7 @@ import com.healthyrolls.domain.ord.exceptions.ActionNotPermittedException;
 import com.healthyrolls.domain.ord.exceptions.InvalidTransitionException;
 import com.healthyrolls.domain.ord.exceptions.OrderNotFoundException;
 
-@RestControllerAdvice(basePackages = "com.healthyrolls.application.billing")
+@RestControllerAdvice(basePackages = "com.healthyrolls.application.prc")
 public class BillingExceptionHandler {
 
     @ExceptionHandler(ActionNotPermittedException.class)

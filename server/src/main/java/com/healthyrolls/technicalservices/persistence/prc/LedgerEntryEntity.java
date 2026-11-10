@@ -1,12 +1,12 @@
-package com.healthyrolls.technicalservices.billing;
+package com.healthyrolls.technicalservices.persistence.prc;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
-import com.healthyrolls.domain.ord.ledger.LedgerEntry;
-import com.healthyrolls.domain.ord.ledger.LedgerEntryType;
 import com.healthyrolls.domain.ord.order.OrderStatus;
+import com.healthyrolls.domain.prc.ledger.LedgerEntry;
+import com.healthyrolls.domain.prc.ledger.LedgerEntryType;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

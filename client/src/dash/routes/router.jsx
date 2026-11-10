@@ -154,7 +154,10 @@ const loadOrderHistory = async (knownRestaurantIds = []) => {
       )
       return []
     }),
-    getBillingHistory().catch(() => []),
+    getBillingHistory().catch(async (error) => {
+      recordCommand('LOAD_BILLING_HISTORY', '', 'error', await describeError(error))
+      return []
+    }),
   ])
 
   const restaurants = await loadRestaurantCatalog([

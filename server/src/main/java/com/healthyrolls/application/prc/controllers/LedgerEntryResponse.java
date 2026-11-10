@@ -1,11 +1,11 @@
-package com.healthyrolls.application.billing;
+package com.healthyrolls.application.prc.controllers;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
-import com.healthyrolls.domain.ord.ledger.LedgerEntryType;
 import com.healthyrolls.domain.ord.order.OrderStatus;
+import com.healthyrolls.domain.prc.ledger.LedgerEntryType;
 
 public record LedgerEntryResponse(
         UUID entryId,
@@ -14,5 +14,4 @@ public record LedgerEntryResponse(
         UUID customerId,
         BigDecimal amount,
         OrderStatus orderStatus,
-        Instant occurredAt) {
-}
+        Instant occurredAt) {}

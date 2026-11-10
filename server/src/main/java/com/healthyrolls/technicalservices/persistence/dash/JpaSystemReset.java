@@ -38,6 +38,7 @@ public class JpaSystemReset implements ISystemReset {
         entityManager.createQuery("delete from RestaurantEventEntity").executeUpdate();
         entityManager.createQuery("delete from MenuEventEntity").executeUpdate();
 
+        entityManager.createQuery("delete from LedgerEntryEntity").executeUpdate();
         entityManager.createQuery("delete from AssignmentEntity").executeUpdate();
         entityManager.createQuery("delete from OrderLineEntity").executeUpdate();
         entityManager.createQuery("delete from OrderEntity").executeUpdate();

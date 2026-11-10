@@ -1,4 +1,4 @@
-package com.healthyrolls.technicalservices.billing;
+package com.healthyrolls.technicalservices.persistence.prc;
 
 import java.math.BigDecimal;
 

@@ -1,4 +1,4 @@
-package com.healthyrolls.application.billing;
+package com.healthyrolls.application.prc;
 
 import java.util.List;
 import java.util.UUID;
@@ -8,10 +8,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.healthyrolls.domain.common.AuthenticatedUser;
-import com.healthyrolls.domain.ord.ledger.ILedgerRepository;
-import com.healthyrolls.domain.ord.ledger.LedgerEntry;
 import com.healthyrolls.domain.ord.order.IOrderRepository;
 import com.healthyrolls.domain.ord.order.OrderAccessPolicy;
+import com.healthyrolls.domain.prc.ledger.ILedgerRepository;
+import com.healthyrolls.domain.prc.ledger.LedgerEntry;
 
 @Service
 public class BillingHistoryService {
