@@ -20,11 +20,11 @@ public class NearestCourierSelector {
         // deterministic comparing straightline distance (favours lower Courier ID)
         return candidates.stream()
                 .filter(Courier::isAvailable)
+                // floating point comparison (rare problem but just in case)
                 .min(Comparator
                         .comparingLong((Courier courier) -> Math.round(courier.distanceTo(
                                 restaurant.getLatitude(),
-                                restaurant.getLongitude()) * 1e9)) // floating point comparison (rare problem but just
-                                                                   // in case)
+                                restaurant.getLongitude()) * 1e9))
                         .thenComparing(courier -> courier.getId().value().toString()));
     }
 }
