@@ -117,7 +117,7 @@ export default function CheckoutPage() {
             clearCart()
         } catch (err) {
             const message = await describeError(err)
-        
+
             if (message.includes('Restaurant is not open')) {
                 setError('This restaurant is not accepting orders right now.')
             } else {
@@ -161,7 +161,7 @@ export default function CheckoutPage() {
                         </div>
                     </div>
                     <div className="checkout-confirmation-actions">
-                        <Link to="/dashboard/orders" className="btn-primary">
+                        <Link to="/orders" className="btn-primary">
                             View My Orders
                         </Link>
                         <Link to="/restaurants" className="btn-secondary">

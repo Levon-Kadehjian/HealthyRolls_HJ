@@ -197,7 +197,9 @@ public class OrderService {
             case CUSTOMER -> repository.findByCustomerId(actor.userId().value());
             case RESTAURANT_STAFF -> repository.findByRestaurantId(actor.restaurantId().value());
             case OPERATOR -> repository.findAll();
-            default -> List.of();
+            case COURIER -> repository.findAll().stream()
+                    .filter(order -> policy.canView(actor, order))
+                    .toList();
         };
     }
 

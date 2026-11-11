@@ -13,6 +13,12 @@ logging:
     root: WARN
     com.healthyrolls: INFO
 
+pricing:
+  delivery-fee: ${DELIVERY_FEE:2.99}
+  service-fee: ${SERVICE_FEE:1.99}
+  small-order-threshold: ${SMALL_ORDER_THRESHOLD:15.00}
+  small-order-surcharge: ${SMALL_ORDER_SURCHARGE:2.50}
+
 healthyrolls:
   security:
     jwt:
@@ -37,9 +43,15 @@ healthyrolls:
         - { path-pattern: /api/orders/preparation/next, method: POST, allowed-rules: [RESTAURANT_STAFF] }
         - { path-pattern: /api/orders/*/actions, method: POST, allowed-rules: [CUSTOMER, RESTAURANT_STAFF, OPERATOR] }
         - { path-pattern: /api/orders, method: POST, allowed-rules: [CUSTOMER] }
-        - { path-pattern: /api/orders/**, method: GET, allowed-rules: [CUSTOMER, RESTAURANT_STAFF, OPERATOR] }
+        - { path-pattern: /api/orders/**, method: GET, allowed-rules: [CUSTOMER, RESTAURANT_STAFF, COURIER, OPERATOR] }
 
-        - { path-pattern: /api/events/**, method: GET, allowed-rules: [CUSTOMER, RESTAURANT_STAFF, OPERATOR] }
+        - { path-pattern: /api/events/**, method: GET, allowed-rules: [CUSTOMER, RESTAURANT_STAFF, COURIER, OPERATOR] }
+
+        # PRC
+        - { path-pattern: /api/billing/history, method: GET, allowed-rules: [CUSTOMER, RESTAURANT_STAFF, COURIER, OPERATOR] }
+        - { path-pattern: /api/billing/customers/*/history, method: GET, allowed-rules: [CUSTOMER, OPERATOR] }
+        - { path-pattern: /api/billing/orders/*, method: GET, allowed-rules: [CUSTOMER, RESTAURANT_STAFF, COURIER, OPERATOR] }
+        - { path-pattern: /api/billing/orders/*/refund, method: POST, allowed-rules: [OPERATOR] }
 
         # DLV
         - { path-pattern: /api/couriers/me/on-duty, method: POST, allowed-rules: [COURIER] }

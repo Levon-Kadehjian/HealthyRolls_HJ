@@ -20,6 +20,7 @@ public class OrderStateFactory {
             case READY -> ReadyState.INSTANCE;
             case PICKED_UP -> PickedUpState.INSTANCE;
             case DELIVERED -> DeliveredState.INSTANCE;
+            case REFUNDED -> DeliveredState.REFUNDED;
             case CANCELLED -> CancelledState.INSTANCE;
             case REJECTED -> RejectedState.INSTANCE;
         };

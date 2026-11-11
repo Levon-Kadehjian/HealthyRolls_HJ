@@ -20,7 +20,11 @@ public record OrderResponse(
 
     public static OrderResponse from(Order o) {
         List<OrderLineResponse> lines = o.getItems().stream()
-                .map(line -> new OrderLineResponse(line.menuItem().getItemId(), line.quantity()))
+                .map(line -> new OrderLineResponse(
+                        line.menuItem().getItemId(),
+                        line.menuItem().getName(),
+                        line.menuItem().getPrice(),
+                        line.quantity()))
                 .toList();
 
         return new OrderResponse(

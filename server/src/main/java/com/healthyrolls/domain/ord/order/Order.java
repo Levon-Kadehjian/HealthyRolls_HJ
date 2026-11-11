@@ -139,6 +139,7 @@ public class Order {
             case MARK_READY -> state.markReady(this);
             case PICK_UP -> state.markPickedUp(this);
             case DELIVER -> state.markDelivered(this);
+            case REFUND -> state.refund(this);
             case CANCEL -> state.cancel(this);
             default -> throw new UnsupportedOperationException("Unsupported order action: " + action);
         }

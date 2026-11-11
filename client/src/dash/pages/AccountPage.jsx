@@ -81,17 +81,17 @@ export default function AccountPage() {
             <Link
               to={
                 isCourier
-                  ? '/dashboard/courier'
+                  ? '/courier'
                   : isStaff
-                    ? '/dashboard/kitchen'
-                    : '/dashboard/orders'
+                    ? '/kitchen'
+                    : '/orders'
               }
               className="btn-secondary"
             >
               {isCourier
                 ? 'My Deliveries'
                 : isStaff
-                  ? 'Kitchen Dashboard'
+                  ? 'Kitchen'
                   : 'View Orders'}
             </Link>
 

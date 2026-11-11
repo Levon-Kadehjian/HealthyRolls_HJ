@@ -12,6 +12,16 @@ export function listOrderEvents() {
   return apiRequest('/api/events')
 }
 
+export function getBillingHistory() {
+  return apiRequest('/api/billing/history')
+}
+
+export function refundOrder(orderId) {
+  return apiRequest(`/api/billing/orders/${orderId}/refund`, {
+    method: 'POST',
+  })
+}
+
 export function applyOrderAction(orderId, action, reason = null) {
   return apiRequest(`/api/orders/${orderId}/actions`, {
     method: 'POST',

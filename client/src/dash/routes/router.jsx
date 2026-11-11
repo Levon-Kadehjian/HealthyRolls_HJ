@@ -1,29 +1,55 @@
 import { createBrowserRouter, redirect } from 'react-router-dom'
-import Root from '../layouts/Root'
-import Dashboard from '../layouts/Dashboard'
-import ErrorPage from '../pages/ErrorPage'
-import HomePage from '../pages/HomePage'
-import AboutPage from '../pages/AboutPage'
-import OrdersPage from '../pages/OrdersPage'
-import AccountPage from '../pages/AccountPage'
-import CartPage from '../pages/CartPage'
-import CheckoutPage from '../pages/CheckoutPage'
-import RestaurantMenuPage from '../pages/RestaurantMenuPage'
-import RestaurantsPage from '../pages/RestaurantsPage'
-import MapPage from '../pages/MapPage'
-import RestaurantOrdersPage from '../pages/RestaurantOrdersPage'
-import ConsolePage from '../pages/ConsolePage'
-import AuthPage from '../pages/AuthPage'
-import { addMenuItem, editMenuItem, changeMenuAvailability, pauseRestaurant, reopenRestaurant, getMapRestaurants, getRestaurant, getRestaurants } from '../api/restaurants'
-import { applyOrderAction, getQueueCounts, listOrderEvents, listOrders } from '../api/orders'
 import { getSession } from '../auth/session'
 import { ensureSessionLocation } from '../api/auth'
 import { describeError, recordCommand, runCommand } from '../console/consoleStore'
-import { buildOrderHistory, canCancelOrder } from '../orders/orderHistory'
+import { buildOrderHistory, canCancelOrder, canRefundOrder } from '../orders/orderHistory'
+import Root from '../layouts/Root'
+import HomePage from '../pages/HomePage'
+import AuthPage from '../pages/AuthPage'
+import AboutPage from '../pages/AboutPage'
+import AccountPage from '../pages/AccountPage'
+import CartPage from '../pages/CartPage'
+import CheckoutPage from '../pages/CheckoutPage'
+import OrdersPage from '../pages/OrdersPage'
 import CourierPage from '../pages/CourierPage'
-import { acceptOffer, confirmDelivery, confirmPickup, declineOffer, getMyCourier, goOffDuty, goOnDuty } from '../api/couriers'
-import { getPendingOffer, getMyActiveOrder } from '../api/couriers'
-import { getStalledOrders, listCouriers, reassignStalledOrder } from '../api/couriers'
+import MapPage from '../pages/MapPage'
+import RestaurantOrdersPage from '../pages/RestaurantOrdersPage'
+import RestaurantsPage from '../pages/RestaurantsPage'
+import RestaurantMenuPage from '../pages/RestaurantMenuPage'
+import ConsolePage from '../pages/ConsolePage'
+import ErrorPage from '../pages/ErrorPage'
+import {
+  addMenuItem,
+  editMenuItem,
+  changeMenuAvailability,
+  pauseRestaurant,
+  reopenRestaurant,
+  getMapRestaurants,
+  getRestaurant,
+  getRestaurants,
+} from '../api/restaurants'
+import {
+  applyOrderAction,
+  getBillingHistory,
+  getQueueCounts,
+  listOrderEvents,
+  listOrders,
+  refundOrder,
+} from '../api/orders'
+import {
+  acceptOffer,
+  confirmDelivery,
+  confirmPickup,
+  declineOffer,
+  getMyActiveOrder,
+  getMyCourier,
+  getPendingOffer,
+  getStalledOrders,
+  goOffDuty,
+  goOnDuty,
+  listCouriers,
+  reassignStalledOrder,
+} from '../api/couriers'
 
 const ORDER_COMMANDS = {
   ACCEPT: 'ACCEPT_ORDER',
@@ -31,19 +57,17 @@ const ORDER_COMMANDS = {
   MARK_READY: 'MARK_ORDER_READY',
 }
 
-const KITCHEN_PATH = '/dashboard/kitchen'
+const KITCHEN_PATH = '/kitchen'
+const COURIER_HOME_PATH = '/courier'
 
 const isStaffSession = (session) => session?.role === 'RESTAURANT_STAFF'
+const isCourierSession = (session) => session?.role === 'COURIER'
 
 const redirectStaffToKitchen = () => {
   if (isStaffSession(getSession())) {
     throw redirect(KITCHEN_PATH)
   }
 }
-
-const COURIER_HOME_PATH = '/dashboard/courier'
-
-const isCourierSession = (session) => session?.role === 'COURIER'
 
 const redirectCourierHome = () => {
   if (isCourierSession(getSession())) {
@@ -73,8 +97,9 @@ const loginRequiredLoader = () => {
 const customerOnlyLoader = () => {
   const session = requireLogin()
   redirectStaffToKitchen()
+  redirectCourierHome()
   if (session.role !== 'CUSTOMER') {
-    throw redirect('/dashboard')
+    throw redirect('/orders')
   }
   return null
 }
@@ -85,17 +110,26 @@ const homeLoader = () => {
   return null
 }
 
-const dashboardLoader = () => ({ session: requireLogin() })
-
 const dashboardIndexLoader = () => {
-  const session = getSession()
-  if (isStaffSession(session)) return redirect('kitchen')
-  if (isCourierSession(session)) return redirect('courier')
-  return redirect('orders')
+  const session = requireLogin()
+  if (isStaffSession(session)) return redirect(KITCHEN_PATH)
+  if (isCourierSession(session)) return redirect('/courier')
+  return redirect('/orders')
 }
 
-const loadRestaurantCatalog = async (restaurantIds) => {
+const loadRestaurantCatalog = async (restaurantIds, session) => {
   const ids = [...new Set(restaurantIds)].filter(Boolean)
+
+  if (session?.role === 'COURIER') {
+    try {
+      const mapRestaurants = await getMapRestaurants()
+      const mapById = new Map(mapRestaurants.map((r) => [r.id, r]))
+      return ids.map((id) => mapById.get(id)).filter(Boolean)
+    } catch (error) {
+      recordCommand('LOAD_MAP_RESTAURANTS', '', 'error', await describeError(error))
+      return []
+    }
+  }
 
   const restaurants = await Promise.all(
     ids.map(async (id) => {
@@ -116,8 +150,8 @@ const loadRestaurantCatalog = async (restaurantIds) => {
   return restaurants.filter(Boolean)
 }
 
-const loadOrderHistory = async (knownRestaurantIds = []) => {
-  const [orders, events] = await Promise.all([
+const loadOrderHistory = async (knownRestaurantIds = [], session = null) => {
+  const [orders, events, ledger] = await Promise.all([
     listOrders(),
     listOrderEvents().catch(async (error) => {
       recordCommand(
@@ -128,15 +162,19 @@ const loadOrderHistory = async (knownRestaurantIds = []) => {
       )
       return []
     }),
+    getBillingHistory().catch(async (error) => {
+      recordCommand('LOAD_BILLING_HISTORY', '', 'error', await describeError(error))
+      return []
+    }),
   ])
 
   const restaurants = await loadRestaurantCatalog([
     ...knownRestaurantIds,
     ...orders.map((order) => order.restaurantId),
-  ])
+  ], session)
 
   return {
-    orders: buildOrderHistory(orders, events, restaurants),
+    orders: buildOrderHistory(orders, events, restaurants, ledger),
     restaurants,
   }
 }
@@ -144,12 +182,11 @@ const loadOrderHistory = async (knownRestaurantIds = []) => {
 const customerOrdersLoader = async () => {
   const session = requireLogin()
   redirectStaffToKitchen()
-  redirectCourierHome()
   try {
     const { orders } = await runCommand(
       'LIST_ORDERS',
       `role=${session.role}`,
-      () => loadOrderHistory(),
+      () => loadOrderHistory([], session),
       (history) => `${history.orders.length} orders`,
     )
     if (session.role === 'OPERATOR') {
@@ -181,6 +218,19 @@ const customerOrdersAction = async ({ request }) => {
   const intent = form.get('intent')
   const status = form.get('status')
   const details = `order=${String(orderId).slice(0, 8)}`
+
+  if (intent === 'REFUND') {
+    if (!canRefundOrder(session.role, status)) {
+      recordCommand('REFUND_ORDER', details, 'error', `order is ${status} or unauthorized`)
+      return { ok: false, error: 'Only operators can refund delivered orders.' }
+    }
+    try {
+      await runCommand('REFUND_ORDER', details, () => refundOrder(orderId), () => 'refunded')
+      return { ok: true }
+    } catch (error) {
+      return { ok: false, error: await describeError(error) }
+    }
+  }
 
   if (intent === 'REASSIGN_STALLED_ORDER') {
     if (session.role !== 'OPERATOR') {
@@ -216,13 +266,13 @@ const restaurantOrdersLoader = async () => {
   const session = requireLogin()
   if (!isStaffSession(session)) {
     recordCommand('OPEN_KITCHEN', `role=${session?.role ?? 'none'}`, 'error', 'restaurant staff only')
-    throw redirect('/dashboard')
+    throw redirect('/orders')
   }
   try {
     const { orders, restaurants } = await runCommand(
       'LIST_ORDERS',
       `role=${session.role}`,
-      () => loadOrderHistory([session.restaurantId]),
+      () => loadOrderHistory([session.restaurantId], session),
       (history) => `${history.orders.length} orders`,
     )
     const ownOrders = session.restaurantId
@@ -282,7 +332,7 @@ const courierLoader = async () => {
   const session = requireLogin()
   if (!isCourierSession(session)) {
     recordCommand('OPEN_DELIVERIES', `role=${session.role}`, 'error', 'couriers only')
-    throw redirect('/dashboard')
+    throw redirect('/orders')
   }
   try {
     return { courier: await getMyCourier(), failed: false }
@@ -432,19 +482,15 @@ const mapLoader = () => {
       const isCourier = session.role === 'COURIER'
       const [restaurants, orders, couriers, courier, activeOrder] = await Promise.all([
         getMapRestaurants(),
-      
         isCourier ? [] : listOrders().catch(async (error) => {
           recordCommand('LOAD_MAP_ORDERS', '', 'error', await describeError(error))
           return []
         }),
-      
         loadMapCouriers(),
-      
         isCourier ? getMyCourier().catch(async (error) => {
           recordCommand('LOAD_COURIER', '', 'error', await describeError(error))
           return null
         }) : null,
-      
         isCourier ? getMyActiveOrder().catch(async (error) => {
           recordCommand('LOAD_COURIER_ORDER', '', 'error', await describeError(error))
           return null
@@ -479,6 +525,10 @@ const restaurantsLoader = () => {
 }
 
 const restaurantLoader = ({ params }) => {
+  const session = getSession()
+  if (isStaffSession(session) && session.restaurantId !== params.restaurantId) {
+    throw redirect(KITCHEN_PATH)
+  }
   redirectCourierHome()
   return runCommand(
     'BROWSE_MENU',
@@ -525,6 +575,18 @@ export const router = createBrowserRouter([
         element: <OrdersPage />,
       },
       {
+        path: 'courier',
+        element: <CourierPage />,
+        loader: courierPageLoader,
+        action: courierAction,
+      },
+      {
+        path: 'kitchen',
+        element: <RestaurantOrdersPage />,
+        loader: restaurantOrdersLoader,
+        action: restaurantOrdersAction,
+      },
+      {
         path: 'account',
         loader: loginRequiredLoader,
         element: <AccountPage />,
@@ -562,36 +624,23 @@ export const router = createBrowserRouter([
       },
       {
         path: 'dashboard',
-        element: <Dashboard />,
-        loader: dashboardLoader,
-        children: [
-          {
-            index: true,
-            loader: dashboardIndexLoader,
-          },
-          {
-            path: 'orders',
-            loader: customerOrdersLoader,
-            action: customerOrdersAction,
-            element: <OrdersPage />,
-          },
-          {
-            path: 'kitchen',
-            element: <RestaurantOrdersPage />,
-            loader: restaurantOrdersLoader,
-            action: restaurantOrdersAction,
-          },
-          {
-            path: 'courier',
-            element: <CourierPage />,
-            loader: courierPageLoader,
-            action: courierAction,
-          },
-          {
-            path: 'account',
-            element: <AccountPage />,
-          },
-        ],
+        loader: dashboardIndexLoader,
+      },
+      {
+        path: 'dashboard/orders',
+        loader: () => redirect('/orders'),
+      },
+      {
+        path: 'dashboard/kitchen',
+        loader: () => redirect(KITCHEN_PATH),
+      },
+      {
+        path: 'dashboard/courier',
+        loader: () => redirect(COURIER_HOME_PATH),
+      },
+      {
+        path: 'dashboard/account',
+        loader: () => redirect('/account'),
       },
       {
         path: '*',

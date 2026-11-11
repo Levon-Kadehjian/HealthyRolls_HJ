@@ -26,6 +26,10 @@ public abstract class AbstractOrderState {
         throw new InvalidTransitionException("Cannot deliver an order in state " + status());
     }
 
+    public void refund(Order order) {
+        throw new InvalidTransitionException("Cannot refund an order in state " + status());
+    }
+
     public void cancel(Order order) {
         throw new InvalidTransitionException(
                 "Cannot cancel an order in state " + status());
