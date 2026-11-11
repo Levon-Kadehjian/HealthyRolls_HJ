@@ -92,15 +92,6 @@ public class BillingService {
         return refund(order, actor.userId().value());
     }
 
-    @Transactional
-    public LedgerEntry refundOrder(UUID orderId, UUID customerId) {
-        Order order = orderRepository.findByOrderId(new OrderId(orderId));
-        if (!order.getCustomerId().equals(customerId)) {
-            throw new ActionNotPermittedException("Order does not belong to this customer");
-        }
-        return refund(order, customerId);
-    }
-
     private LedgerEntry refund(Order order, UUID actorId) {
         if (order.status() != OrderStatus.DELIVERED) {
             throw new InvalidTransitionException("Only delivered orders can be refunded");

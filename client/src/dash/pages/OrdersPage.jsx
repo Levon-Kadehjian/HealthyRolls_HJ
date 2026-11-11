@@ -92,7 +92,7 @@ function RefundOrder({ order, fetcher }) {
   )
 }
 
-function OrderCard({ order }) {
+function OrderCard({ order, isCourier }) {
   const fetcher = useFetcher()
   const error = fetcher.data?.ok === false ? fetcher.data.error : null
   const placedAt = formatDateTime(order.placedAt)
@@ -115,7 +115,7 @@ function OrderCard({ order }) {
             <dd>{placedAt}</dd>
           </div>
         )}
-        {updatedAt && updatedAt !== placedAt && (
+        {updatedAt && (
           <div>
             <dt>Last update</dt>
             <dd>{updatedAt}</dd>
@@ -129,19 +129,21 @@ function OrderCard({ order }) {
             <span>
               <span className="order-line-qty">{line.quantity}×</span> {line.name ?? `Item ${shortId(line.menuItemId)}`}
             </span>
-            {line.price !== null && <span>{formatMoney(line.price * line.quantity)}</span>}
+            {!isCourier && line.price !== null && <span>{formatMoney(line.price * line.quantity)}</span>}
           </li>
         ))}
       </ul>
 
-      {order.total !== null && (
+      {!isCourier && (order.total !== null ? (
         <div className="order-total">
           <span>{order.billedTotal != null ? 'Billed Total' : 'Total'}</span>
           <span>{formatMoney(order.total)}</span>
         </div>
-      )}
+      ) : (
+        <p className="order-note">Total unavailable</p>
+      ))}
 
-      {order.refunded && (
+      {!isCourier && order.refunded && (
         <p className="order-note" style={{ color: '#c0392b', fontWeight: 600 }}>
           Refunded: {order.refundAmount != null ? formatMoney(order.refundAmount) : 'Full refund issued'}
         </p>
@@ -161,7 +163,7 @@ function OrderCard({ order }) {
   )
 }
 
-function OrderSection({ title, orders, empty }) {
+function OrderSection({ title, orders, empty, isCourier }) {
   return (
     <section className="orders-section">
       <h3>
@@ -172,7 +174,7 @@ function OrderSection({ title, orders, empty }) {
       ) : (
         <ul className="order-list">
           {orders.map((order) => (
-            <OrderCard key={order.orderId} order={order} />
+            <OrderCard key={order.orderId} order={order} isCourier={isCourier} />
           ))}
         </ul>
       )}
@@ -237,6 +239,7 @@ export default function OrdersPage() {
   const { orders, failed, stalled } = useLoaderData()
   const session = useSession()
   const isOperator = session?.role === 'OPERATOR'
+  const isCourier = session?.role === 'COURIER'
   const revalidator = useRevalidator()
   const refreshing = revalidator.state === 'loading'
   const sorted = newestFirst(orders)
@@ -244,9 +247,9 @@ export default function OrdersPage() {
   const preparationQueues = Object.values(
     active.reduce((queues, order) => {
       if (order.status !== 'ACCEPTED') return queues
-  
+
       const id = order.restaurantId
-  
+
       if (!queues[id]) {
         queues[id] = {
           restaurantId: id,
@@ -254,40 +257,58 @@ export default function OrdersPage() {
           count: 0,
         }
       }
-  
+
       queues[id].count += 1
       return queues
     }, {}),
   )
-  
-  const busyRestaurants = preparationQueues.filter((restaurant) => restaurant.count >= 6,)
 
-  const past = sorted.filter((order) => !ACTIVE_STATUSES.includes(order.status))
-  const waiting = active.filter((order) => order.status === 'READY' && order.courierId == null,)
-  
+  const busyRestaurants = preparationQueues.filter((restaurant) => restaurant.count >= 6)
+
+  const past = isCourier
+    ? sorted.filter((order) => ['DELIVERED', 'REFUNDED'].includes(order.status))
+    : sorted.filter((order) => !ACTIVE_STATUSES.includes(order.status))
+  const waiting = active.filter((order) => order.status === 'READY' && order.courierId == null)
+
   const fetchers = useFetchers()
-  const actionInProgress = fetchers.some(
-    (fetcher) => fetcher.state !== 'idle',
-  )
-  
+  const actionInProgress = fetchers.some((fetcher) => fetcher.state !== 'idle')
+
   useEffect(() => {
     if (!isOperator) return undefined
-  
+
     const timer = setInterval(() => {
       if (revalidator.state === 'idle' && !actionInProgress) {
         revalidator.revalidate()
       }
     }, 5000)
-  
+
     return () => clearInterval(timer)
   }, [isOperator, revalidator, actionInProgress])
+
+  const pageTitle = isOperator ? 'All Orders' : isCourier ? 'Orders' : 'Order Tracking'
+  const pageSubtitle = isOperator
+    ? 'View current and past orders across all restaurants.'
+    : isCourier
+      ? 'View your completed deliveries.'
+      : 'Keep track of your current and past sushi orders.'
+
+  const activeTitle = isCourier ? 'Active deliveries' : 'Active orders'
+  const pastTitle = isCourier ? 'Completed deliveries' : 'Past orders'
+  const activeEmpty = isOperator
+    ? 'There are no active orders right now.'
+    : isCourier
+      ? 'You do not have any active deliveries right now.'
+      : 'You do not have any active orders right now.'
+  const pastEmpty = isCourier
+    ? 'Completed deliveries will show up here.'
+    : 'Completed and cancelled orders will show up here.'
 
   return (
     <div className="orders-page">
       <header className="page-header orders-header">
         <div>
-          <h2>{isOperator ? 'All Orders' : 'Order Tracking'}</h2>
-          <p>{isOperator ? 'View current and past orders across all restaurants.' : 'Keep track of your current and past sushi orders.'}</p>
+          <h2>{pageTitle}</h2>
+          <p>{pageSubtitle}</p>
         </div>
         <button type="button" className="btn-secondary" onClick={() => revalidator.revalidate()} disabled={refreshing}>
           {refreshing ? 'Refreshing…' : 'Refresh'}
@@ -296,7 +317,7 @@ export default function OrdersPage() {
 
       {failed && (
         <p className="order-error orders-load-error" role="alert">
-          {isOperator ? 'Orders could not be loaded.' : 'Your orders could not be loaded.'} Check the output console for details.
+          {isOperator ? 'Orders could not be loaded.' : isCourier ? 'Deliveries could not be loaded.' : 'Your orders could not be loaded.'} Check the output console for details.
         </p>
       )}
       {isOperator && !failed && busyRestaurants.length > 0 && (
@@ -347,23 +368,39 @@ export default function OrdersPage() {
       )}
       {isOperator && stalled && <StalledOrders stalled={stalled} orders={orders} />}
 
-      {!failed && orders.length === 0 ? (
+      {!failed && (isCourier ? past.length === 0 : orders.length === 0) ? (
         <div className="orders-empty-card">
           <span className="orders-icon">📦</span>
-          <h3>No Orders Yet</h3>
-          <p>{isOperator ? 'No orders have been placed yet.' : 'You have not placed any orders yet.'}</p>
-          <Link to="/restaurants" className="btn-primary">
-            Browse Restaurants
-          </Link>
+          <h3>{isCourier ? 'No Deliveries Yet' : 'No Orders Yet'}</h3>
+          <p>
+            {isOperator
+              ? 'No orders have been placed yet.'
+              : isCourier
+                ? 'You do not have any completed deliveries yet.'
+                : 'You have not placed any orders yet.'}
+          </p>
+          {!isCourier && (
+            <Link to="/restaurants" className="btn-primary">
+              Browse Restaurants
+            </Link>
+          )}
         </div>
       ) : (
         <>
+          {!isCourier && (
+            <OrderSection
+              title={activeTitle}
+              orders={active}
+              empty={activeEmpty}
+              isCourier={isCourier}
+            />
+          )}
           <OrderSection
-            title="Active orders"
-            orders={active}
-            empty={isOperator ? 'There are no active orders right now.' : 'You do not have any active orders right now.'}
+            title={pastTitle}
+            orders={past}
+            empty={pastEmpty}
+            isCourier={isCourier}
           />
-          <OrderSection title="Past orders" orders={past} empty="Completed and cancelled orders will show up here." />
         </>
       )}
     </div>

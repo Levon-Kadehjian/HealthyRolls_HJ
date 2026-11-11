@@ -35,6 +35,23 @@
   margin-bottom: 0;
 }
 
+.map-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 20px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 14px;
+}
+
+.map-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .map-panel .city-map {
   margin-bottom: 16px;
 }

@@ -69,21 +69,26 @@ export function buildOrderHistory(orders, events = [], restaurants = [], ledger 
   return orders.map((order) => {
     const lines = (order.lines ?? []).map((line) => {
       const item = menuItemsById.get(line.menuItemId)
-      return { ...line, name: item?.name ?? line.name, price: item ? Number(item.price) : null }
+      const name = line.name ?? item?.name ?? `Item ${String(line.menuItemId ?? '').slice(0, 8)}`
+      const price = line.price != null ? Number(line.price) : (item ? Number(item.price) : null)
+      return { ...line, name, price }
     })
     const priced = lines.every((line) => line.price !== null)
     const { placedAt = null, updatedAt = null } = timeline.get(order.orderId) ?? {}
     const charge = chargesByOrderId.get(order.orderId)
     const refund = refundsByOrderId.get(order.orderId)
     const billedTotal = charge?.amount != null ? Number(charge.amount) : null
+    const subtotal = priced ? lines.reduce((sum, line) => sum + line.price * line.quantity, 0) : null
+    const isCompleted = order.status === 'DELIVERED' || order.status === 'REFUNDED'
+    const total = billedTotal ?? (isCompleted ? null : subtotal)
 
     return {
       ...order,
       lines,
       restaurantName: restaurantsById.get(order.restaurantId)?.name ?? null,
       itemCount: lines.reduce((sum, line) => sum + line.quantity, 0),
-      subtotal: priced ? lines.reduce((sum, line) => sum + line.price * line.quantity, 0) : null,
-      total: billedTotal ?? (priced ? lines.reduce((sum, line) => sum + line.price * line.quantity, 0) : null),
+      subtotal,
+      total,
       billedTotal,
       refunded: Boolean(refund || order.status === 'REFUNDED'),
       refundAmount: refund?.amount != null ? Math.abs(Number(refund.amount)) : null,

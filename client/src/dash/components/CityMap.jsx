@@ -17,6 +17,27 @@ const COURIER_BADGES = {
   CARRYING: () => <Package size={13} />,
 }
 
+const COURIER_STATES = [
+  ['IDLE', 'Idle, waiting for an order'],
+  ['ASSIGNED', 'Assigned, heading to the restaurant'],
+  ['CARRYING', 'Carrying an order'],
+]
+
+export function CourierLegend() {
+  return (
+    <ul className="map-legend" aria-label="Courier states">
+      {COURIER_STATES.map(([status, label]) => (
+        <li key={status}>
+          <span className={`map-pin map-pin-courier map-pin-${status.toLowerCase()}`} aria-hidden="true">
+            {COURIER_BADGES[status]()}
+          </span>
+          {label}
+        </li>
+      ))}
+    </ul>
+  )
+}
+
 const icons = new Map()
 function pinIcon(kind, status, heading) {
   const key = `${kind}:${status ?? ''}:${heading ?? ''}`

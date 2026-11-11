@@ -35,9 +35,9 @@ export default function AuthPage({ initialMode = 'login' }) {
   useEffect(() => {
     if (session) {
       if (session.role === 'RESTAURANT_STAFF') {
-        navigate('/dashboard/kitchen', { replace: true })
+        navigate('/kitchen', { replace: true })
       } else if (session.role === 'COURIER') {
-        navigate('/dashboard/courier', { replace: true })
+        navigate('/courier', { replace: true })
       } else {
         navigate('/restaurants', { replace: true })
       }
@@ -45,7 +45,6 @@ export default function AuthPage({ initialMode = 'login' }) {
   }, [session, navigate])
 
   const handleRoleSelect = (selectedRole) => {
-    //if (selectedRole === 'COURIER') return (unblock the courrier)
     setRole(selectedRole)
     setError('')
   }
@@ -84,7 +83,7 @@ export default function AuthPage({ initialMode = 'login' }) {
     if (mode === 'signup') {
       const lat = Number(latitude)
       const lon = Number(longitude)
-      
+
       if (
         latitude.trim() === '' ||
         longitude.trim() === '' ||
@@ -116,7 +115,7 @@ export default function AuthPage({ initialMode = 'login' }) {
     try {
       const res =
         mode === 'signup'
-          ? await registerUser({ name: name.trim(), email: email.trim(), password, latitude: Number(latitude), longitude: Number(longitude),})
+          ? await registerUser({ name: name.trim(), email: email.trim(), password, latitude: Number(latitude), longitude: Number(longitude) })
           : await loginUser({ email: email.trim(), password, role })
 
       if (!res.ok) {
@@ -128,9 +127,9 @@ export default function AuthPage({ initialMode = 'login' }) {
       // Successful login/signup: navigate according to role
       const effectiveRole = res.session?.role || (mode === 'signup' ? 'CUSTOMER' : role)
       if (effectiveRole === 'RESTAURANT_STAFF') {
-        navigate('/dashboard/kitchen')
+        navigate('/kitchen')
       } else if (effectiveRole === 'COURIER') {
-        navigate('/dashboard/courier')
+        navigate('/courier')
       } else {
         navigate('/restaurants')
       }
@@ -152,8 +151,8 @@ export default function AuthPage({ initialMode = 'login' }) {
           <h2>{mode === 'signup' ? 'Create an Account' : 'Welcome to HealthyRolls'}</h2>
           <p className="auth-subtitle">
             {mode === 'signup'
-              ? 'Create a customer account to start ordering rolls'
-              : 'Sign in to browse restaurants or manage your kitchen'}
+              ? 'Join today and get fresh sushi delivered'
+              : 'Sign in to browse restaurants or manage your deliveries'}
           </p>
         </header>
 
@@ -262,7 +261,6 @@ export default function AuthPage({ initialMode = 'login' }) {
               </div>
             </div>
           </div>
-
           )}
 
           {error && (
@@ -388,7 +386,7 @@ export default function AuthPage({ initialMode = 'login' }) {
               onClick={() => handleQuickFill('RESTAURANT_STAFF')}
             >
               Fill Staff
-            </button>           
+            </button>
             <button
               type="button"
               className="auth-demo-btn"
@@ -402,11 +400,9 @@ export default function AuthPage({ initialMode = 'login' }) {
               onClick={() => handleQuickFill('OPERATOR')}
             >
               Fill Operator
-            </button>            
+            </button>
           </div>
         </div>
-        
-
         )}
 
         <footer className="auth-footer">

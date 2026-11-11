@@ -293,7 +293,7 @@
 }
 
 .kitchen-history {
-  margin-top: 24px;
+  margin-top: 32px;
   padding: 14px;
   background: var(--k-washi);
   border: 1px dashed var(--k-mat-edge);

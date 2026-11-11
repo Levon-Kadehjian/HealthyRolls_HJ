@@ -92,7 +92,7 @@ export default function Navbar() {
   return (
     <header className="site-header">
       <div className="site-nav">
-        <Link to={isStaff ? '/dashboard/kitchen' : isCourier ? '/dashboard/courier' : '/'} className="site-brand" aria-label="HealthyRolls home">
+        <Link to={isStaff ? '/kitchen' : isCourier ? '/courier' : '/'} className="site-brand" aria-label="HealthyRolls home">
           <img src={sushiLogo} alt="" className="site-brand-logo" />
           <span className="site-brand-name">HealthyRolls</span>
         </Link>
@@ -115,7 +115,7 @@ export default function Navbar() {
           )}
           {isCourier && (
             <>
-              <NavLink to="/dashboard/courier" className={linkClass}>
+              <NavLink to="/courier" className={linkClass}>
                 Deliveries
               </NavLink>
               <NavLink to="/map" className={linkClass}>
@@ -125,9 +125,14 @@ export default function Navbar() {
           )}
           {isStaff && (
             <>
-              <NavLink to="/dashboard/kitchen" className={linkClass}>
+              <NavLink to="/kitchen" className={linkClass}>
                 Kitchen
               </NavLink>
+              {session?.restaurantId && (
+                <NavLink to={`/restaurants/${session.restaurantId}`} className={linkClass}>
+                  Menu
+                </NavLink>
+              )}
               <NavLink to="/map" className={linkClass}>
                 Map
               </NavLink>
@@ -141,7 +146,7 @@ export default function Navbar() {
         <div className="nav-actions">
           {session && (
             <>
-              {!isStaff && !isCourier && (
+              {!isStaff && (
                 <NavLink to="/orders" className={linkClass}>
                   Orders
                 </NavLink>

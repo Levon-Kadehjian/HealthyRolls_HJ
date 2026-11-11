@@ -43,9 +43,9 @@ healthyrolls:
         - { path-pattern: /api/orders/preparation/next, method: POST, allowed-rules: [RESTAURANT_STAFF] }
         - { path-pattern: /api/orders/*/actions, method: POST, allowed-rules: [CUSTOMER, RESTAURANT_STAFF, OPERATOR] }
         - { path-pattern: /api/orders, method: POST, allowed-rules: [CUSTOMER] }
-        - { path-pattern: /api/orders/**, method: GET, allowed-rules: [CUSTOMER, RESTAURANT_STAFF, OPERATOR] }
+        - { path-pattern: /api/orders/**, method: GET, allowed-rules: [CUSTOMER, RESTAURANT_STAFF, COURIER, OPERATOR] }
 
-        - { path-pattern: /api/events/**, method: GET, allowed-rules: [CUSTOMER, RESTAURANT_STAFF, OPERATOR] }
+        - { path-pattern: /api/events/**, method: GET, allowed-rules: [CUSTOMER, RESTAURANT_STAFF, COURIER, OPERATOR] }
 
         # PRC
         - { path-pattern: /api/billing/history, method: GET, allowed-rules: [CUSTOMER, RESTAURANT_STAFF, COURIER, OPERATOR] }
