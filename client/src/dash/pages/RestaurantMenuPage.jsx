@@ -59,7 +59,7 @@ export default function RestaurantMenuPage() {
   return (
     <div className="menu-page">
       <div className="menu-back">
-        <Link to={canEdit ? '/dashboard/kitchen' : '/restaurants'} className="restaurant-back-link">
+        <Link to={canEdit ? '/kitchen' : '/restaurants'} className="restaurant-back-link">
           {canEdit ? '← Kitchen orders' : '← All restaurants'}
         </Link>
       </div>

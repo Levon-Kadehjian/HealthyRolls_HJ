@@ -27,10 +27,11 @@
 
 .courier-card {
   --courier-col: var(--border);
+  max-width: 600px;
+  margin-inline: auto;
   display: flex;
   flex-direction: column;
   gap: 10px;
-  max-width: 560px;
   padding: 18px;
   background: var(--social-bg);
   border: 1px solid var(--border);

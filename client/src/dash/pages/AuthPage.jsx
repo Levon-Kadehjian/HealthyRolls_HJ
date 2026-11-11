@@ -35,7 +35,7 @@ export default function AuthPage({ initialMode = 'login' }) {
   useEffect(() => {
     if (session) {
       if (session.role === 'RESTAURANT_STAFF') {
-        navigate('/dashboard/kitchen', { replace: true })
+        navigate('/kitchen', { replace: true })
       } else if (session.role === 'COURIER') {
         navigate('/courier', { replace: true })
       } else {
@@ -127,7 +127,7 @@ export default function AuthPage({ initialMode = 'login' }) {
       // Successful login/signup: navigate according to role
       const effectiveRole = res.session?.role || (mode === 'signup' ? 'CUSTOMER' : role)
       if (effectiveRole === 'RESTAURANT_STAFF') {
-        navigate('/dashboard/kitchen')
+        navigate('/kitchen')
       } else if (effectiveRole === 'COURIER') {
         navigate('/courier')
       } else {

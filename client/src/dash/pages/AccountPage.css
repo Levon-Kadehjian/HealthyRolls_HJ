@@ -5,10 +5,6 @@
   text-align: left;
 }
 
-.dashboard-content .account-page {
-  margin: 0;
-}
-
 .account-card {
   background: var(--social-bg);
   border: 1px solid var(--border);

@@ -92,7 +92,7 @@ export default function Navbar() {
   return (
     <header className="site-header">
       <div className="site-nav">
-        <Link to={isStaff ? '/dashboard/kitchen' : isCourier ? '/courier' : '/'} className="site-brand" aria-label="HealthyRolls home">
+        <Link to={isStaff ? '/kitchen' : isCourier ? '/courier' : '/'} className="site-brand" aria-label="HealthyRolls home">
           <img src={sushiLogo} alt="" className="site-brand-logo" />
           <span className="site-brand-name">HealthyRolls</span>
         </Link>
@@ -125,7 +125,7 @@ export default function Navbar() {
           )}
           {isStaff && (
             <>
-              <NavLink to="/dashboard/kitchen" className={linkClass}>
+              <NavLink to="/kitchen" className={linkClass}>
                 Kitchen
               </NavLink>
               {session?.restaurantId && (

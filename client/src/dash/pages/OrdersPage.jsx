@@ -75,6 +75,7 @@ function RefundOrder({ order, fetcher }) {
   return (
     <fetcher.Form method="post" className="order-confirm">
       <input type="hidden" name="orderId" value={order.orderId} />
+      <input type="hidden" name="status" value={order.status} />
       <p className="order-confirm-text">
         <strong>Refund this order?</strong>
         <span>The customer will receive a full refund. This cannot be undone.</span>
@@ -114,7 +115,7 @@ function OrderCard({ order, isCourier }) {
             <dd>{placedAt}</dd>
           </div>
         )}
-        {updatedAt && updatedAt !== placedAt && (
+        {updatedAt && (
           <div>
             <dt>Last update</dt>
             <dd>{updatedAt}</dd>
@@ -265,7 +266,7 @@ export default function OrdersPage() {
   const busyRestaurants = preparationQueues.filter((restaurant) => restaurant.count >= 6)
 
   const past = isCourier
-    ? sorted.filter((order) => order.status === 'DELIVERED')
+    ? sorted.filter((order) => ['DELIVERED', 'REFUNDED'].includes(order.status))
     : sorted.filter((order) => !ACTIVE_STATUSES.includes(order.status))
   const waiting = active.filter((order) => order.status === 'READY' && order.courierId == null)
 

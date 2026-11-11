@@ -83,7 +83,7 @@ export default function AccountPage() {
                 isCourier
                   ? '/courier'
                   : isStaff
-                    ? '/dashboard/kitchen'
+                    ? '/kitchen'
                     : '/orders'
               }
               className="btn-secondary"
@@ -91,7 +91,7 @@ export default function AccountPage() {
               {isCourier
                 ? 'My Deliveries'
                 : isStaff
-                  ? 'Kitchen Dashboard'
+                  ? 'Kitchen'
                   : 'View Orders'}
             </Link>
 

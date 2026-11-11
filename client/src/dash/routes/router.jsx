@@ -4,7 +4,6 @@ import { ensureSessionLocation } from '../api/auth'
 import { describeError, recordCommand, runCommand } from '../console/consoleStore'
 import { buildOrderHistory, canCancelOrder, canRefundOrder } from '../orders/orderHistory'
 import Root from '../layouts/Root'
-import Dashboard from '../layouts/Dashboard'
 import HomePage from '../pages/HomePage'
 import AuthPage from '../pages/AuthPage'
 import AboutPage from '../pages/AboutPage'
@@ -58,7 +57,7 @@ const ORDER_COMMANDS = {
   MARK_READY: 'MARK_ORDER_READY',
 }
 
-const KITCHEN_PATH = '/dashboard/kitchen'
+const KITCHEN_PATH = '/kitchen'
 const COURIER_HOME_PATH = '/courier'
 
 const isStaffSession = (session) => session?.role === 'RESTAURANT_STAFF'
@@ -100,7 +99,7 @@ const customerOnlyLoader = () => {
   redirectStaffToKitchen()
   redirectCourierHome()
   if (session.role !== 'CUSTOMER') {
-    throw redirect('/dashboard')
+    throw redirect('/orders')
   }
   return null
 }
@@ -111,11 +110,9 @@ const homeLoader = () => {
   return null
 }
 
-const dashboardLoader = () => ({ session: requireLogin() })
-
 const dashboardIndexLoader = () => {
-  const session = getSession()
-  if (isStaffSession(session)) return redirect('kitchen')
+  const session = requireLogin()
+  if (isStaffSession(session)) return redirect(KITCHEN_PATH)
   if (isCourierSession(session)) return redirect('/courier')
   return redirect('/orders')
 }
@@ -269,7 +266,7 @@ const restaurantOrdersLoader = async () => {
   const session = requireLogin()
   if (!isStaffSession(session)) {
     recordCommand('OPEN_KITCHEN', `role=${session?.role ?? 'none'}`, 'error', 'restaurant staff only')
-    throw redirect('/dashboard')
+    throw redirect('/orders')
   }
   try {
     const { orders, restaurants } = await runCommand(
@@ -584,6 +581,12 @@ export const router = createBrowserRouter([
         action: courierAction,
       },
       {
+        path: 'kitchen',
+        element: <RestaurantOrdersPage />,
+        loader: restaurantOrdersLoader,
+        action: restaurantOrdersAction,
+      },
+      {
         path: 'account',
         loader: loginRequiredLoader,
         element: <AccountPage />,
@@ -621,32 +624,23 @@ export const router = createBrowserRouter([
       },
       {
         path: 'dashboard',
-        element: <Dashboard />,
-        loader: dashboardLoader,
-        children: [
-          {
-            index: true,
-            loader: dashboardIndexLoader,
-          },
-          {
-            path: 'orders',
-            loader: () => redirect('/orders'),
-          },
-          {
-            path: 'kitchen',
-            element: <RestaurantOrdersPage />,
-            loader: restaurantOrdersLoader,
-            action: restaurantOrdersAction,
-          },
-          {
-            path: 'courier',
-            loader: () => redirect('/courier'),
-          },
-          {
-            path: 'account',
-            element: <AccountPage />,
-          },
-        ],
+        loader: dashboardIndexLoader,
+      },
+      {
+        path: 'dashboard/orders',
+        loader: () => redirect('/orders'),
+      },
+      {
+        path: 'dashboard/kitchen',
+        loader: () => redirect(KITCHEN_PATH),
+      },
+      {
+        path: 'dashboard/courier',
+        loader: () => redirect(COURIER_HOME_PATH),
+      },
+      {
+        path: 'dashboard/account',
+        loader: () => redirect('/account'),
       },
       {
         path: '*',
