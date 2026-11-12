@@ -17,12 +17,14 @@ public class NearestCourierSelector {
         Objects.requireNonNull(restaurant, "Restaurant is required");
         Objects.requireNonNull(candidates, "Courier candidates are required");
 
+        // deterministic comparing straightline distance (favours lower Courier ID)
         return candidates.stream()
                 .filter(Courier::isAvailable)
+                // floating point comparison (rare problem but just in case)
                 .min(Comparator
-                        .comparingDouble((Courier courier) -> courier.distanceTo(
+                        .comparingLong((Courier courier) -> Math.round(courier.distanceTo(
                                 restaurant.getLatitude(),
-                                restaurant.getLongitude()))
+                                restaurant.getLongitude()) * 1e9))
                         .thenComparing(courier -> courier.getId().value().toString()));
     }
 }

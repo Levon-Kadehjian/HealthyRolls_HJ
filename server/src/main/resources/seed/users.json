@@ -1,5 +1,6 @@
 [
   {
+    "id": "00000000-0000-4000-8000-000000000101",
     "email": "customer@healthyrolls.com",
     "hashedPassword": "customer123",
     "name": "Test Customer",
@@ -9,6 +10,7 @@
     "longitude": -73.5673
   },
   {
+    "id": "00000000-0000-4000-8000-000000000201",
     "email": "staff@kyo.bar",
     "hashedPassword": "staff123",
     "name": "Kyo Bar Staff",
@@ -18,6 +20,7 @@
     "longitude": -73.5574
   },
   {
+    "id": "00000000-0000-4000-8000-000000000202",
     "email": "staff@sho-dan.com",
     "hashedPassword": "staff123",
     "name": "Sho-Dan Staff",
@@ -27,6 +30,7 @@
     "longitude": -73.5745
   },
   {
+    "id": "00000000-0000-4000-8000-000000000001",
     "email": "courier@healthyrolls.com",
     "hashedPassword": "courier123",
     "name": "Test Courier",
@@ -37,6 +41,7 @@
     "courierStatus": "OFFLINE"
   },
     {
+    "id": "00000000-0000-4000-8000-000000000002",
     "email": "courier2@healthyrolls.com",
     "hashedPassword": "courier1234",
     "name": "Test Courier 2",
@@ -47,6 +52,7 @@
     "courierStatus": "OFFLINE"
   },
   {
+    "id": "00000000-0000-4000-8000-000000000003",
     "email": "courier3@healthyrolls.com",
     "hashedPassword": "courier12345",
     "name": "Test Courier 3",
@@ -57,6 +63,7 @@
     "courierStatus": "OFFLINE"
   },
   {
+    "id": "00000000-0000-4000-8000-000000000301",
     "email": "operator@healthyrolls.com",
     "hashedPassword": "operator123",
     "name": "Test Operator",
@@ -66,6 +73,7 @@
     "longitude": null
   },
   {
+    "id": "00000000-0000-4000-8000-000000000102",
     "email": "customer2@healthyrolls.com",
     "hashedPassword": "customer1234",
     "name": "Test Customer 2",
@@ -75,6 +83,7 @@
     "longitude": -73.5878
   },
   {
+    "id": "00000000-0000-4000-8000-000000000103",
     "email": "customer3@healthyrolls.com",
     "hashedPassword": "customer12345",
     "name": "Test Customer 3",
@@ -84,6 +93,7 @@
     "longitude": -73.5934
   },
   {
+    "id": "00000000-0000-4000-8000-000000000203",
     "email": "staff@maki.ca",
     "hashedPassword": "staff123",
     "name": "Maki Staff",
@@ -93,6 +103,7 @@
     "longitude": -73.5822
   },
   {
+    "id": "00000000-0000-4000-8000-000000000204",
     "email": "staff@sakura.ca",
     "hashedPassword": "staff123",
     "name": "Sakura Staff",
@@ -102,6 +113,7 @@
     "longitude": -73.5524
   },
   {
+    "id": "00000000-0000-4000-8000-000000000205",
     "email": "staff@umami.ca",
     "hashedPassword": "staff123",
     "name": "Umami Staff",
@@ -111,6 +123,7 @@
     "longitude": -73.6003
   },
   {
+    "id": "00000000-0000-4000-8000-000000000206",
     "email": "staff@izakaya.ca",
     "hashedPassword": "staff123",
     "name": "Izakaya Staff",
@@ -120,6 +133,7 @@
     "longitude": -73.56
   },
   {
+    "id": "00000000-0000-4000-8000-000000000004",
     "email": "courier4@healthyrolls.com",
     "hashedPassword": "courier123456",
     "name": "Test Courier 4",
@@ -130,6 +144,7 @@
     "courierStatus": "OFFLINE"
   },
   {
+    "id": "00000000-0000-4000-8000-000000000005",
     "email": "courier5@healthyrolls.com",
     "hashedPassword": "courier1234567",
     "name": "Test Courier 5",
@@ -140,6 +155,7 @@
     "courierStatus": "OFFLINE"
   },
   {
+    "id": "00000000-0000-4000-8000-000000000006",
     "email": "courier6@healthyrolls.com",
     "hashedPassword": "courier12345678",
     "name": "Test Courier 6",
@@ -150,6 +166,7 @@
     "courierStatus": "OFFLINE"
   },
   {
+    "id": "00000000-0000-4000-8000-000000000207",
     "email": "staff@tempura.ca",
     "hashedPassword": "staff123",
     "name": "Tempura Staff",
@@ -159,6 +176,7 @@
     "longitude": -73.5472
   },
   {
+    "id": "00000000-0000-4000-8000-000000000208",
     "email": "staff@bento.ca",
     "hashedPassword": "staff123",
     "name": "Bento Staff",
@@ -168,6 +186,7 @@
     "longitude": -73.5991
   },
   {
+    "id": "00000000-0000-4000-8000-000000000209",
     "email": "staff@poke.ca",
     "hashedPassword": "staff123",
     "name": "Poke Staff",
@@ -177,6 +196,7 @@
     "longitude": -73.571
   },
   {
+    "id": "00000000-0000-4000-8000-000000000104",
     "email": "customer4@healthyrolls.com",
     "hashedPassword": "customer123456",
     "name": "Test Customer 4",
@@ -186,6 +206,7 @@
     "longitude": -73.58
   },
   {
+    "id": "00000000-0000-4000-8000-000000000105",
     "email": "customer5@healthyrolls.com",
     "hashedPassword": "customer1234567",
     "name": "Test Customer 5",
@@ -195,6 +216,7 @@
     "longitude": -73.556
   },
   {
+    "id": "00000000-0000-4000-8000-000000000007",
     "email": "courier7@healthyrolls.com",
     "hashedPassword": "courier123456789",
     "name": "Test Courier 7",
@@ -205,6 +227,7 @@
     "courierStatus": "OFFLINE"
   },
   {
+    "id": "00000000-0000-4000-8000-000000000008",
     "email": "courier8@healthyrolls.com",
     "hashedPassword": "courier1234567890",
     "name": "Test Courier 8",
@@ -215,6 +238,7 @@
     "courierStatus": "OFFLINE"
   },
   {
+    "id": "00000000-0000-4000-8000-000000000009",
     "email": "courier9@healthyrolls.com",
     "hashedPassword": "courier12345678901",
     "name": "Test Courier 9",
@@ -225,6 +249,7 @@
     "courierStatus": "OFFLINE"
   },
   {
+    "id": "00000000-0000-4000-8000-000000000210",
     "email": "staff@saintsushi.ca",
     "hashedPassword": "staff123",
     "name": "Saint Sushi Staff",
