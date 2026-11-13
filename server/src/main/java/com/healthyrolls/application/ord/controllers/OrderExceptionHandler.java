@@ -6,6 +6,7 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 import com.healthyrolls.domain.ord.exceptions.ActionNotPermittedException;
 import com.healthyrolls.domain.ord.exceptions.InvalidTransitionException;
+import com.healthyrolls.domain.ord.exceptions.InvalidRestaurantTransitionException;
 import com.healthyrolls.domain.ord.exceptions.MenuItemSoldOutException;
 import com.healthyrolls.domain.ord.exceptions.NoAcceptedOrderException;
 import com.healthyrolls.domain.ord.exceptions.OrderNotFoundException;
@@ -18,6 +19,18 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice(basePackages = "com.healthyrolls.application.ord.controllers")
 public class OrderExceptionHandler {
+
+    @ExceptionHandler(InvalidRestaurantTransitionException.class)
+    public ProblemDetail onInvalidRestaurantTransition(InvalidRestaurantTransitionException e) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(CONFLICT, e.getMessage());
+        problem.setTitle("Invalid restaurant transition");
+        return problem;
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ProblemDetail onInvalidInput(IllegalArgumentException e) {
+        return ProblemDetail.forStatusAndDetail(org.springframework.http.HttpStatus.BAD_REQUEST, e.getMessage());
+    }
 
     @ExceptionHandler(OrderNotFoundException.class)
     public ProblemDetail onNotFound(OrderNotFoundException e) {

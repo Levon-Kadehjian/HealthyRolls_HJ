@@ -34,9 +34,13 @@ public class OrderEntity {
 
     private UUID courierId;
     private Instant acceptedAt;
+    private Instant deliveredAt;
 
     @Column(columnDefinition = "text")
     private String rejectionReason;
+
+    private Double deliveryLatitude;
+    private Double deliveryLongitude;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -59,8 +63,11 @@ public class OrderEntity {
         this.restaurantId = order.getRestaurantId();
         this.courierId = order.getCourierId();
         this.acceptedAt = order.getAcceptedAt();
+        this.deliveredAt = order.getDeliveredAt();
         this.status = order.status();
         this.rejectionReason = order.getRejectionReason();
+        this.deliveryLatitude = order.getDeliveryLatitude();
+        this.deliveryLongitude = order.getDeliveryLongitude();
         this.version = order.version();
         for (var line : order.getItems()) {
             items.add(new OrderLineEntity(line));
@@ -69,7 +76,8 @@ public class OrderEntity {
 
     public OrderRecord toRecord() {
         return new OrderRecord(orderId, status.name(), customerId, restaurantId,
-                courierId, acceptedAt, rejectionReason, version,
-                items.stream().map(OrderLineEntity::toDomain).toList());
+                courierId, acceptedAt, deliveredAt, rejectionReason, version,
+                items.stream().map(OrderLineEntity::toDomain).toList(),
+                deliveryLatitude, deliveryLongitude);
     }
 }

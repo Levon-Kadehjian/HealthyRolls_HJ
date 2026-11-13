@@ -1,4 +1,4 @@
-package com.healthyrolls.technicalservices.persistence.ord.jpa.seed;
+package com.healthyrolls.technicalservices.configuration;
 
 import com.healthyrolls.technicalservices.persistence.ord.jpa.menu.MenuItemEntity;
 import com.healthyrolls.technicalservices.persistence.ord.jpa.menu.SpringDataMenuItemRepository;
@@ -18,15 +18,15 @@ import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
 
 @Component
-public class RestaurantSeedLoader implements ApplicationRunner {
+public class SeedRestaurantLoader implements ApplicationRunner {
 
-    private static final Logger log = LoggerFactory.getLogger(RestaurantSeedLoader.class);
+    private static final Logger log = LoggerFactory.getLogger(SeedRestaurantLoader.class);
     private static final String SEED_FILE = "seed/restaurants.json";
 
     private final SpringDataRestaurantRepository restaurants;
     private final SpringDataMenuItemRepository menuItems;
 
-    public RestaurantSeedLoader(
+    public SeedRestaurantLoader(
             SpringDataRestaurantRepository restaurants,
             SpringDataMenuItemRepository menuItems) {
 
@@ -42,6 +42,11 @@ public class RestaurantSeedLoader implements ApplicationRunner {
             return;
         }
 
+        seedRestaurants();
+    }
+
+    @Transactional
+    public void seedRestaurants() {
         if (restaurants.count() > 0) {
             log.info("Restaurants already present, skipping restaurant seeding");
             return;

@@ -8,6 +8,7 @@ import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +28,9 @@ import com.healthyrolls.domain.ord.order.OrderId;
 import com.healthyrolls.domain.ord.order.OrderLine;
 import com.healthyrolls.domain.ord.order.OrderStateChanged;
 import com.healthyrolls.domain.ord.order.OrderStatus;
+import com.healthyrolls.domain.ord.order.QueueCounts;
+import com.healthyrolls.domain.reg.IUserRepository;
+import com.healthyrolls.domain.reg.User;
 
 @Service
 public class OrderService {
@@ -39,6 +43,8 @@ public class OrderService {
     private final RestaurantService restaurantService;
     private final MenuService menuService;
     private final OrderAccessPolicy policy;
+    private final ApplicationEventPublisher events;
+    private final IUserRepository userRepository;
 
     public OrderService(
             IOrderRepository repository,
@@ -46,7 +52,11 @@ public class OrderService {
             OrderEventRecorder recorder,
             RestaurantService restaurantService,
             MenuService menuService,
-            OrderAccessPolicy policy) {
+            OrderAccessPolicy policy,
+            ApplicationEventPublisher events,
+            IUserRepository userRepository) {
+
+        this.userRepository = Objects.requireNonNull(userRepository, "User repository is required");
 
         this.repository = Objects.requireNonNull(repository, "Order repository is required");
 
@@ -59,6 +69,8 @@ public class OrderService {
         this.menuService = Objects.requireNonNull(menuService, "Menu service is required");
 
         this.policy = Objects.requireNonNull(policy, "Order access policy is required");
+
+        this.events = Objects.requireNonNull(events, "Event publisher is required");
     }
 
     @Transactional
@@ -81,16 +93,21 @@ public class OrderService {
 
         List<OrderLine> validatedItems = menuService.validateAndResolveItems(restaurantId, items);
 
+        User customer = userRepository.findById(actor.userId())
+                .orElseThrow(() -> new IllegalStateException("Customer account not found: " + customerId));
+
         Order order = factory.createNew(
                 customerId,
                 restaurantId,
-                validatedItems);
+                validatedItems,
+                customer.latitude(),
+                customer.longitude());
 
         OrderId orderId = order.getOrderId();
 
         repository.save(order);
 
-        recorder.record(new OrderStateChanged(
+        record(new OrderStateChanged(
                 EventId.random(),
                 orderId,
                 OrderStatus.NONE,
@@ -154,6 +171,23 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
+    public List<QueueCounts> queueCounts(AuthenticatedUser actor) {
+        Objects.requireNonNull(actor, "User context is required");
+        List<QueueCounts> all = repository.countQueues();
+        if (actor.role() == UserRole.RESTAURANT_STAFF) {
+            UUID own = actor.restaurantId() == null ? null : actor.restaurantId().value();
+            return all.stream().filter(c -> c.restaurantId().equals(own)).toList();
+        }
+        return all;
+    }
+
+    @Transactional(readOnly = true)
+    public List<QueueCounts> queueCountsForMap(AuthenticatedUser actor) {
+        Objects.requireNonNull(actor, "User context is required");
+        return repository.countQueues();
+    }
+
+    @Transactional(readOnly = true)
     public List<Order> listOrders(AuthenticatedUser actor) {
 
         Objects.requireNonNull(actor, "User context is required");
@@ -163,11 +197,15 @@ public class OrderService {
             case CUSTOMER -> repository.findByCustomerId(actor.userId().value());
             case RESTAURANT_STAFF -> repository.findByRestaurantId(actor.restaurantId().value());
             case OPERATOR -> repository.findAll();
-            default -> List.of();
+            case COURIER -> repository.findAll().stream()
+                    .filter(order -> policy.canView(actor, order))
+                    .toList();
         };
     }
 
     private void startNextOrderIfIdle(UUID restaurantId, AuthenticatedUser actor) {
+        restaurantService.lockPreparationQueue(restaurantId);
+
         if (repository.hasPreparingOrder(restaurantId)) {
             return;
         }
@@ -195,10 +233,14 @@ public class OrderService {
 
         Instant occurredAt;
 
-        if (action == OrderAction.ACCEPT) {
-            occurredAt = order.getAcceptedAt();
-        } else {
+        if (null == action) {
             occurredAt = Instant.now();
+        } else {
+            occurredAt = switch (action) {
+                case ACCEPT -> order.getAcceptedAt();
+                case DELIVER -> order.getDeliveredAt();
+                default -> Instant.now();
+            };
         }
 
         OrderStateChanged event = new OrderStateChanged(
@@ -209,9 +251,15 @@ public class OrderService {
                 actor.userId().value(),
                 occurredAt);
 
-        recorder.record(event);
+        record(event);
 
         log.info("Order {} moved {} -> {} by user {}",
                 order.getOrderId().value(), previousStatus, order.status(), actor.userId().value());
+    }
+
+    // Observer Pattern. Listeners for DispatchService on READY, and BillingService on DELIVERED
+    private void record(OrderStateChanged event) {
+        recorder.record(event);
+        events.publishEvent(event);
     }
 }

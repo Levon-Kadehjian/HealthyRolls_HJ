@@ -28,6 +28,18 @@ public class JpaMenuRepository implements IMenuRepository {
     }
 
     @Override
+    @Transactional
+    public MenuItem saveItem(UUID restaurantId, MenuItem item) {
+        Objects.requireNonNull(restaurantId, "Restaurant ID is required");
+        Objects.requireNonNull(item, "Menu item is required");
+        var restaurant = restaurants.findById(restaurantId)
+                .orElseThrow(() -> new RestaurantNotFoundException(restaurantId));
+        MenuItemEntity saved = database.save(new MenuItemEntity(item.getItemId(), restaurant,
+                item.getName(), item.getPrice(), item.getStatus()));
+        return toDomain(saved);
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public Menu findByRestaurantId(UUID restaurantId) {
         Objects.requireNonNull(restaurantId, "Restaurant ID is required");
@@ -41,13 +53,13 @@ public class JpaMenuRepository implements IMenuRepository {
         List<MenuItem> items = new ArrayList<>();
 
         for (MenuItemEntity entity : entities) {
-            items.add(new MenuItem(
-                    entity.getItemId(),
-                    entity.getName(),
-                    entity.getPrice(),
-                    entity.getStatus()));
+            items.add(toDomain(entity));
         }
 
         return new Menu(restaurantId, items);
+    }
+
+    private MenuItem toDomain(MenuItemEntity entity) {
+        return new MenuItem(entity.getItemId(), entity.getName(), entity.getPrice(), entity.getStatus());
     }
 }

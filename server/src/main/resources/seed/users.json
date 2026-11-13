@@ -1,5 +1,6 @@
 [
   {
+    "id": "00000000-0000-4000-8000-000000000101",
     "email": "customer@healthyrolls.com",
     "hashedPassword": "customer123",
     "name": "Test Customer",
@@ -9,6 +10,7 @@
     "longitude": -73.5673
   },
   {
+    "id": "00000000-0000-4000-8000-000000000201",
     "email": "staff@kyo.bar",
     "hashedPassword": "staff123",
     "name": "Kyo Bar Staff",
@@ -18,15 +20,50 @@
     "longitude": -73.5574
   },
   {
+    "id": "00000000-0000-4000-8000-000000000202",
+    "email": "staff@sho-dan.com",
+    "hashedPassword": "staff123",
+    "name": "Sho-Dan Staff",
+    "role": "RESTAURANT_STAFF",
+    "restaurantId": { "value": "a931edab-ffd4-4b47-a4c1-6533b237a8cc" },
+    "latitude": 45.5013,
+    "longitude": -73.5745
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000001",
     "email": "courier@healthyrolls.com",
     "hashedPassword": "courier123",
     "name": "Test Courier",
     "role": "COURIER",
     "restaurantId": null,
     "latitude": 45.5185,
-    "longitude": -73.5765
+    "longitude": -73.5765,
+    "courierStatus": "OFFLINE"
+  },
+    {
+    "id": "00000000-0000-4000-8000-000000000002",
+    "email": "courier2@healthyrolls.com",
+    "hashedPassword": "courier1234",
+    "name": "Test Courier 2",
+    "role": "COURIER",
+    "restaurantId": null,
+    "latitude": 45.5135,
+    "longitude": -73.5574,
+    "courierStatus": "OFFLINE"
   },
   {
+    "id": "00000000-0000-4000-8000-000000000003",
+    "email": "courier3@healthyrolls.com",
+    "hashedPassword": "courier12345",
+    "name": "Test Courier 3",
+    "role": "COURIER",
+    "restaurantId": null,
+    "latitude": 45.4955,
+    "longitude": -73.5574,
+    "courierStatus": "OFFLINE"
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000301",
     "email": "operator@healthyrolls.com",
     "hashedPassword": "operator123",
     "name": "Test Operator",
@@ -34,5 +71,191 @@
     "restaurantId": null,
     "latitude": null,
     "longitude": null
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000102",
+    "email": "customer2@healthyrolls.com",
+    "hashedPassword": "customer1234",
+    "name": "Test Customer 2",
+    "role": "CUSTOMER",
+    "restaurantId": null,
+    "latitude": 45.5088,
+    "longitude": -73.5878
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000103",
+    "email": "customer3@healthyrolls.com",
+    "hashedPassword": "customer12345",
+    "name": "Test Customer 3",
+    "role": "CUSTOMER",
+    "restaurantId": null,
+    "latitude": 45.5262,
+    "longitude": -73.5934
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000203",
+    "email": "staff@maki.ca",
+    "hashedPassword": "staff123",
+    "name": "Maki Staff",
+    "role": "RESTAURANT_STAFF",
+    "restaurantId": { "value": "e14fadf7-995d-4b31-9849-17f761518afb" },
+    "latitude": 45.5231,
+    "longitude": -73.5822
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000204",
+    "email": "staff@sakura.ca",
+    "hashedPassword": "staff123",
+    "name": "Sakura Staff",
+    "role": "RESTAURANT_STAFF",
+    "restaurantId": { "value": "2c9016d8-3928-4c49-bf99-fde3490ef22c" },
+    "latitude": 45.5075,
+    "longitude": -73.5524
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000205",
+    "email": "staff@umami.ca",
+    "hashedPassword": "staff123",
+    "name": "Umami Staff",
+    "role": "RESTAURANT_STAFF",
+    "restaurantId": { "value": "52210a3c-e89f-4e84-b502-b8f3a8111e5a" },
+    "latitude": 45.5231,
+    "longitude": -73.6003
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000206",
+    "email": "staff@izakaya.ca",
+    "hashedPassword": "staff123",
+    "name": "Izakaya Staff",
+    "role": "RESTAURANT_STAFF",
+    "restaurantId": { "value": "64879202-47d8-4558-8d3c-a83389903e73" },
+    "latitude": 45.493,
+    "longitude": -73.56
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000004",
+    "email": "courier4@healthyrolls.com",
+    "hashedPassword": "courier123456",
+    "name": "Test Courier 4",
+    "role": "COURIER",
+    "restaurantId": null,
+    "latitude": 45.5231,
+    "longitude": -73.5934,
+    "courierStatus": "OFFLINE"
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000005",
+    "email": "courier5@healthyrolls.com",
+    "hashedPassword": "courier1234567",
+    "name": "Test Courier 5",
+    "role": "COURIER",
+    "restaurantId": null,
+    "latitude": 45.5062,
+    "longitude": -73.5636,
+    "courierStatus": "OFFLINE"
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000006",
+    "email": "courier6@healthyrolls.com",
+    "hashedPassword": "courier12345678",
+    "name": "Test Courier 6",
+    "role": "COURIER",
+    "restaurantId": null,
+    "latitude": 45.498,
+    "longitude": -73.582,
+    "courierStatus": "OFFLINE"
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000207",
+    "email": "staff@tempura.ca",
+    "hashedPassword": "staff123",
+    "name": "Tempura Staff",
+    "role": "RESTAURANT_STAFF",
+    "restaurantId": { "value": "a4c78f28-3af8-4064-9e68-80cac67d4ccc" },
+    "latitude": 45.5457,
+    "longitude": -73.5472
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000208",
+    "email": "staff@bento.ca",
+    "hashedPassword": "staff123",
+    "name": "Bento Staff",
+    "role": "RESTAURANT_STAFF",
+    "restaurantId": { "value": "2fa6ba36-ad8e-4d58-b602-387acaf3ffa8" },
+    "latitude": 45.4857,
+    "longitude": -73.5991
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000209",
+    "email": "staff@poke.ca",
+    "hashedPassword": "staff123",
+    "name": "Poke Staff",
+    "role": "RESTAURANT_STAFF",
+    "restaurantId": { "value": "4fa8d37b-1893-4958-953a-2af9dc6e66eb" },
+    "latitude": 45.459,
+    "longitude": -73.571
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000104",
+    "email": "customer4@healthyrolls.com",
+    "hashedPassword": "customer123456",
+    "name": "Test Customer 4",
+    "role": "CUSTOMER",
+    "restaurantId": null,
+    "latitude": 45.488,
+    "longitude": -73.58
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000105",
+    "email": "customer5@healthyrolls.com",
+    "hashedPassword": "customer1234567",
+    "name": "Test Customer 5",
+    "role": "CUSTOMER",
+    "restaurantId": null,
+    "latitude": 45.542,
+    "longitude": -73.556
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000007",
+    "email": "courier7@healthyrolls.com",
+    "hashedPassword": "courier123456789",
+    "name": "Test Courier 7",
+    "role": "COURIER",
+    "restaurantId": null,
+    "latitude": 45.511,
+    "longitude": -73.57,
+    "courierStatus": "OFFLINE"
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000008",
+    "email": "courier8@healthyrolls.com",
+    "hashedPassword": "courier1234567890",
+    "name": "Test Courier 8",
+    "role": "COURIER",
+    "restaurantId": null,
+    "latitude": 45.511,
+    "longitude": -73.57,
+    "courierStatus": "OFFLINE"
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000009",
+    "email": "courier9@healthyrolls.com",
+    "hashedPassword": "courier12345678901",
+    "name": "Test Courier 9",
+    "role": "COURIER",
+    "restaurantId": null,
+    "latitude": 45.48,
+    "longitude": -73.59,
+    "courierStatus": "OFFLINE"
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000210",
+    "email": "staff@saintsushi.ca",
+    "hashedPassword": "staff123",
+    "name": "Saint Sushi Staff",
+    "role": "RESTAURANT_STAFF",
+    "restaurantId": { "value": "6305aadf-08f1-4f77-819e-8a54d437fd9e" },
+    "latitude": 45.5185,
+    "longitude": -73.5765
   }
 ]

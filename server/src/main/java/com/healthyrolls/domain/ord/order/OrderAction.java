@@ -6,6 +6,7 @@ public enum OrderAction {
     MARK_READY,
     PICK_UP,
     DELIVER,
+    REFUND,
     CANCEL,
     REJECT
 }

@@ -19,11 +19,15 @@ public abstract class AbstractOrderState {
     }
 
     public void markPickedUp(Order order) {
-        throw new UnsupportedOperationException();
+        throw new InvalidTransitionException("Cannot pick up an order in state " + status());
     }
 
     public void markDelivered(Order order) {
-        throw new UnsupportedOperationException();
+        throw new InvalidTransitionException("Cannot deliver an order in state " + status());
+    }
+
+    public void refund(Order order) {
+        throw new InvalidTransitionException("Cannot refund an order in state " + status());
     }
 
     public void cancel(Order order) {

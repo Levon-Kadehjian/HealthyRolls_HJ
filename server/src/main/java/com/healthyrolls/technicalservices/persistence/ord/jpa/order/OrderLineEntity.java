@@ -25,7 +25,7 @@ public class OrderLineEntity {
     @Column(nullable = false)
     private String itemName;
 
-    @Column(nullable = false, columnDefinition = "numeric")
+    @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal unitPrice;
 
     @Enumerated(EnumType.STRING)

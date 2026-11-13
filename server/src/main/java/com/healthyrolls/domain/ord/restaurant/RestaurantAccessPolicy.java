@@ -7,6 +7,11 @@ import java.util.UUID;
 
 public class RestaurantAccessPolicy {
 
+    public boolean canEditMenu(AuthenticatedUser user, UUID restaurantId) {
+        return user.role() == UserRole.RESTAURANT_STAFF && user.restaurantId() != null
+                && user.restaurantId().value().equals(restaurantId);
+    }
+
     public boolean canReopen(AuthenticatedUser user) {
         return user.role() == UserRole.OPERATOR;
     }

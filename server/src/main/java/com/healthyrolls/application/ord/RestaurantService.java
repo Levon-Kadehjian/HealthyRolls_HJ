@@ -1,17 +1,18 @@
 package com.healthyrolls.application.ord;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.List;
-import com.healthyrolls.domain.common.UserRole;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.healthyrolls.domain.common.AuthenticatedUser;
+import com.healthyrolls.domain.common.UserRole;
 import com.healthyrolls.domain.ord.exceptions.ActionNotPermittedException;
 import com.healthyrolls.domain.ord.restaurant.IRestaurantRepository;
 import com.healthyrolls.domain.ord.restaurant.Restaurant;
@@ -54,6 +55,12 @@ public class RestaurantService {
     }
 
     @Transactional(readOnly = true)
+    public List<Restaurant> listForMap(AuthenticatedUser actor) {
+        Objects.requireNonNull(actor, "Authenticated user is required");
+        return List.copyOf(repository.findAll());
+    }
+
+    @Transactional(readOnly = true)
     public Restaurant getForBrowsing(UUID restaurantId, AuthenticatedUser actor) {
         Objects.requireNonNull(actor, "Authenticated user is required");
         Objects.requireNonNull(restaurantId, "Restaurant ID is required");
@@ -61,6 +68,11 @@ public class RestaurantService {
             throw new ActionNotPermittedException("You cannot browse this restaurant's menu");
         }
         return repository.findById(restaurantId);
+    }
+
+    @Transactional(propagation = Propagation.MANDATORY)
+    public void lockPreparationQueue(UUID restaurantId) {
+        repository.lockById(Objects.requireNonNull(restaurantId, "Restaurant ID is required"));
     }
 
     public boolean isOpen(UUID restaurantId) {

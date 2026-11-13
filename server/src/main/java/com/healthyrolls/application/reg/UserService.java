@@ -36,7 +36,13 @@ public class UserService {
         this.tokenIssuer = tokenIssuer;
     }
 
-    public UserId register(String email, String hashedPassword, String name) {
+    public UserId register(
+            String email,
+            String hashedPassword,
+            String name,
+            Double latitude,
+            Double longitude) {
+
         if (userRepository.existsByEmail(email)) {
             throw new EmailAlreadyUsedException(email);
         }
@@ -46,7 +52,9 @@ public class UserService {
                 passwordHasher.hash(hashedPassword),
                 name,
                 UserRole.CUSTOMER,
-                null);
+                null,
+                latitude,
+                longitude);
 
         UserId id = userRepository.save(user).id();
         log.info("Registered user {} with role {}", id.value(), UserRole.CUSTOMER);
@@ -75,11 +83,17 @@ public class UserService {
 
     public boolean loadSeeded(String email, String hashedPassword, String name, UserRole role,
             RestaurantId restaurantId, Double latitude, Double longitude) {
+        return loadSeeded(UserId.random(), email, hashedPassword, name, role, restaurantId, latitude, longitude);
+    }
+
+    public boolean loadSeeded(UserId id, String email, String hashedPassword, String name, UserRole role,
+            RestaurantId restaurantId, Double latitude, Double longitude) {
         if (userRepository.existsByEmail(email)) {
             return false;
         }
 
         User user = userFactory.create(
+                id,
                 email,
                 passwordHasher.hash(hashedPassword),
                 name,
@@ -93,7 +107,9 @@ public class UserService {
     }
 
     public boolean loadSeeded(SeedUser seed) {
+        // Fixed seed ids keep "lowest courier id" (R-DLV-02) stable across resets (R-REG-03).
         return loadSeeded(
+                seed.id() == null ? UserId.random() : new UserId(seed.id()),
                 seed.email(),
                 seed.hashedPassword(),
                 seed.name(),

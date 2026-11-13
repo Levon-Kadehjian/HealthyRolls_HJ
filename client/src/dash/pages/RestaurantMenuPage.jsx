@@ -4,6 +4,8 @@ import { Link, useLoaderData, useNavigate } from 'react-router-dom'
 import { useSession } from '../auth/useSession'
 import { useCart } from '../cart/useCart'
 import './RestaurantMenuPage.css'
+import MenuEditor from '../components/MenuEditor'
+import RestaurantStatusControls from '../components/RestaurantStatusControls'
 
 const currency = new Intl.NumberFormat('en-CA', { style: 'currency', currency: 'CAD' })
 
@@ -22,7 +24,8 @@ export default function RestaurantMenuPage() {
   const navigate = useNavigate()
 
   const isOpen = restaurant.status === 'OPEN'
-  const cartIsHere = cartRestaurant?.id === restaurant.id
+  const canEdit = session?.role === 'RESTAURANT_STAFF' && session.restaurantId === restaurant.id
+  const cartIsHere = session?.role === 'CUSTOMER' && cartRestaurant?.id === restaurant.id
   const cartSummary = { id: restaurant.id, name: restaurant.name, status: restaurant.status }
 
   useEffect(() => {
@@ -56,8 +59,8 @@ export default function RestaurantMenuPage() {
   return (
     <div className="menu-page">
       <div className="menu-back">
-        <Link to="/restaurants" className="restaurant-back-link">
-          ← All restaurants
+        <Link to={canEdit ? '/kitchen' : '/restaurants'} className="restaurant-back-link">
+          {canEdit ? '← Kitchen orders' : '← All restaurants'}
         </Link>
       </div>
 
@@ -72,12 +75,21 @@ export default function RestaurantMenuPage() {
           <p>{restaurant.menu.length} items on the menu</p>
         </div>
 
-        {cartIsHere && itemCount > 0 && (
-          <Link to="/cart" className="btn-primary">
-            View Cart ({itemCount})
+        <div className="restaurant-banner-actions">
+          <Link to={`/map?restaurant=${restaurant.id}`} className="btn-secondary">
+            See on map
           </Link>
-        )}
+          {cartIsHere && itemCount > 0 && (
+            <Link to="/cart" className="btn-primary">
+              View Cart ({itemCount})
+            </Link>
+          )}
+        </div>
       </header>
+
+      <RestaurantStatusControls restaurant={restaurant} session={session} />
+
+      {canEdit && <MenuEditor restaurant={restaurant} />}
 
       {!isOpen && (
         <div className="restaurant-banner restaurant-banner-warning" role="status">
@@ -159,9 +171,9 @@ export default function RestaurantMenuPage() {
 
                 <div className="menu-card-footer">
                   <span className="menu-price">{currency.format(Number(item.price))}</span>
-                  <button type="button" className="btn-add" disabled={unavailable} onClick={() => handleAdd(item)}>
+                  {session?.role === 'CUSTOMER' && <button type="button" className="btn-add" disabled={unavailable} onClick={() => handleAdd(item)}>
                     {!isOpen ? 'Unavailable' : soldOut ? 'Sold Out' : 'Add to Cart'}
-                  </button>
+                  </button>}
                 </div>
               </article>
             )

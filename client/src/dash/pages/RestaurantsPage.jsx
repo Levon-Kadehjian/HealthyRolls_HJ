@@ -1,5 +1,6 @@
-import { useLoaderData } from 'react-router-dom'
+import { Link, useLoaderData } from 'react-router-dom'
 import RestaurantCard from '../components/RestaurantCard'
+import './RestaurantsPage.css'
 
 export default function RestaurantsPage() {
   const restaurants = useLoaderData()
@@ -8,7 +9,9 @@ export default function RestaurantsPage() {
     <div className="restaurants-page">
       <header className="page-header">
         <h2>Restaurants</h2>
-        <p>Pick a restaurant to browse its menu.</p>
+        <p>
+          Find a spot and browse its menu. <Link to="/map">See them on the map →</Link>
+        </p>
       </header>
 
       {restaurants.length === 0 ? (

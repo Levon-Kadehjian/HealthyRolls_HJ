@@ -1,10 +1,19 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { Bike, ChefHat, Shield, User } from 'lucide-react'
 import sushiLogo from '../assets/sushi-logo.png'
 import { useSession } from '../auth/useSession'
 import { loginUser, registerUser } from '../api/auth'
+import { recordCommand } from '../console/consoleStore'
 import PasswordInput from '../components/PasswordInput'
 import './AuthPage.css'
+
+const ROLE_BUTTON_LABELS = {
+  CUSTOMER: 'Customer',
+  RESTAURANT_STAFF: 'Staff',
+  COURIER: 'Courier',
+  OPERATOR: 'Operator',
+}
 
 export default function AuthPage({ initialMode = 'login' }) {
   const [searchParams] = useSearchParams()
@@ -15,6 +24,8 @@ export default function AuthPage({ initialMode = 'login' }) {
   const [role, setRole] = useState('CUSTOMER')
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
+  const [latitude, setLatitude] = useState('')
+  const [longitude, setLongitude] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
@@ -24,7 +35,9 @@ export default function AuthPage({ initialMode = 'login' }) {
   useEffect(() => {
     if (session) {
       if (session.role === 'RESTAURANT_STAFF') {
-        navigate('/dashboard/kitchen', { replace: true })
+        navigate('/kitchen', { replace: true })
+      } else if (session.role === 'COURIER') {
+        navigate('/courier', { replace: true })
       } else {
         navigate('/restaurants', { replace: true })
       }
@@ -32,7 +45,6 @@ export default function AuthPage({ initialMode = 'login' }) {
   }, [session, navigate])
 
   const handleRoleSelect = (selectedRole) => {
-    if (selectedRole === 'COURIER') return
     setRole(selectedRole)
     setError('')
   }
@@ -48,7 +60,20 @@ export default function AuthPage({ initialMode = 'login' }) {
       setEmail('staff@kyo.bar')
       setPassword('staff123')
       setName('Kyo Bar Staff')
+    } else if (targetRole === 'COURIER') {
+      setEmail('courier@healthyrolls.com')
+      setPassword('courier123')
+      setName('Test Courier')
+    } else if (targetRole === 'OPERATOR') {
+      setEmail('operator@healthyrolls.com')
+      setPassword('operator123')
+      setName('Test Operator')
     }
+  }
+
+  const reportValidationError = (message) => {
+    setError(message)
+    recordCommand(mode === 'signup' ? 'REGISTER' : 'LOGIN', 'Form validation', 'error', message)
   }
 
   const handleSubmit = async (e) => {
@@ -56,16 +81,32 @@ export default function AuthPage({ initialMode = 'login' }) {
     setError('')
 
     if (mode === 'signup') {
-      if (!name.trim()) {
-        setError('Please enter your full name.')
+      const lat = Number(latitude)
+      const lon = Number(longitude)
+
+      if (
+        latitude.trim() === '' ||
+        longitude.trim() === '' ||
+        !Number.isFinite(lat) ||
+        !Number.isFinite(lon) ||
+        lat < -90 ||
+        lat > 90 ||
+        lon < -180 ||
+        lon > 180
+      ) {
+        reportValidationError('Enter a valid delivery latitude and longitude.')
         return
       }
-      if (password.length < 6) {
-        setError('Password must be at least 6 characters.')
+      if (!name.trim()) {
+        reportValidationError('Please enter your full name.')
+        return
+      }
+      if (!password.trim() || password.length < 6) {
+        reportValidationError('Password must be at least 6 characters.')
         return
       }
       if (password !== confirmPassword) {
-        setError('Passwords do not match.')
+        reportValidationError('Passwords do not match.')
         return
       }
     }
@@ -74,7 +115,7 @@ export default function AuthPage({ initialMode = 'login' }) {
     try {
       const res =
         mode === 'signup'
-          ? await registerUser({ name: name.trim(), email: email.trim(), password })
+          ? await registerUser({ name: name.trim(), email: email.trim(), password, latitude: Number(latitude), longitude: Number(longitude) })
           : await loginUser({ email: email.trim(), password, role })
 
       if (!res.ok) {
@@ -86,7 +127,9 @@ export default function AuthPage({ initialMode = 'login' }) {
       // Successful login/signup: navigate according to role
       const effectiveRole = res.session?.role || (mode === 'signup' ? 'CUSTOMER' : role)
       if (effectiveRole === 'RESTAURANT_STAFF') {
-        navigate('/dashboard/kitchen')
+        navigate('/kitchen')
+      } else if (effectiveRole === 'COURIER') {
+        navigate('/courier')
       } else {
         navigate('/restaurants')
       }
@@ -108,8 +151,8 @@ export default function AuthPage({ initialMode = 'login' }) {
           <h2>{mode === 'signup' ? 'Create an Account' : 'Welcome to HealthyRolls'}</h2>
           <p className="auth-subtitle">
             {mode === 'signup'
-              ? 'Create a customer account to start ordering rolls'
-              : 'Sign in to browse restaurants or manage your kitchen'}
+              ? 'Join today and get fresh sushi delivered'
+              : 'Sign in to browse restaurants or manage your deliveries'}
           </p>
         </header>
 
@@ -140,7 +183,11 @@ export default function AuthPage({ initialMode = 'login' }) {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="auth-form">
+        <form
+          onSubmit={handleSubmit}
+          onInvalid={(event) => reportValidationError(event.target.validationMessage)}
+          className="auth-form"
+        >
           {mode === 'login' && (
           <div className="auth-role-section">
             <span className="auth-role-label">Choose your role</span>
@@ -155,10 +202,7 @@ export default function AuthPage({ initialMode = 'login' }) {
                 onKeyDown={(e) => (e.key === ' ' || e.key === 'Enter') && handleRoleSelect('CUSTOMER')}
               >
                 <div className="auth-role-icon">
-                  <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                    <circle cx="12" cy="7" r="4" />
-                  </svg>
+                  <User />
                 </div>
                 <span className="auth-role-title">Customer</span>
                 <span className="auth-role-desc">Browse & order sushi</span>
@@ -175,39 +219,48 @@ export default function AuthPage({ initialMode = 'login' }) {
                 onKeyDown={(e) => (e.key === ' ' || e.key === 'Enter') && handleRoleSelect('RESTAURANT_STAFF')}
               >
                 <div className="auth-role-icon">
-                  <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M6 13.87A4 4 0 0 1 7.41 6a5.11 5.11 0 0 1 1.05-1.54 5 5 0 0 1 7.08 0A5.11 5.11 0 0 1 16.59 6 4 4 0 0 1 18 13.87V21H6Z" />
-                    <line x1="6" y1="17" x2="18" y2="17" />
-                  </svg>
+                  <ChefHat />
                 </div>
                 <span className="auth-role-title">Restaurant Staff</span>
                 <span className="auth-role-desc">Kitchen orders & tickets</span>
                 {role === 'RESTAURANT_STAFF' && <span className="auth-role-check">✓</span>}
               </div>
 
-              {/* Courier - Non clickable / disabled */}
+              {/* Courier */}
               <div
                 role="radio"
-                aria-checked={false}
-                aria-disabled="true"
-                className="auth-role-card auth-role-disabled"
-                title="Courier registration is coming in a future update"
+                tabIndex={0}
+                aria-checked={role === 'COURIER'}
+                className={`auth-role-card ${role === 'COURIER' ? 'auth-role-selected' : ''}`}
+                onClick={() => handleRoleSelect('COURIER')}
+                onKeyDown={(e) => (e.key === ' ' || e.key === 'Enter') && handleRoleSelect('COURIER')}
               >
-                <span className="auth-role-badge-soon">Soon</span>
                 <div className="auth-role-icon">
-                  <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="18.5" cy="17.5" r="3.5" />
-                    <circle cx="5.5" cy="17.5" r="3.5" />
-                    <circle cx="15" cy="5" r="1" />
-                    <path d="M12 17.5V14l-3-3 4-3 2 3h2" />
-                  </svg>
+                  <Bike />
                 </div>
                 <span className="auth-role-title">Courier</span>
                 <span className="auth-role-desc">Delivery partner</span>
+                {role === 'COURIER' && <span className="auth-role-check">✓</span>}
+              </div>
+
+              {/* Operator */}
+              <div
+                role="radio"
+                tabIndex={0}
+                aria-checked={role === 'OPERATOR'}
+                className={`auth-role-card ${role === 'OPERATOR' ? 'auth-role-selected' : ''}`}
+                onClick={() => handleRoleSelect('OPERATOR')}
+                onKeyDown={(e) => (e.key === ' ' || e.key === 'Enter') && handleRoleSelect('OPERATOR')}
+              >
+                <div className="auth-role-icon">
+                  <Shield />
+                </div>
+                <span className="auth-role-title">Operator</span>
+                <span className="auth-role-desc">Platform admin</span>
+                {role === 'OPERATOR' && <span className="auth-role-check">✓</span>}
               </div>
             </div>
           </div>
-
           )}
 
           {error && (
@@ -230,6 +283,39 @@ export default function AuthPage({ initialMode = 'login' }) {
                 autoComplete="name"
               />
             </div>
+          )}
+          {mode === 'signup' && (
+            <>
+              <div className="auth-field">
+                <label htmlFor="auth-latitude">Delivery latitude</label>
+                <input
+                  id="auth-latitude"
+                  type="number"
+                  className="auth-input"
+                  min="-90"
+                  max="90"
+                  step="any"
+                  value={latitude}
+                  onChange={(e) => setLatitude(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="auth-field">
+                <label htmlFor="auth-longitude">Delivery longitude</label>
+                <input
+                  id="auth-longitude"
+                  type="number"
+                  className="auth-input"
+                  min="-180"
+                  max="180"
+                  step="any"
+                  value={longitude}
+                  onChange={(e) => setLongitude(e.target.value)}
+                  required
+                />
+              </div>
+            </>
           )}
 
           <div className="auth-field">
@@ -279,7 +365,7 @@ export default function AuthPage({ initialMode = 'login' }) {
               ? 'Please wait…'
               : mode === 'signup'
                 ? 'Sign Up as Customer'
-                : `Log In as ${role === 'CUSTOMER' ? 'Customer' : 'Staff'}`}
+                : `Log In as ${ROLE_BUTTON_LABELS[role]}`}
           </button>
         </form>
 
@@ -301,9 +387,22 @@ export default function AuthPage({ initialMode = 'login' }) {
             >
               Fill Staff
             </button>
+            <button
+              type="button"
+              className="auth-demo-btn"
+              onClick={() => handleQuickFill('COURIER')}
+            >
+              Fill Courier
+            </button>
+            <button
+              type="button"
+              className="auth-demo-btn"
+              onClick={() => handleQuickFill('OPERATOR')}
+            >
+              Fill Operator
+            </button>
           </div>
         </div>
-
         )}
 
         <footer className="auth-footer">

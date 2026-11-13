@@ -15,8 +15,13 @@ public class UserFactory {
 
     public User create(String email, String storedHash, String name, UserRole role,
             RestaurantId restaurantId, Double latitude, Double longitude) {
+        return create(UserId.random(), email, storedHash, name, role, restaurantId, latitude, longitude);
+    }
+
+    public User create(UserId id, String email, String storedHash, String name, UserRole role,
+            RestaurantId restaurantId, Double latitude, Double longitude) {
         return new User(
-                UserId.random(),
+                id,
                 email,
                 storedHash,
                 name,

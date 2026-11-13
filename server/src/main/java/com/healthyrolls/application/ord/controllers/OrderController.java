@@ -4,9 +4,11 @@ import static org.springframework.http.HttpStatus.CREATED;
 
 import com.healthyrolls.application.ord.OrderService;
 import com.healthyrolls.domain.common.AuthenticatedUser;
+import com.healthyrolls.domain.ord.exceptions.ActionNotPermittedException;
 import com.healthyrolls.domain.ord.menu.MenuItem;
 import com.healthyrolls.domain.ord.menu.MenuItemStatus;
 import com.healthyrolls.domain.ord.order.Order;
+import com.healthyrolls.domain.ord.order.OrderAction;
 import com.healthyrolls.domain.ord.order.OrderId;
 import com.healthyrolls.domain.ord.order.OrderLine;
 
@@ -60,6 +62,13 @@ public class OrderController {
         return ResponseEntity.ok(orders);
     }
 
+    @GetMapping("/queues")
+    public ResponseEntity<List<QueueCountsResponse>> queueCounts(
+            @RequestAttribute(AuthenticatedUser.REQUEST_ATTRIBUTE) AuthenticatedUser user) {
+
+        return ResponseEntity.ok(orderService.queueCounts(user).stream().map(QueueCountsResponse::from).toList());
+    }
+
     @GetMapping("/{orderId}")
     public ResponseEntity<OrderResponse> getOrder(
             @RequestAttribute(AuthenticatedUser.REQUEST_ATTRIBUTE) AuthenticatedUser user,
@@ -75,6 +84,11 @@ public class OrderController {
             @RequestAttribute(AuthenticatedUser.REQUEST_ATTRIBUTE) AuthenticatedUser user,
             @PathVariable UUID orderId,
             @RequestBody OrderActionRequest req) {
+
+        if (req.action() == OrderAction.PICK_UP || req.action() == OrderAction.DELIVER) {
+            throw new ActionNotPermittedException(
+                    "Use the courier pickup and delivery endpoints for these actions");
+        }
 
         OrderId id = new OrderId(orderId);
         orderService.changeOrder(id, req.action(), req.reason(), user);

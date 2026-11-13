@@ -11,9 +11,12 @@ public record OrderRecord(
         UUID restaurantId,
         UUID courierId,
         Instant acceptedAt,
+        Instant deliveredAt,
         String rejectionReason,
         long version,
-        List<OrderLine> items) {
+        List<OrderLine> items,
+        Double deliveryLatitude,
+        Double deliveryLongitude) {
     public OrderRecord {
         items = List.copyOf(items);
     }

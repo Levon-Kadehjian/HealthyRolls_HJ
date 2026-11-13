@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
+import com.healthyrolls.domain.common.UserId;
+import com.healthyrolls.domain.ord.exceptions.InvalidTransitionException;
 import com.healthyrolls.domain.ord.order.state.PlacedState;
 
 public class Order {
@@ -15,11 +17,15 @@ public class Order {
     private UUID courierId;
     private AbstractOrderState state;
     private Instant acceptedAt;
+    private Instant deliveredAt;
     private long version;
     private List<OrderLine> items;
     private String rejectionReason;
+    private Double deliveryLatitude;
+    private Double deliveryLongitude;
 
-    Order(UUID customerId, UUID restaurantId, List<OrderLine> items) {
+    Order(UUID customerId, UUID restaurantId, List<OrderLine> items, Double deliveryLatitude,
+            Double deliveryLongitude) {
 
         this.customerId = Objects.requireNonNull(customerId, "Customer ID is required");
         this.restaurantId = Objects.requireNonNull(restaurantId, "Restaurant ID is required");
@@ -32,15 +38,19 @@ public class Order {
         }
 
         this.items = List.copyOf(items);
+        this.deliveryLatitude = deliveryLatitude;
+        this.deliveryLongitude = deliveryLongitude;
         this.id = OrderId.random();
         this.state = PlacedState.INSTANCE;
     }
 
     Order(OrderRecord record, OrderStateFactory stateFactory) {
-        this(record.customerId(), record.restaurantId(), record.items());
+        this(record.customerId(), record.restaurantId(), record.items(),
+                record.deliveryLatitude(), record.deliveryLongitude());
         this.id = new OrderId(Objects.requireNonNull(record.orderId()));
         this.courierId = record.courierId();
         this.acceptedAt = record.acceptedAt();
+        this.deliveredAt = record.deliveredAt();
         this.state = stateFactory.fromStatus(OrderStatus.valueOf(record.status()));
         this.rejectionReason = record.rejectionReason();
         this.version = record.version();
@@ -62,8 +72,20 @@ public class Order {
         return courierId;
     }
 
+    public Double getDeliveryLatitude() {
+        return deliveryLatitude;
+    }
+
+    public Double getDeliveryLongitude() {
+        return deliveryLongitude;
+    }
+
     public Instant getAcceptedAt() {
         return acceptedAt;
+    }
+
+    public Instant getDeliveredAt() {
+        return deliveredAt;
     }
 
     public List<OrderLine> getItems() {
@@ -78,8 +100,19 @@ public class Order {
         return rejectionReason;
     }
 
-    public void assignCourier(UUID id) {
-        throw new UnsupportedOperationException();
+    public void assignCourier(UserId courier) {
+        Objects.requireNonNull(courier, "Courier ID is required");
+        if (status() != OrderStatus.READY) {
+            throw new InvalidTransitionException("Cannot assign a courier to an order in state " + status());
+        }
+        courierId = courier.value();
+    }
+
+    public void releaseCourier() {
+        if (status() != OrderStatus.READY) {
+            throw new InvalidTransitionException("Cannot release the courier of an order in state " + status());
+        }
+        courierId = null;
     }
 
     public void apply(OrderAction action) {
@@ -106,6 +139,7 @@ public class Order {
             case MARK_READY -> state.markReady(this);
             case PICK_UP -> state.markPickedUp(this);
             case DELIVER -> state.markDelivered(this);
+            case REFUND -> state.refund(this);
             case CANCEL -> state.cancel(this);
             default -> throw new UnsupportedOperationException("Unsupported order action: " + action);
         }
@@ -120,6 +154,9 @@ public class Order {
 
         if (next.status() == OrderStatus.ACCEPTED) {
             acceptedAt = Instant.now();
+        }
+        if (next.status() == OrderStatus.DELIVERED) {
+            deliveredAt = Instant.now();
         }
 
         state = next;

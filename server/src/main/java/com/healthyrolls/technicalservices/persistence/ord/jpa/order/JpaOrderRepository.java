@@ -1,18 +1,22 @@
 package com.healthyrolls.technicalservices.persistence.ord.jpa.order;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
+
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.healthyrolls.domain.ord.exceptions.OrderNotFoundException;
 import com.healthyrolls.domain.ord.order.IOrderRepository;
 import com.healthyrolls.domain.ord.order.Order;
 import com.healthyrolls.domain.ord.order.OrderFactory;
 import com.healthyrolls.domain.ord.order.OrderId;
 import com.healthyrolls.domain.ord.order.OrderStatus;
-
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
-import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
+import com.healthyrolls.domain.ord.order.QueueCounts;
 
 @Repository
 public class JpaOrderRepository implements IOrderRepository {
@@ -75,6 +79,24 @@ public class JpaOrderRepository implements IOrderRepository {
     public boolean hasPreparingOrder(UUID restaurantId) {
         Objects.requireNonNull(restaurantId, "Restaurant ID is required");
         return database.existsByRestaurantIdAndStatus(restaurantId, OrderStatus.PREPARING);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<QueueCounts> countQueues() {
+        Map<UUID, Map<OrderStatus, Long>> byRestaurant = new HashMap<>();
+        for (Object[] row : database.countByRestaurantAndStatus(
+                List.of(OrderStatus.PLACED, OrderStatus.ACCEPTED, OrderStatus.PREPARING, OrderStatus.READY))) {
+            byRestaurant.computeIfAbsent((UUID) row[0], id -> new HashMap<>())
+                    .put((OrderStatus) row[1], (Long) row[2]);
+        }
+        return byRestaurant.entrySet().stream()
+                .map(e -> new QueueCounts(e.getKey(),
+                        e.getValue().getOrDefault(OrderStatus.PLACED, 0L)
+                                + e.getValue().getOrDefault(OrderStatus.ACCEPTED, 0L),
+                        e.getValue().getOrDefault(OrderStatus.PREPARING, 0L),
+                        e.getValue().getOrDefault(OrderStatus.READY, 0L)))
+                .toList();
     }
 
     @Override
