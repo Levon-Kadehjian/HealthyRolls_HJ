@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 
-import com.healthyrolls.domain.common.UserId;
 import com.healthyrolls.domain.dlv.courier.CourierStateChanged;
 import com.healthyrolls.domain.dlv.courier.CourierStatus;
 import com.healthyrolls.domain.dlv.courier.ICourierEventRepository;
@@ -83,23 +82,47 @@ public class DispatchService {
 
         // Lock before checking assignments so competing dispatches see committed offers.
         List<Courier> lockedCouriers = courierRepository.findAllForDispatch();
+
         Order order = orderRepository.findByOrderId(orderId);
-        requireReadyOrder(order);
+
+        if (order.status() != OrderStatus.READY) {
+            throw new IllegalStateException(
+                    "Only ready orders can be dispatched");
+        }
 
         Optional<Assignment> existing = assignmentRepository.findActiveByOrderId(orderId);
+
         if (existing.isPresent()) {
             queue.remove(orderId);
             return existing;
         }
 
-        Optional<Courier> selected = selectCourier(order, lockedCouriers);
+        Restaurant restaurant = restaurantRepository.findById(order.getRestaurantId());
+
+        List<Courier> candidates = lockedCouriers.stream()
+                .filter(Courier::isAvailable)
+                .filter(courier -> assignmentRepository
+                        .findActiveByCourierId(courier.getId())
+                        .isEmpty())
+                .toList();
+
+        Optional<Courier> selected = selector.select(restaurant, candidates);
+
         if (selected.isEmpty()) {
             queue.enqueue(orderId);
             return Optional.empty();
         }
 
-        Assignment assignment = assignCourier(orderId, order, selected.get());
+        Courier courier = selected.get();
+        Assignment assignment = new Assignment(orderId, courier.getId());
+
+        assignmentRepository.save(assignment);
+
+        order.assignCourier(courier.getId());
+        orderRepository.save(order);
+
         queue.remove(orderId);
+
         return Optional.of(assignment);
     }
 
@@ -142,66 +165,23 @@ public class DispatchService {
 
     private void handleCancelledOrder(OrderId orderId) {
         List<Courier> lockedCouriers = courierRepository.findAllForDispatch();
+
         Optional<Assignment> existing = assignmentRepository.findActiveByOrderId(orderId);
+
         if (existing.isEmpty()) {
             queue.remove(orderId);
             return;
         }
 
         Assignment assignment = existing.get();
-        Courier courier = findCourier(
-                lockedCouriers,
-                assignment.getCourierId());
-        assignment.cancel();
-        releaseCancelledCourier(orderId, courier);
-        assignmentRepository.save(assignment);
-        queue.remove(orderId);
 
-        if (courier.isAvailable()) {
-            onCourierIdle();
-        }
-    }
-
-    private void requireReadyOrder(Order order) {
-        if (order.status() != OrderStatus.READY) {
-            throw new IllegalStateException(
-                    "Only ready orders can be dispatched");
-        }
-    }
-
-    private Optional<Courier> selectCourier(Order order, List<Courier> lockedCouriers) {
-        Restaurant restaurant = restaurantRepository.findById(order.getRestaurantId());
-        List<Courier> candidates = lockedCouriers.stream()
-                .filter(Courier::isAvailable)
-                .filter(courier -> isCourierEligible(courier))
-                .toList();
-        return selector.select(restaurant, candidates);
-    }
-
-    private boolean isCourierEligible(Courier courier) {
-        return assignmentRepository
-                .findActiveByCourierId(courier.getId())
-                .isEmpty();
-    }
-
-    private Assignment assignCourier(OrderId orderId, Order order, Courier courier) {
-        Assignment assignment = new Assignment(
-                orderId,
-                courier.getId());
-        assignmentRepository.save(assignment);
-        order.assignCourier(courier.getId());
-        orderRepository.save(order);
-        return assignment;
-    }
-
-    private Courier findCourier(List<Courier> couriers, UserId courierId) {
-        return couriers.stream()
-                .filter(candidate -> candidate.getId().equals(courierId))
+        Courier courier = lockedCouriers.stream()
+                .filter(candidate -> candidate.getId().equals(assignment.getCourierId()))
                 .findFirst()
-                .orElseThrow(() -> new CourierNotFoundException(courierId));
-    }
+                .orElseThrow(() -> new CourierNotFoundException(assignment.getCourierId()));
 
-    private void releaseCancelledCourier(OrderId orderId, Courier courier) {
+        assignment.cancel();
+
         if (orderId.equals(courier.getCurrentOrderId())) {
             final CourierStatus previousStatus = courier.getStatus();
 
@@ -217,6 +197,13 @@ public class DispatchService {
                         courier.getStatus(),
                         Instant.now()));
             }
+        }
+
+        assignmentRepository.save(assignment);
+        queue.remove(orderId);
+
+        if (courier.isAvailable()) {
+            onCourierIdle();
         }
     }
 
