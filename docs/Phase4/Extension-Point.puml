@@ -1,0 +1,69 @@
+@startuml
+title Phase IV - Dispatch Waiting-Time NTF Extension Point
+
+package "application.dlv" {
+    class DispatchService {
+        + dispatch(OrderId) : Optional<Assignment>
+        + onCourierIdle() : void
+        - requireReadyOrder(Order) : void
+        - selectCourier(Order, List<Courier>) : Optional<Courier>
+        - isCourierEligible(Courier) : boolean
+        - assignCourier(OrderId, Order, Courier) : Assignment
+        - findCourier(List<Courier>, UserId) : Courier
+        - releaseCancelledCourier(OrderId, Courier) : void
+    }
+
+    interface DispatchExtension {
+        + onWaitingOrder(OrderId, Instant) : void
+        + onAssignmentCreated(OrderId, Assignment) : void
+    }
+}
+
+package "domain.dlv.delivery" {
+    class DispatchQueue
+    class Assignment
+}
+
+package "domain.dlv.courier" {
+    class NearestCourierSelector
+    class Courier
+}
+
+package "domain.ord.order" {
+    class Order
+    class OrderId
+}
+
+package "NTF module" {
+    class WaitingTimeAlertService {
+        + onWaitingOrder(OrderId, Instant) : void
+        + onAssignmentCreated(OrderId, Assignment) : void
+    }
+}
+
+DispatchService ..> DispatchQueue : manages waiting orders
+DispatchService ..> NearestCourierSelector : selects a courier
+DispatchService ..> Order : validates and assigns
+DispatchService ..> Assignment : creates and persists
+DispatchService ..> Courier : filters and releases
+DispatchService --> DispatchExtension : publishes lifecycle events
+DispatchExtension <|.. WaitingTimeAlertService : implements
+
+note right of DispatchService
+  Extract Method separated validation,
+  courier selection, assignment creation, courier lookup,
+  and cancelled-courier release.
+  selectCourier(...) and assignCourier(...)
+  keep DispatchService's dispatch flow open
+  for focused future dispatch behavior.
+end note
+
+note bottom of WaitingTimeAlertService
+  NTF module plugs into DispatchExtension.
+  onWaitingOrder() receives queue event
+  and evaluates waiting-time alerts.
+  onAssignmentCreated() allows assignment
+  state changes to cancel or update an alert.
+end note
+
+@enduml
