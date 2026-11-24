@@ -181,15 +181,7 @@ public class CourierService {
         assignmentRepository.save(assignment);
         repository.save(courier);
 
-        CourierStateChanged event = new CourierStateChanged(
-                EventId.random(),
-                courierId,
-                orderId,
-                previousStatus,
-                courier.getStatus(),
-                Instant.now());
-
-        courierEventRepository.save(event);
+        CourierStateChanged event = recordCourierTransition(courier, previousStatus, orderId);
 
         log.info("Courier {} accepted order {}, moved {} -> {}, event {}",
                 courierId.value(), orderId.value(), previousStatus, courier.getStatus(),
@@ -227,15 +219,7 @@ public class CourierService {
 
         dispatchService.returnOfferToQueue(assignment);
 
-        CourierStateChanged event = new CourierStateChanged(
-                EventId.random(),
-                courierId,
-                orderId,
-                previousStatus,
-                courier.getStatus(),
-                Instant.now());
-
-        courierEventRepository.save(event);
+        CourierStateChanged event = recordCourierTransition(courier, previousStatus, orderId);
 
         log.info("Courier {} declined order {}, moved {} -> {}, event {}",
                 courierId.value(), orderId.value(), previousStatus, courier.getStatus(),
@@ -391,18 +375,21 @@ public class CourierService {
                         assignment.getOrderId(), actor));
     }
 
-    private void recordCourierTransition(
+    private CourierStateChanged recordCourierTransition(
             Courier courier,
             CourierStatus previousStatus,
             OrderId orderId) {
 
-        courierEventRepository.save(new CourierStateChanged(
+        CourierStateChanged event = new CourierStateChanged(
                 EventId.random(),
                 courier.getId(),
                 orderId,
                 previousStatus,
                 courier.getStatus(),
-                Instant.now()));
+                Instant.now());
+
+        courierEventRepository.save(event);
+        return event;
     }
 
     @Transactional(readOnly = true)
