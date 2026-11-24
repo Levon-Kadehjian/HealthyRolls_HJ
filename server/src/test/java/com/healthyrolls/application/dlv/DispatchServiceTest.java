@@ -9,6 +9,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -21,6 +22,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.healthyrolls.domain.common.UserId;
 import com.healthyrolls.domain.dlv.courier.Courier;
+import com.healthyrolls.domain.dlv.courier.CourierStateChanged;
 import com.healthyrolls.domain.dlv.courier.CourierStatus;
 import com.healthyrolls.domain.dlv.courier.ICourierEventRepository;
 import com.healthyrolls.domain.dlv.courier.ICourierRepository;
@@ -28,9 +30,12 @@ import com.healthyrolls.domain.dlv.delivery.Assignment;
 import com.healthyrolls.domain.dlv.delivery.DispatchQueue;
 import com.healthyrolls.domain.dlv.delivery.IAssignmentRepository;
 import com.healthyrolls.domain.dlv.delivery.NearestCourierSelector;
+import com.healthyrolls.domain.dlv.exceptions.CourierNotFoundException;
+import com.healthyrolls.domain.ord.order.EventId;
 import com.healthyrolls.domain.ord.order.IOrderRepository;
 import com.healthyrolls.domain.ord.order.Order;
 import com.healthyrolls.domain.ord.order.OrderId;
+import com.healthyrolls.domain.ord.order.OrderStateChanged;
 import com.healthyrolls.domain.ord.order.OrderStatus;
 import com.healthyrolls.domain.ord.restaurant.IRestaurantRepository;
 import com.healthyrolls.domain.ord.restaurant.Restaurant;
@@ -199,6 +204,108 @@ class DispatchServiceTest {
         assertEquals(List.of(orderId), queue.snapshot());
         verify(selector).select(restaurant, List.of());
         verify(assignmentRepository, never()).save(any(Assignment.class));
+    }
+
+    @Test
+    void cancellingOrderWithoutAssignmentRemovesItFromQueue() {
+        OrderId orderId = OrderId.random();
+        queue.enqueue(orderId);
+
+        when(courierRepository.findAllForDispatch()).thenReturn(List.of());
+        when(assignmentRepository.findActiveByOrderId(orderId))
+                .thenReturn(Optional.empty());
+
+        service.onOrderStateChanged(cancelledEvent(orderId));
+
+        assertTrue(queue.snapshot().isEmpty());
+        verify(assignmentRepository, never()).save(any(Assignment.class));
+        verify(courierRepository, never()).save(any(Courier.class));
+        verify(courierEventRepository, never()).save(any(CourierStateChanged.class));
+    }
+
+    @Test
+    void cancellingAssignedOrderCancelsAssignmentAndReleasesCourier() {
+        OrderId orderId = OrderId.random();
+        Courier courier = new Courier(
+                UserId.random(),
+                "Assigned Courier",
+                1.0,
+                1.0,
+                CourierStatus.ASSIGNED,
+                orderId);
+        Assignment assignment = new Assignment(orderId, courier.getId());
+        queue.enqueue(orderId);
+
+        when(courierRepository.findAllForDispatch()).thenReturn(List.of(courier));
+        when(assignmentRepository.findActiveByOrderId(orderId))
+                .thenReturn(Optional.of(assignment));
+
+        service.onOrderStateChanged(cancelledEvent(orderId));
+
+        assertTrue(!assignment.isActive());
+        assertEquals(CourierStatus.IDLE, courier.getStatus());
+        assertEquals(null, courier.getCurrentOrderId());
+        assertTrue(queue.snapshot().isEmpty());
+        verify(courierRepository).save(courier);
+        verify(assignmentRepository).save(assignment);
+        verify(courierEventRepository).save(any(CourierStateChanged.class));
+    }
+
+    @Test
+    void cancellingOrderCancelsAssignmentWhenCourierHasDifferentCurrentOrder() {
+        OrderId orderId = OrderId.random();
+        Courier courier = new Courier(
+                UserId.random(),
+                "Assigned Courier",
+                1.0,
+                1.0,
+                CourierStatus.ASSIGNED,
+                OrderId.random());
+        Assignment assignment = new Assignment(orderId, courier.getId());
+
+        when(courierRepository.findAllForDispatch()).thenReturn(List.of(courier));
+        when(assignmentRepository.findActiveByOrderId(orderId))
+                .thenReturn(Optional.of(assignment));
+
+        service.onOrderStateChanged(cancelledEvent(orderId));
+
+        assertTrue(!assignment.isActive());
+        assertEquals(CourierStatus.ASSIGNED, courier.getStatus());
+        assertTrue(queue.snapshot().isEmpty());
+        verify(courierRepository, never()).save(courier);
+        verify(assignmentRepository).save(assignment);
+        verify(courierEventRepository, never()).save(any(CourierStateChanged.class));
+    }
+
+    @Test
+    void cancellingOrderThrowsWhenAssignedCourierIsMissing() {
+        OrderId orderId = OrderId.random();
+        UserId missingCourierId = UserId.random();
+        Assignment assignment = new Assignment(orderId, missingCourierId);
+
+        when(courierRepository.findAllForDispatch()).thenReturn(List.of());
+        when(assignmentRepository.findActiveByOrderId(orderId))
+                .thenReturn(Optional.of(assignment));
+
+        CourierNotFoundException exception = assertThrows(
+                CourierNotFoundException.class,
+                () -> service.onOrderStateChanged(cancelledEvent(orderId)));
+
+        assertEquals(
+                "Courier not found: " + missingCourierId.value(),
+                exception.getMessage());
+        verify(assignmentRepository, never()).save(any(Assignment.class));
+        verify(courierRepository, never()).save(any(Courier.class));
+    }
+
+    private OrderStateChanged cancelledEvent(OrderId orderId) {
+        return new OrderStateChanged(
+                EventId.random(),
+                orderId,
+                OrderStatus.ACCEPTED,
+                OrderStatus.CANCELLED,
+                UUID.randomUUID(),
+                Instant.now());
     }
 
     private Courier idleCourier() {
