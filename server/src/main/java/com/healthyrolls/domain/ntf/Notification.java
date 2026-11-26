@@ -1,9 +1,10 @@
 package com.healthyrolls.domain.ntf;
 
-import com.healthyrolls.domain.common.UserId;
-import com.healthyrolls.domain.ord.order.OrderId;
 import java.time.Instant;
 import java.util.Objects;
+
+import com.healthyrolls.domain.common.UserId;
+import com.healthyrolls.domain.ord.order.OrderId;
 
 public class Notification {
 
@@ -15,15 +16,19 @@ public class Notification {
     private final Instant createdAt;
     private boolean read;
 
-    public Notification(NotificationId id, UserId recipientId, OrderId orderId,
-            NotificationType type, String message, Instant createdAt) {
-
+    public Notification(
+            NotificationId id,
+            UserId recipientId,
+            OrderId orderId,
+            NotificationType type,
+            String message,
+            Instant createdAt) {
         this.id = Objects.requireNonNull(id, "Notification ID is required");
-        this.type = Objects.requireNonNull(type, "Notification type is required");
-        this.message = Objects.requireNonNull(message, "Notification message is required");
-        this.createdAt = Objects.requireNonNull(createdAt, "Notification createdAt is required");
         this.recipientId = recipientId;
         this.orderId = orderId;
+        this.type = Objects.requireNonNull(type, "Notification type is required");
+        this.message = Objects.requireNonNull(message, "Message is required");
+        this.createdAt = Objects.requireNonNull(createdAt, "Creation timestamp is required");
         this.read = false;
     }
 
@@ -56,6 +61,6 @@ public class Notification {
     }
 
     public void markRead() {
-        read = true;
+        this.read = true;
     }
 }
