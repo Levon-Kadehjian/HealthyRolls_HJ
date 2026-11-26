@@ -24,7 +24,7 @@ public class JpaNotificationRepository implements INotificationRepository {
     @Override
     @Transactional
     public Notification save(Notification n) {
-        insertIfAbsent(n);
+        jpa.save(NotificationEntity.from(n));
         return n;
     }
 
