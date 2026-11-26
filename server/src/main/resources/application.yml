@@ -74,6 +74,7 @@ healthyrolls:
 
         # NTF
         - { path-pattern: /api/notifications, method: GET, allowed-rules: [CUSTOMER, OPERATOR] }
+        - { path-pattern: /api/notifications/*/read, method: POST, allowed-rules: [CUSTOMER, OPERATOR] }
 
         # Operator
         - { path-pattern: /api/admin/reset, method: POST, allowed-rules: [OPERATOR] }
