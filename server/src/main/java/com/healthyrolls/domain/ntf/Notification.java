@@ -24,7 +24,7 @@ public class Notification {
             String message,
             Instant createdAt) {
         this.id = Objects.requireNonNull(id, "Notification ID is required");
-        this.recipientId = Objects.requireNonNull(recipientId, "Recipient ID is required");
+        this.recipientId = recipientId;
         this.orderId = orderId;
         this.type = Objects.requireNonNull(type, "Notification type is required");
         this.message = Objects.requireNonNull(message, "Message is required");

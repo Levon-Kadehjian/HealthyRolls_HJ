@@ -1,13 +1,12 @@
 package com.healthyrolls.domain.ntf;
 
+import com.healthyrolls.domain.common.UserId;
 import java.util.List;
 import java.util.Optional;
 
-import com.healthyrolls.domain.common.UserId;
-
 public interface INotificationRepository {
 
-    Notification save(Notification notification);
+    Notification save(Notification n);
 
     Optional<Notification> findById(NotificationId id);
 

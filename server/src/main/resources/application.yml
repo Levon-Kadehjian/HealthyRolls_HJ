@@ -13,6 +13,11 @@ logging:
     root: WARN
     com.healthyrolls: INFO
 
+notification:
+  dispatch-wait-threshold: ${DISPATCH_WAIT_THRESHOLD:5m}
+  scan-interval: ${SCAN_INTERVAL:1m}
+  max-notifications-per-user: ${MAX_NOTIFICATIONS_PER_USER:50}
+
 pricing:
   delivery-fee: ${DELIVERY_FEE:2.99}
   service-fee: ${SERVICE_FEE:1.99}
