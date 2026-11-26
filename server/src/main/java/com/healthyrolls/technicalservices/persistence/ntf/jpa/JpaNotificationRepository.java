@@ -40,6 +40,14 @@ public class JpaNotificationRepository implements INotificationRepository {
         return findByRecipient(id.value(), 50);
     }
 
+    @Transactional(readOnly = true)
+    public List<Notification> findByRecipient(UUID id, int limit) {
+        return jpa.findByRecipientId(id, PageRequest.of(0, limit))
+                .stream()
+                .map(NotificationRecord::toDomain)
+                .toList();
+    }
+
     @Override
     @Transactional
     public void deleteAll() {
@@ -53,14 +61,6 @@ public class JpaNotificationRepository implements INotificationRepository {
         }
         jpa.save(NotificationRecord.from(n));
         return true;
-    }
-
-    @Transactional(readOnly = true)
-    public List<Notification> findByRecipient(UUID id, int limit) {
-        return jpa.findByRecipientId(id, PageRequest.of(0, limit))
-                .stream()
-                .map(NotificationRecord::toDomain)
-                .toList();
     }
 
     @Transactional(readOnly = true)
