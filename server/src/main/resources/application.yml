@@ -67,5 +67,8 @@ healthyrolls:
         - { path-pattern: /api/dispatch/stalled-orders/*/reassign, method: POST, allowed-rules: [OPERATOR] }
         - { path-pattern: /api/dispatch/couriers, method: GET, allowed-rules: [CUSTOMER, RESTAURANT_STAFF, COURIER, OPERATOR] }
 
+        # NTF
+        - { path-pattern: /api/notifications, method: GET, allowed-rules: [CUSTOMER, OPERATOR] }
+
         # Operator
         - { path-pattern: /api/admin/reset, method: POST, allowed-rules: [OPERATOR] }
