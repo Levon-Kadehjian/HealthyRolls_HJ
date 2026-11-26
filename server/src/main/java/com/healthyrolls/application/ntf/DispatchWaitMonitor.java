@@ -29,7 +29,7 @@ public class DispatchWaitMonitor implements DispatchExtension {
         alerted.remove(orderId);
     }
 
-    @Scheduled(fixedDelayString = "${notifications.check-interval}")
+    @Scheduled(fixedDelayString = "${notification.scan-interval}")
     public void checkWaitingOrders() {
     }
 
