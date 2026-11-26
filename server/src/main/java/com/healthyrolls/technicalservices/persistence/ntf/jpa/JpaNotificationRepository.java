@@ -5,6 +5,7 @@ import com.healthyrolls.domain.ntf.INotificationRepository;
 import com.healthyrolls.domain.ntf.Notification;
 import com.healthyrolls.domain.ntf.NotificationId;
 import com.healthyrolls.domain.ntf.NotificationType;
+import com.healthyrolls.technicalservices.persistence.ntf.NotificationProperties;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -19,9 +20,11 @@ public class JpaNotificationRepository implements INotificationRepository {
     private static final Sort NEWEST_FIRST = Sort.by(Sort.Direction.DESC, "createdAt");
 
     private final SpringDataNotificationRepository jpa;
+    private final NotificationProperties properties;
 
-    public JpaNotificationRepository(SpringDataNotificationRepository jpa) {
+    public JpaNotificationRepository(SpringDataNotificationRepository jpa, NotificationProperties properties) {
         this.jpa = jpa;
+        this.properties = properties;
     }
 
     @Override
@@ -40,7 +43,7 @@ public class JpaNotificationRepository implements INotificationRepository {
     @Override
     @Transactional(readOnly = true)
     public List<Notification> findByRecipient(UserId id) {
-        return findByRecipient(id.value(), 50);
+        return findByRecipient(id.value(), properties.getMaxNotificationsPerUser());
     }
 
     @Transactional(readOnly = true)
