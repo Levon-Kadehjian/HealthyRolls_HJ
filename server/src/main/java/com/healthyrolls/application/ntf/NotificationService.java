@@ -40,11 +40,11 @@ public class NotificationService {
 
     @EventListener
     public void onOrderStateChanged(OrderStateChanged event) {
-
+        // Handled by NotificationService team
     }
 
     public void alertOperators(OrderId orderId, Duration waited) {
-
+        // Handled by NotificationService team
     }
 
     public List<Notification> listFor(AuthenticatedUser user) {
