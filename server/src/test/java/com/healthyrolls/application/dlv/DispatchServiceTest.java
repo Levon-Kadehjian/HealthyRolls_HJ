@@ -70,7 +70,8 @@ class DispatchServiceTest {
                 restaurantRepository,
                 courierEventRepository,
                 selector,
-                queue);
+                queue,
+                List.of());
     }
 
     @Test
