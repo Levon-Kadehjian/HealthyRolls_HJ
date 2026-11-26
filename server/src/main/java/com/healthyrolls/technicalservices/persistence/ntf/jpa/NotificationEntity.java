@@ -14,7 +14,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "notifications")
-public class NotificationRecord {
+public class NotificationEntity {
 
     @Id
     private UUID id;
@@ -38,11 +38,11 @@ public class NotificationRecord {
     @Column(nullable = false)
     private boolean read;
 
-    protected NotificationRecord() {
+    protected NotificationEntity() {
     }
 
-    static NotificationRecord from(Notification n) {
-        NotificationRecord r = new NotificationRecord();
+    static NotificationEntity from(Notification n) {
+        NotificationEntity r = new NotificationEntity();
         r.id = n.getId().value();
         r.orderId = n.getOrderId() != null ? n.getOrderId().value() : null;
         r.recipientId = n.getRecipientId() != null ? n.getRecipientId().value() : null;

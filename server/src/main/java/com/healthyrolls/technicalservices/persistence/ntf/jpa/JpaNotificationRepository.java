@@ -31,7 +31,7 @@ public class JpaNotificationRepository implements INotificationRepository {
     @Override
     @Transactional(readOnly = true)
     public Optional<Notification> findById(NotificationId id) {
-        return jpa.findById(id.value()).map(NotificationRecord::toDomain);
+        return jpa.findById(id.value()).map(NotificationEntity::toDomain);
     }
 
     @Override
@@ -44,7 +44,7 @@ public class JpaNotificationRepository implements INotificationRepository {
     public List<Notification> findByRecipient(UUID id, int limit) {
         return jpa.findByRecipientId(id, PageRequest.of(0, limit))
                 .stream()
-                .map(NotificationRecord::toDomain)
+                .map(NotificationEntity::toDomain)
                 .toList();
     }
 
@@ -59,7 +59,7 @@ public class JpaNotificationRepository implements INotificationRepository {
         if (jpa.existsBySourceId(n.getId().value())) {
             return false;
         }
-        jpa.save(NotificationRecord.from(n));
+        jpa.save(NotificationEntity.from(n));
         return true;
     }
 
@@ -67,7 +67,7 @@ public class JpaNotificationRepository implements INotificationRepository {
     public List<Notification> findOperatorAlerts(int limit) {
         return jpa.findByType(NotificationType.DISPATCH_ALERT.name(), PageRequest.of(0, limit))
                 .stream()
-                .map(NotificationRecord::toDomain)
+                .map(NotificationEntity::toDomain)
                 .toList();
     }
 

@@ -5,11 +5,11 @@ import java.util.UUID;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface SpringDataNotificationRepository extends JpaRepository<NotificationRecord, UUID> {
+public interface SpringDataNotificationRepository extends JpaRepository<NotificationEntity, UUID> {
 
     boolean existsBySourceId(UUID sourceId);
 
-    List<NotificationRecord> findByRecipientId(UUID recipientId, Pageable page);
+    List<NotificationEntity> findByRecipientId(UUID recipientId, Pageable page);
 
-    List<NotificationRecord> findByType(String type, Pageable page);
+    List<NotificationEntity> findByType(String type, Pageable page);
 }
