@@ -9,11 +9,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 public class JpaNotificationRepository implements INotificationRepository {
+
+    private static final Sort NEWEST_FIRST = Sort.by(Sort.Direction.DESC, "createdAt");
 
     private final SpringDataNotificationRepository jpa;
 
@@ -42,7 +45,7 @@ public class JpaNotificationRepository implements INotificationRepository {
 
     @Transactional(readOnly = true)
     public List<Notification> findByRecipient(UUID id, int limit) {
-        return jpa.findByRecipientId(id, PageRequest.of(0, limit))
+        return jpa.findByRecipientId(id, PageRequest.of(0, limit, NEWEST_FIRST))
                 .stream()
                 .map(NotificationEntity::toDomain)
                 .toList();
@@ -65,7 +68,7 @@ public class JpaNotificationRepository implements INotificationRepository {
 
     @Transactional(readOnly = true)
     public List<Notification> findOperatorAlerts(int limit) {
-        return jpa.findByType(NotificationType.DISPATCH_ALERT.name(), PageRequest.of(0, limit))
+        return jpa.findByType(NotificationType.DISPATCH_ALERT.name(), PageRequest.of(0, limit, NEWEST_FIRST))
                 .stream()
                 .map(NotificationEntity::toDomain)
                 .toList();
