@@ -59,7 +59,7 @@ public class JpaNotificationRepository implements INotificationRepository {
 
     @Transactional
     public boolean insertIfAbsent(Notification n) {
-        if (jpa.existsBySourceId(n.getId().value())) {
+        if (jpa.existsById(n.getId().value())) {
             return false;
         }
         jpa.save(NotificationEntity.from(n));

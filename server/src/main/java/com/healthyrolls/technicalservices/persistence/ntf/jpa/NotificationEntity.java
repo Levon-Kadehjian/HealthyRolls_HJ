@@ -32,9 +32,6 @@ public class NotificationEntity {
     @Column(nullable = false)
     private Instant createdAt;
 
-    @Column(nullable = false, unique = true)
-    private UUID sourceId;
-
     @Column(nullable = false)
     private boolean read;
 
@@ -49,7 +46,6 @@ public class NotificationEntity {
         r.type = n.getType().name();
         r.message = n.getMessage();
         r.createdAt = n.getCreatedAt();
-        r.sourceId = n.getId().value();
         r.read = n.isRead();
         return r;
     }
