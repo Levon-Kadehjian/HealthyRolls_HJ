@@ -12,5 +12,7 @@ public interface INotificationRepository {
 
     List<Notification> findByRecipient(UserId id);
 
+    List<Notification> findOperatorAlerts();
+
     void deleteAll();
 }

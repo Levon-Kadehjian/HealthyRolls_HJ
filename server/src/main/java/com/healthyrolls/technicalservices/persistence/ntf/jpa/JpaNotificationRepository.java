@@ -8,7 +8,6 @@ import com.healthyrolls.domain.ntf.NotificationType;
 import com.healthyrolls.technicalservices.persistence.ntf.NotificationProperties;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
@@ -43,12 +42,16 @@ public class JpaNotificationRepository implements INotificationRepository {
     @Override
     @Transactional(readOnly = true)
     public List<Notification> findByRecipient(UserId id) {
-        return findByRecipient(id.value(), properties.getMaxNotificationsPerUser());
+        return jpa.findByRecipientId(id.value(), latest())
+                .stream()
+                .map(NotificationEntity::toDomain)
+                .toList();
     }
 
+    @Override
     @Transactional(readOnly = true)
-    public List<Notification> findByRecipient(UUID id, int limit) {
-        return jpa.findByRecipientId(id, PageRequest.of(0, limit, NEWEST_FIRST))
+    public List<Notification> findOperatorAlerts() {
+        return jpa.findByType(NotificationType.DISPATCH_ALERT.name(), latest())
                 .stream()
                 .map(NotificationEntity::toDomain)
                 .toList();
@@ -57,28 +60,10 @@ public class JpaNotificationRepository implements INotificationRepository {
     @Override
     @Transactional
     public void deleteAll() {
-        clear();
-    }
-
-    @Transactional
-    public boolean insertIfAbsent(Notification n) {
-        if (jpa.existsById(n.getId().value())) {
-            return false;
-        }
-        jpa.save(NotificationEntity.from(n));
-        return true;
-    }
-
-    @Transactional(readOnly = true)
-    public List<Notification> findOperatorAlerts(int limit) {
-        return jpa.findByType(NotificationType.DISPATCH_ALERT.name(), PageRequest.of(0, limit, NEWEST_FIRST))
-                .stream()
-                .map(NotificationEntity::toDomain)
-                .toList();
-    }
-
-    @Transactional
-    public void clear() {
         jpa.deleteAll();
+    }
+
+    private PageRequest latest() {
+        return PageRequest.of(0, properties.getMaxNotificationsPerUser(), NEWEST_FIRST);
     }
 }
