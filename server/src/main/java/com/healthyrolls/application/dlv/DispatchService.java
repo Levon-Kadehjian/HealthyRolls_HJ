@@ -41,6 +41,7 @@ public class DispatchService {
     private final ICourierEventRepository courierEventRepository;
     private final NearestCourierSelector selector;
     private final DispatchQueue queue;
+    private final List<DispatchExtension> extensions;
 
     public DispatchService(
             ICourierRepository courierRepository,
@@ -49,7 +50,8 @@ public class DispatchService {
             IRestaurantRepository restaurantRepository,
             ICourierEventRepository courierEventRepository,
             NearestCourierSelector selector,
-            DispatchQueue queue) {
+            DispatchQueue queue,
+            List<DispatchExtension> extensions) {
 
         this.courierRepository = Objects.requireNonNull(
                 courierRepository, "Courier repository is required");
@@ -65,6 +67,8 @@ public class DispatchService {
                 selector, "Courier selector is required");
         this.queue = Objects.requireNonNull(
                 queue, "Dispatch queue is required");
+        this.extensions = List.copyOf(Objects.requireNonNull(
+                extensions, "Dispatch extensions are required"));
     }
 
     @EventListener
@@ -95,11 +99,13 @@ public class DispatchService {
         Optional<Courier> selected = selectCourier(order, lockedCouriers);
         if (selected.isEmpty()) {
             queue.enqueue(orderId);
+            notifyWaiting(orderId);
             return Optional.empty();
         }
 
         Assignment assignment = assignCourier(orderId, order, selected.get());
         queue.remove(orderId);
+        notifyAssigned(orderId, assignment);
         return Optional.of(assignment);
     }
 
@@ -199,6 +205,15 @@ public class DispatchService {
                 .filter(candidate -> candidate.getId().equals(courierId))
                 .findFirst()
                 .orElseThrow(() -> new CourierNotFoundException(courierId));
+    }
+
+    private void notifyWaiting(OrderId orderId) {
+        Instant since = Instant.now();
+        extensions.forEach(extension -> extension.onWaitingOrder(orderId, since));
+    }
+
+    private void notifyAssigned(OrderId orderId, Assignment assignment) {
+        extensions.forEach(extension -> extension.onAssignmentCreated(orderId, assignment));
     }
 
     private void releaseCancelledCourier(OrderId orderId, Courier courier) {
