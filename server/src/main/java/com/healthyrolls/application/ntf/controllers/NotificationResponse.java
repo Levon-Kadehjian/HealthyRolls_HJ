@@ -11,7 +11,8 @@ public record NotificationResponse(
         UUID orderId,
         NotificationType type,
         String message,
-        Instant createdAt) {
+        Instant createdAt,
+        boolean read) {
 
     public static NotificationResponse from(Notification n) {
         return new NotificationResponse(
@@ -19,6 +20,7 @@ public record NotificationResponse(
                 n.getOrderId() != null ? n.getOrderId().value() : null,
                 n.getType(),
                 n.getMessage(),
-                n.getCreatedAt());
+                n.getCreatedAt(),
+                n.isRead());
     }
 }
