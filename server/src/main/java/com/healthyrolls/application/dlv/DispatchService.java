@@ -139,6 +139,7 @@ public class DispatchService {
         orderRepository.save(order);
 
         queue.enqueue(orderId);
+        notifyWaiting(orderId);
         onCourierIdle();
     }
 
