@@ -3,6 +3,7 @@ import sushiLogo from '../assets/sushi-logo.png'
 import { useCart } from '../cart/useCart'
 import { useSession } from '../auth/useSession'
 import AccountMenu from './AccountMenu'
+import NotificationPanel from './NotificationPanel'
 import './Navbar.css'
 import { ShoppingCart } from 'lucide-react'
 
@@ -88,6 +89,7 @@ export default function Navbar() {
                   {itemCount > 0 && <span className="nav-badge" aria-hidden="true">{itemCount}</span>}
                 </NavLink>
               )}
+              <NotificationPanel key={session.userId} />
             </>
           )}
           <AccountMenu session={session} />

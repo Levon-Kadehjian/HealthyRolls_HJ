@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, useFetcher, useFetchers, useLoaderData, useRevalidator } from 'react-router-dom'
 import { useSession } from '../auth/useSession'
-import NotificationPanel from '../components/NotificationPanel'
 import {
   ACTIVE_STATUSES,
   canCancelOrder,
@@ -322,8 +321,6 @@ export default function OrdersPage() {
           {isOperator ? 'Check the output console for details.' : 'Try refreshing the page.'}
         </p>
       )}
-
-      <NotificationPanel key={session?.userId ?? 'anon'} />
 
       {isOperator && !failed && busyRestaurants.length > 0 && (
         <section className="orders-section" aria-label="Preparation queue warnings">
