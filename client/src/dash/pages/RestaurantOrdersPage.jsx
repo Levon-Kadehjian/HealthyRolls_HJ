@@ -85,7 +85,7 @@ export default function RestaurantOrdersPage() {
 
       {failed && (
         <p className="kitchen-load-error" role="alert">
-          Orders could not be loaded. Check the output console for details.
+          Orders could not be loaded. Try refreshing the page.
         </p>
       )}
 

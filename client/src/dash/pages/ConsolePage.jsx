@@ -29,7 +29,7 @@ export default function ConsolePage() {
     <div className="console-page">
       <header className="page-header">
         <h2>Output Console</h2>
-        <p>Every command and every error from this session.</p>
+        <p>Commands and errors recorded in this browser.</p>
       </header>
 
       <section className="console-panel" aria-label="Output console">

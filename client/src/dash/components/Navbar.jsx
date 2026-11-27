@@ -77,6 +77,11 @@ export default function Navbar() {
                   Orders
                 </NavLink>
               )}
+              {session.role === 'OPERATOR' && (
+                <NavLink to="/console" className={linkClass}>
+                  Console
+                </NavLink>
+              )}
               {session.role === 'CUSTOMER' && (
                 <NavLink to="/cart" className={({ isActive }) => `nav-icon-link ${isActive ? 'nav-link-active' : ''}`} aria-label={`Cart, ${itemCount} items`}>
                   <ShoppingCart className="nav-icon" strokeWidth={1.9} aria-hidden="true" />

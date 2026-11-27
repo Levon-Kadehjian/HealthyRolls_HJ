@@ -286,6 +286,11 @@ export default function AuthPage({ initialMode = 'login' }) {
           )}
           {mode === 'signup' && (
             <>
+              <p id="auth-location-help" className="auth-field-help">
+                Enter your delivery location's GPS coordinates as decimal numbers.
+                You can copy them from a map. Example in Montréal: latitude 45.5017,
+                longitude -73.5673. Include the minus sign.
+              </p>
               <div className="auth-field">
                 <label htmlFor="auth-latitude">Delivery latitude</label>
                 <input
@@ -295,6 +300,8 @@ export default function AuthPage({ initialMode = 'login' }) {
                   min="-90"
                   max="90"
                   step="any"
+                  placeholder="e.g. 45.5017"
+                  aria-describedby="auth-location-help"
                   value={latitude}
                   onChange={(e) => setLatitude(e.target.value)}
                   required
@@ -310,6 +317,8 @@ export default function AuthPage({ initialMode = 'login' }) {
                   min="-180"
                   max="180"
                   step="any"
+                  placeholder="e.g. -73.5673"
+                  aria-describedby="auth-location-help"
                   value={longitude}
                   onChange={(e) => setLongitude(e.target.value)}
                   required

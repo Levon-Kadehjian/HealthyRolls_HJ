@@ -63,6 +63,7 @@ describe('Navbar characterisation', () => {
     expect(screen.queryByRole('button', { name: 'Account menu' })).not.toBeInTheDocument()
     expect(screen.queryByRole('link', { name: 'Orders' })).not.toBeInTheDocument()
     expect(screen.queryByRole('link', { name: /Cart,/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Console' })).not.toBeInTheDocument()
   })
 
   it.each([
@@ -74,6 +75,11 @@ describe('Navbar characterisation', () => {
     const user = renderNavbar(role)
 
     expect(screen.getByText(label)).toBeVisible()
+    if (role === 'OPERATOR') {
+      expect(screen.getByRole('link', { name: 'Console' })).toHaveAttribute('href', '/console')
+    } else {
+      expect(screen.queryByRole('link', { name: 'Console' })).not.toBeInTheDocument()
+    }
     await openAccountMenu(user)
 
     const menu = within(screen.getByRole('menu'))

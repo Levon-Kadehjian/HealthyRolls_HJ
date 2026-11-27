@@ -199,7 +199,7 @@ const displayedOrderId = hasPendingOffer ? offer.orderId : courier?.currentOrder
       {failed && (
         <p className="courier-load-error" role="alert">
           Your courier profile could not be loaded.
-          Check the output console for details.
+          Try refreshing the page.
         </p>
       )}
 
