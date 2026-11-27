@@ -55,16 +55,16 @@ From `client`, install the locked dependencies and run the Navbar tests:
 npm ci
 npm test -- src/dash/components/Navbar.test.jsx
 ```
+### Backend characterisation tests
 
-`npm test` runs all frontend tests once; `npm run test:watch` reruns them as files change.
-The tests use Vitest, React Testing Library and Happy DOM. They exercise the existing
-Navbar through its UI, including account-menu interactions, role permissions, logout,
-and system reset confirmation, success and failure. The reset API is mocked, so no
-backend or database is needed and running the tests cannot reset application data.
+From the project root, using Java 25:
 
-For Phase IV, commit the passing characterisation tests before extracting the account
-menu, then run these same tests on the refactor commit. Their assertions describe
-observable behaviour and do not depend on the internal component structure.
+```sh
+cd server
+./mvnw -Dtest=DispatchServiceTest,CourierServiceTest test
+```
+
+These tests cover the courier and dispatch behaviour preserved by the refactorings.
 
 ## Database
 
