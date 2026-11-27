@@ -1,5 +1,10 @@
 package com.healthyrolls.application.dlv;
 
+import java.time.Instant;
+import java.util.List;
+import java.util.Optional;
+
+import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -7,7 +12,13 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import static org.mockito.ArgumentMatchers.any;
+import org.mockito.InOrder;
+import org.mockito.Mock;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -15,24 +26,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
-
-import java.time.Instant;
-import java.util.List;
-import java.util.Optional;
-
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InOrder;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.LoggerFactory;
-
-import ch.qos.logback.classic.Logger;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.read.ListAppender;
+import org.springframework.context.ApplicationEventPublisher;
 
 import com.healthyrolls.application.ord.OrderService;
 import com.healthyrolls.domain.common.AuthenticatedUser;
@@ -54,6 +50,10 @@ import com.healthyrolls.domain.ord.order.OrderAction;
 import com.healthyrolls.domain.ord.order.OrderId;
 import com.healthyrolls.domain.ord.order.OrderStatus;
 
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
+
 @ExtendWith(MockitoExtension.class)
 class CourierServiceTest {
 
@@ -71,6 +71,8 @@ class CourierServiceTest {
     private IOrderRepository orderRepository;
     @Mock
     private ICourierEventRepository courierEventRepository;
+    @Mock
+    private ApplicationEventPublisher events;
 
     private CourierService service;
     private Logger serviceLogger;
@@ -85,7 +87,8 @@ class CourierServiceTest {
                 orderService,
                 assignmentRepository,
                 orderRepository,
-                courierEventRepository);
+                courierEventRepository,
+                events);
 
         serviceLogger = (Logger) LoggerFactory.getLogger(CourierService.class);
         logAppender = new ListAppender<>();
