@@ -11,6 +11,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.healthyrolls.domain.common.AuthenticatedUser;
 import com.healthyrolls.domain.common.UserId;
+import com.healthyrolls.domain.dlv.courier.CourierStateChanged;
+import com.healthyrolls.domain.dlv.courier.CourierStatus;
 import com.healthyrolls.domain.ntf.INotificationRepository;
 import com.healthyrolls.domain.ntf.Notification;
 import com.healthyrolls.domain.ntf.NotificationId;
@@ -41,6 +43,24 @@ public class NotificationService {
                 event.orderId(),
                 NotificationType.ORDER_STATUS,
                 messageFor(event),
+                event.occurredAt()));
+    }
+
+    @EventListener
+    @Transactional
+    public void onCourierStateChanged(CourierStateChanged event) {
+        if (event.fromStatus() != CourierStatus.IDLE
+                || event.toStatus() != CourierStatus.ASSIGNED
+                || event.orderId() == null) {
+            return;
+        }
+        Order order = orders.findByOrderId(event.orderId());
+        notifications.save(new Notification(
+                NotificationId.random(),
+                new UserId(order.getCustomerId()),
+                event.orderId(),
+                NotificationType.ORDER_STATUS,
+                "A courier has been assigned to your order",
                 event.occurredAt()));
     }
 

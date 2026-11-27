@@ -10,6 +10,11 @@ import Navbar from './Navbar'
 
 // Mock the backend boundary; keep the real session, router and console behaviour.
 vi.mock('../api/admin', () => ({ resetSystem: vi.fn() }))
+vi.mock('../api/notifications', () => ({
+  listNotifications: vi.fn(() => Promise.resolve([])),
+  markNotificationRead: vi.fn(),
+  markNotificationsRead: vi.fn(),
+}))
 
 function CurrentRoute() {
   const { pathname } = useLocation()
