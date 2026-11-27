@@ -74,6 +74,11 @@ public class NotificationService {
                 });
     }
 
+    @Transactional
+    public void readAll(AuthenticatedUser user, List<NotificationId> ids) {
+        ids.forEach(id -> markRead(user, id));
+    }
+
     private boolean canSee(AuthenticatedUser user, Notification n) {
         if (n.getType() == NotificationType.DISPATCH_ALERT) {
             return user.isOperator();
