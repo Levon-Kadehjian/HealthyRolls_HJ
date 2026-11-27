@@ -94,6 +94,14 @@ const loginRequiredLoader = () => {
   return null
 }
 
+const operatorOnlyLoader = () => {
+  const session = requireLogin()
+  if (session.role !== 'OPERATOR') {
+    throw redirect('/')
+  }
+  return null
+}
+
 const customerOnlyLoader = () => {
   const session = requireLogin()
   redirectStaffToKitchen()
@@ -603,6 +611,7 @@ export const router = createBrowserRouter([
       },
       {
         path: 'console',
+        loader: operatorOnlyLoader,
         element: <ConsolePage />,
       },
       {

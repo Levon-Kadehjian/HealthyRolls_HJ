@@ -13,6 +13,11 @@ logging:
     root: WARN
     com.healthyrolls: INFO
 
+notification:
+  dispatch-wait-threshold: ${DISPATCH_WAIT_THRESHOLD:5m}
+  scan-interval: ${SCAN_INTERVAL:1m}
+  max-notifications-per-user: ${MAX_NOTIFICATIONS_PER_USER:50}
+
 pricing:
   delivery-fee: ${DELIVERY_FEE:2.99}
   service-fee: ${SERVICE_FEE:1.99}
@@ -66,6 +71,11 @@ healthyrolls:
         - { path-pattern: /api/dispatch/stalled-orders, method: GET, allowed-rules: [OPERATOR] }
         - { path-pattern: /api/dispatch/stalled-orders/*/reassign, method: POST, allowed-rules: [OPERATOR] }
         - { path-pattern: /api/dispatch/couriers, method: GET, allowed-rules: [CUSTOMER, RESTAURANT_STAFF, COURIER, OPERATOR] }
+
+        # NTF
+        - { path-pattern: /api/notifications, method: GET, allowed-rules: [CUSTOMER, OPERATOR] }
+        - { path-pattern: /api/notifications/*/read, method: POST, allowed-rules: [CUSTOMER, OPERATOR] }
+        - { path-pattern: /api/notifications/read, method: POST, allowed-rules: [CUSTOMER, OPERATOR] }
 
         # Operator
         - { path-pattern: /api/admin/reset, method: POST, allowed-rules: [OPERATOR] }

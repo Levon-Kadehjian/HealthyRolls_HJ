@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,16 +35,19 @@ public class BillingService {
     private final IOrderRepository orderRepository;
     private final ILedgerRepository ledgerRepository;
     private final IOrderEventRepository orderEventRepository;
+    private final ApplicationEventPublisher events;
 
     public BillingService(
             FareCalculator fareCalculator,
             IOrderRepository orderRepository,
             ILedgerRepository ledgerRepository,
-            IOrderEventRepository orderEventRepository) {
+            IOrderEventRepository orderEventRepository,
+            ApplicationEventPublisher events) {
         this.fareCalculator = fareCalculator;
         this.orderRepository = orderRepository;
         this.ledgerRepository = ledgerRepository;
         this.orderEventRepository = orderEventRepository;
+        this.events = events;
     }
 
     @EventListener
@@ -112,13 +116,15 @@ public class BillingService {
         orderRepository.save(order);
 
         EventId eventId = EventId.random();
-        orderEventRepository.save(new OrderStateChanged(
+        OrderStateChanged event = new OrderStateChanged(
                 eventId,
                 order.getOrderId(),
                 previousStatus,
                 order.status(),
                 actorId,
-                java.time.Instant.now()));
+                java.time.Instant.now());
+        orderEventRepository.save(event);
+        events.publishEvent(event);
 
         LedgerEntry refund = LedgerEntry.refund(order, charge.amount().abs());
         ledgerRepository.append(refund);

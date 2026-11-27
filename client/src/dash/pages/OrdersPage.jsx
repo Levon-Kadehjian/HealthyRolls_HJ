@@ -317,9 +317,11 @@ export default function OrdersPage() {
 
       {failed && (
         <p className="order-error orders-load-error" role="alert">
-          {isOperator ? 'Orders could not be loaded.' : isCourier ? 'Deliveries could not be loaded.' : 'Your orders could not be loaded.'} Check the output console for details.
+          {isOperator ? 'Orders could not be loaded.' : isCourier ? 'Deliveries could not be loaded.' : 'Your orders could not be loaded.'}{' '}
+          {isOperator ? 'Check the output console for details.' : 'Try refreshing the page.'}
         </p>
       )}
+
       {isOperator && !failed && busyRestaurants.length > 0 && (
         <section className="orders-section" aria-label="Preparation queue warnings">
           <h3>Long preparation queues</h3>

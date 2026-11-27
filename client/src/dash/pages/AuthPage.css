@@ -238,6 +238,13 @@
   color: var(--text-h);
 }
 
+.auth-field-help {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text);
+}
+
 .auth-input {
   width: 100%;
   padding: 9px 12px;

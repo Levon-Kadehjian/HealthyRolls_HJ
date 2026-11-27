@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,6 +47,7 @@ public class CourierService {
     private final IOrderRepository orderRepository;
     private final OrderService orderService;
     private final ICourierEventRepository courierEventRepository;
+    private final ApplicationEventPublisher events;
 
     public CourierService(
             ICourierRepository repository,
@@ -54,7 +56,8 @@ public class CourierService {
             OrderService orderService,
             IAssignmentRepository assignmentRepository,
             IOrderRepository orderRepository,
-            ICourierEventRepository courierEventRepository) {
+            ICourierEventRepository courierEventRepository,
+            ApplicationEventPublisher events) {
 
         this.repository = Objects.requireNonNull(
                 repository, "Courier repository is required");
@@ -72,6 +75,7 @@ public class CourierService {
                 orderService, "Order service is required");
         this.courierEventRepository = Objects.requireNonNull(
                 courierEventRepository, "Courier event repository is required");
+        this.events = Objects.requireNonNull(events, "Event publisher is required");
     }
 
     @Transactional
@@ -181,15 +185,7 @@ public class CourierService {
         assignmentRepository.save(assignment);
         repository.save(courier);
 
-        CourierStateChanged event = new CourierStateChanged(
-                EventId.random(),
-                courierId,
-                orderId,
-                previousStatus,
-                courier.getStatus(),
-                Instant.now());
-
-        courierEventRepository.save(event);
+        CourierStateChanged event = recordCourierTransition(courier, previousStatus, orderId);
 
         log.info("Courier {} accepted order {}, moved {} -> {}, event {}",
                 courierId.value(), orderId.value(), previousStatus, courier.getStatus(),
@@ -227,15 +223,7 @@ public class CourierService {
 
         dispatchService.returnOfferToQueue(assignment);
 
-        CourierStateChanged event = new CourierStateChanged(
-                EventId.random(),
-                courierId,
-                orderId,
-                previousStatus,
-                courier.getStatus(),
-                Instant.now());
-
-        courierEventRepository.save(event);
+        CourierStateChanged event = recordCourierTransition(courier, previousStatus, orderId);
 
         log.info("Courier {} declined order {}, moved {} -> {}, event {}",
                 courierId.value(), orderId.value(), previousStatus, courier.getStatus(),
@@ -391,18 +379,22 @@ public class CourierService {
                         assignment.getOrderId(), actor));
     }
 
-    private void recordCourierTransition(
+    private CourierStateChanged recordCourierTransition(
             Courier courier,
             CourierStatus previousStatus,
             OrderId orderId) {
 
-        courierEventRepository.save(new CourierStateChanged(
+        CourierStateChanged event = new CourierStateChanged(
                 EventId.random(),
                 courier.getId(),
                 orderId,
                 previousStatus,
                 courier.getStatus(),
-                Instant.now()));
+                Instant.now());
+
+        courierEventRepository.save(event);
+        events.publishEvent(event);
+        return event;
     }
 
     @Transactional(readOnly = true)
